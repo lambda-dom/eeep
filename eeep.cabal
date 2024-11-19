@@ -1,0 +1,51 @@
+cabal-version:      3.0
+name:               eeep
+version:            0.1.0.0
+synopsis:           A library for handling BG EE data files.
+description:        Please see the README on GitHub at <https://github.com/lambda-dom/eeep#readme>
+category:           Data
+homepage:           https://github.com/lambda-dom/eeep#readme
+author:             lambda-dom
+license:            BSD-3-Clause
+license-file:       LICENSE
+maintainer:         grodrigues.math@gmail.com
+copyright:          2024 G. Rodrigues
+build-type:         Simple
+extra-source-files:
+extra-doc-files:
+    README.md
+    CHANGELOG.md
+    LICENSE
+
+source-repository head
+    type: git
+    location: https://github.com/lambda-dom/eeep
+
+common common-fields
+    default-language: GHC2021
+    default-extensions:
+        DerivingStrategies
+        TypeFamilies
+    build-depends:
+        -- GHC 9.6
+        base >=4.18 && <4.19,
+        mono-traversable >=1.0 && <1.1,
+        trisagion >=0.1 && <0.2,
+    ghc-options:
+        -Wall
+        -Wcompat
+        -Widentities
+        -Wincomplete-record-updates
+        -Wincomplete-uni-patterns
+        -Wmissing-export-lists
+        -Wmissing-home-modules
+        -Wpartial-fields
+        -Wredundant-constraints
+        -Wmissing-deriving-strategies
+        -- -Wunused-packages
+
+library
+    import: common-fields
+    hs-source-dirs: src
+    exposed-modules:
+        Eeep.Types.Streams
