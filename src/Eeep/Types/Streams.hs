@@ -23,7 +23,7 @@ import Data.Bifunctor (Bifunctor (..))
 import Data.MonoTraversable (MonoFunctor (..),  MonoFoldable (..), Element)
 
 -- Libraries.
-import Bins.Typeclasses.Streamable (Streamable (..))
+import Trisagion.Typeclasses.Streamable (Streamable (..))
 
 
 {- | Wrapper around a 'Streamable' adding an offset to track current position. -}
