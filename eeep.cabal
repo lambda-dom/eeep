@@ -42,11 +42,14 @@ library
     build-depends:
         -- GHC 9.6
         base >=4.18 && <4.19,
-        -- optics-core >= 0.4.1 && <0.4.2,
+        optics-core >= 0.4.1 && <0.4.2,
+        -- Non-hackage libraries.
+        -- mono >=0.1 && <0.2,
     other-modules:
     exposed-modules:
         Eeep.Types.Opcode.Probability
         Eeep.Types.Opcode.ResistDispel
         Eeep.Types.Opcode.SaveBonus
+        Eeep.Types.Opcode.SaveFlags
         Eeep.Types.Opcode.Target
         Eeep.Types.Opcode.Timing
