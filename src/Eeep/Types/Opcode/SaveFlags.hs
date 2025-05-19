@@ -30,12 +30,9 @@ import Data.Word (Word32)
 -- Libraries.
 import Optics.Core (Lens', lens)
 
--- non-Hackage libraries.
-import Mono.Types.BitArray (BitArray (..))
-
 
 {- | The 'SaveFlags' type.-}
-newtype SaveFlags = SaveFlags (BitArray Word32)
+newtype SaveFlags = SaveFlags Word32
     deriving stock (Eq, Show)
 
 
@@ -93,7 +90,7 @@ bypassMI = flag 24
 
 {- | Constructor for the 'SaveFlags' type. -}
 toSaveFlags :: Word32 -> SaveFlags
-toSaveFlags n = SaveFlags (BitArray $ n .&. mask)
+toSaveFlags n = SaveFlags $ n .&. mask
     where
         -- Mask to constrain values with only valid bits enabled.
         mask = 16780319
