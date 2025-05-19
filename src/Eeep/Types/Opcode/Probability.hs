@@ -19,8 +19,8 @@ import Data.Word (Word8)
 
 {- | The (non-empty) @Probability@ interval type. -}
 data Probability = Probability {
-    lower :: {-# UNPACK #-} !Word8,
-    upper :: {-# UNPACK #-} !Word8
+    _lower :: {-# UNPACK #-} !Word8,
+    _upper :: {-# UNPACK #-} !Word8
 } deriving stock (Eq, Show)
 
 
@@ -32,5 +32,5 @@ toProbability
     -> Maybe Probability
 toProbability l u =
     if 0 <= l && l <= u && u <= 100
-        then Just $ Probability {lower = fromIntegral l, upper = fromIntegral u}
+        then Just $ Probability {_lower = fromIntegral l, _upper = fromIntegral u}
         else Nothing
