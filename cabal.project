@@ -1,12 +1,2 @@
 packages:
     ./eeep.cabal
-
-source-repository-package
-    type: git
-    location: https://github.com/lambda-dom/mono
-    tag: main
-
-source-repository-package
-    type: git
-    location: https://github.com/lambda-dom/trisagion
-    tag: main

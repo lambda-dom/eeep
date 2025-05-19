@@ -11,8 +11,6 @@ license-file:       LICENSE
 maintainer:         grodrigues.math@gmail.com
 copyright:          2025 G. Rodrigues
 build-type:         Simple
-tested-with:
-    GHC == {9.6.6}
 extra-doc-files:
     LICENSE
     README.md
@@ -44,6 +42,11 @@ library
     build-depends:
         -- GHC 9.6
         base >=4.18 && <4.19,
+        -- optics-core >= 0.4.1 && <0.4.2,
     other-modules:
     exposed-modules:
+        Eeep.Types.Opcode.Probability
+        Eeep.Types.Opcode.ResistDispel
+        Eeep.Types.Opcode.SaveBonus
+        Eeep.Types.Opcode.Target
         Eeep.Types.Opcode.Timing
