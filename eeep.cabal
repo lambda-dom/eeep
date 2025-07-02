@@ -40,17 +40,23 @@ library
     hs-source-dirs:
         src
     build-depends:
-        -- GHC 9.6
-        base >=4.18 && <4.19,
+        -- GHC 9.6 - 9.8
+        base >=4.18 && <4.20,
         optics-core >= 0.4.1 && <0.4.2,
         -- Non-hackage libraries.
         -- mono >=0.1 && <0.2,
     other-modules:
     exposed-modules:
-        Eeep.Types.Opcode.Probability
+        Eeep.Types.Opcode.Target
+        Eeep.Types.Opcode.Power
+        Eeep.Types.Opcode.Parameter
+        Eeep.Types.Opcode.Timing
         Eeep.Types.Opcode.ResistDispel
+        Eeep.Types.Opcode.Duration
+        Eeep.Types.Opcode.Probability
         Eeep.Types.Opcode.Resref
+        Eeep.Types.Opcode.DiceNumber
+        Eeep.Types.Opcode.DiceSides
         Eeep.Types.Opcode.SaveBonus
         Eeep.Types.Opcode.SaveFlags
-        Eeep.Types.Opcode.Target
-        Eeep.Types.Opcode.Timing
+        Eeep.Types.Opcode.Special
