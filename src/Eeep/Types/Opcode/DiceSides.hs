@@ -14,6 +14,6 @@ module Eeep.Types.Opcode.DiceSides (
 import Data.Word (Word32)
 
 
-{- | The 'DiceSides' type. -}
+{- | The t'DiceSides' type. -}
 newtype DiceSides = DiceSides Word32
     deriving stock (Eq, Ord, Show)

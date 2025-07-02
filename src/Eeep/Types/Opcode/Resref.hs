@@ -15,6 +15,6 @@ import Data.Ix (Ix)
 import Data.Word (Word64)
 
 
-{- | The 'Resref' type for resource references. -}
+{- | The t'Resref' type for resource references. -}
 newtype Resref = Resref Word64
     deriving stock (Eq, Ord, Ix)

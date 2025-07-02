@@ -8,14 +8,19 @@ module Eeep.Types.Opcode.OpType (
     -- * Types.
     OpType (..),
 
-    -- ** Constants.
-    opIndices,
+    -- * Basic functions.
+    toOpType,
+    fromOpType,
 ) where
 
 -- Imports.
 -- Base.
 import Data.Word (Word16)
 import Data.Ix (Ix)
+
+-- Libraries.
+import Data.Vector.Strict (Vector, (!), fromListN, fromList, force)
+import Data.Maybe (isJust)
 
 
 {- | The @OpType@ enumeration type for all IE opcodes up to BG2 EE. -}
@@ -372,8 +377,8 @@ data OpType
 
 
 {- | Enumeration of the opcode types for parsing and serialization. -}
-opIndices :: [(Word16, Maybe OpType)]
-opIndices = [
+optypes :: [(Word16, Maybe OpType)]
+optypes = [
     (0,   Just ACDamageType),
     (1,   Just AttacksRound),
     (2,   Just CureSleep),
@@ -743,3 +748,22 @@ opIndices = [
     (366, Just EffectOnMove),
     (367, Just MinimumBaseStats)
     ]
+
+
+{- | Vector @Index -> Maybe 'OpType'@. -}
+opTypes :: Vector (Maybe OpType)
+opTypes = fromListN 368 (snd <$> optypes)
+
+{- | Vector of 'OpType' indices. -}
+opIndices :: Vector Word16
+opIndices = force . fromList . fmap fst . filter (\ (_ , r) -> isJust r) $ optypes
+
+{- | Return the t'OpType' from an index. -}
+toOpType :: Word-> Maybe OpType
+toOpType m = if 0 <= n && n <= length opTypes then opTypes ! n else Nothing
+    where
+        n = fromIntegral m
+
+{- | Return the 'Word' index assocated to an t'OpType'. -}
+fromOpType :: OpType -> Word
+fromOpType op = fromIntegral $ opIndices ! fromEnum op

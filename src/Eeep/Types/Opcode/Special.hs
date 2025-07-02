@@ -14,6 +14,6 @@ module Eeep.Types.Opcode.Special (
 import Data.Word (Word32)
 
 
-{- | The 'Special' type. -}
+{- | The t'Special' type. -}
 newtype Special = Special Word32
     deriving stock (Eq, Ord, Show)

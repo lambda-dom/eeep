@@ -1,5 +1,5 @@
 cabal-version:      3.0
-name:               trisagion
+name:               eeep
 version:            0.1.0.0
 synopsis:           A library for modding BG EE games.
 description:        Please see the README on GitHub at <https://github.com/lambda-dom/eeep#readme>
@@ -42,6 +42,7 @@ library
     build-depends:
         -- GHC 9.6 - 9.8
         base >=4.18 && <4.20,
+        vector >=0.13 && <0.14,
         optics-core >= 0.4.1 && <0.4.2,
         -- Non-hackage libraries.
         -- mono >=0.1 && <0.2,

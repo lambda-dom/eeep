@@ -36,7 +36,7 @@ instance Bounded SaveBonus where
     maxBound = SaveBonus 20
 
 
-{- | Smart constructor for the 'SaveBonus' type.-}
+{- | Smart constructor for the t'SaveBonus' type.-}
 {-# INLINE toSaveBonus #-}
 toSaveBonus :: Int -> Maybe SaveBonus
 toSaveBonus n = if -20 <= n && n <= 20 then Just $ SaveBonus (fromIntegral n) else Nothing

@@ -14,6 +14,6 @@ module Eeep.Types.Opcode.Parameter (
 import Data.Word (Word32)
 
 
-{- | The 'Parameter' type. -}
+{- | The t'Parameter' type. -}
 newtype Parameter = Parameter Word32
     deriving stock (Eq, Ord, Show)

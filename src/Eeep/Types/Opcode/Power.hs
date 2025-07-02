@@ -33,7 +33,7 @@ instance Bounded Power where
     maxBound = Power 10
 
 
-{- | Smart constructor for the 'Power' type.-}
+{- | Smart constructor for the t'Power' type.-}
 {-# INLINE toPower #-}
 toPower :: Int -> Maybe Power
 toPower n = if 0 <= n && n <= 10 then Just $ Power (fromIntegral n) else Nothing

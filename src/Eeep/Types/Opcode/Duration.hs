@@ -14,6 +14,6 @@ module Eeep.Types.Opcode.Duration (
 import Data.Word (Word32)
 
 
-{- | The 'Duration' type. -}
+{- | The t'Duration' type. -}
 newtype Duration = Duration Word32
     deriving stock (Eq, Ord, Show)

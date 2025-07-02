@@ -14,6 +14,6 @@ module Eeep.Types.Opcode.DiceNumber (
 import Data.Word (Word32)
 
 
-{- | The 'DiceNumber' type. -}
+{- | The t'DiceNumber' type. -}
 newtype DiceNumber = DiceNumber Word32
     deriving stock (Eq, Ord, Show)

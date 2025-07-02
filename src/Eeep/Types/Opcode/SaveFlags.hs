@@ -31,7 +31,7 @@ import Data.Word (Word32)
 import Optics.Core (Lens', lens)
 
 
-{- | The 'SaveFlags' type.-}
+{- | The t'SaveFlags' type.-}
 newtype SaveFlags = SaveFlags Word32
     deriving stock (Eq, Show)
 
@@ -47,48 +47,48 @@ flag n = lens project update
         update r@(SaveFlags ns) b = if b then SaveFlags (ns .|. bit n) else r
 
 
-{- | The save vs. spells bit flag. -}
+{- | The save vs. spells bit lens. -}
 {-# INLINE spells #-}
 spells :: Lens' SaveFlags Bool
 spells = flag 0
 
-{- | The save vs. breath bit flag. -}
+{- | The save vs. breath bit lens. -}
 {-# INLINE breath #-}
 breath :: Lens' SaveFlags Bool
 breath = flag 1
 
-{- | The save vs. poison (paralyze) bit flag. -}
+{- | The save vs. poison (paralyze) bit lens. -}
 {-# INLINE poison #-}
 poison :: Lens' SaveFlags Bool
 poison = flag 2
 
-{- | The save vs. wands bit flag. -}
+{- | The save vs. wands bit lens. -}
 {-# INLINE wands #-}
 wands :: Lens' SaveFlags Bool
 wands = flag 3
 
-{- | The save vs. petrify bit flag. -}
+{- | The save vs. petrify bit lens. -}
 {-# INLINE petrify #-}
 petrify :: Lens' SaveFlags Bool
 petrify = flag 4
 
-{- | The ignore primary bit flag. -}
+{- | The ignore primary bit lens. -}
 {-# INLINE ignorePrimary #-}
 ignorePrimary :: Lens' SaveFlags Bool
 ignorePrimary = flag 10
 
-{- | The ignore secondary bit flag. -}
+{- | The ignore secondary bit lens. -}
 {-# INLINE ignoreSecondary #-}
 ignoreSecondary :: Lens' SaveFlags Bool
 ignoreSecondary = flag 11
 
-{- | The bypass mirror image bit flag. -}
+{- | The bypass mirror image bit lens. -}
 {-# INLINE bypassMI #-}
 bypassMI :: Lens' SaveFlags Bool
 bypassMI = flag 24
 
 
-{- | Constructor for the 'SaveFlags' type. -}
+{- | Constructor for the t'SaveFlags' type. -}
 toSaveFlags :: Word32 -> SaveFlags
 toSaveFlags n = SaveFlags $ n .&. mask
     where
