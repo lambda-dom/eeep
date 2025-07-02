@@ -47,6 +47,7 @@ library
         -- mono >=0.1 && <0.2,
     other-modules:
     exposed-modules:
+        Eeep.Types.Opcode.OpType
         Eeep.Types.Opcode.Target
         Eeep.Types.Opcode.Power
         Eeep.Types.Opcode.Parameter
