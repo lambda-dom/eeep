@@ -49,6 +49,7 @@ library
     exposed-modules:
         Eeep.Types.Opcode.Probability
         Eeep.Types.Opcode.ResistDispel
+        Eeep.Types.Opcode.Resref
         Eeep.Types.Opcode.SaveBonus
         Eeep.Types.Opcode.SaveFlags
         Eeep.Types.Opcode.Target
