@@ -15,6 +15,7 @@ module Eeep.Types.Opcode.ResistDispel (
 -- Imports.
 -- Base.
 import Data.Ix (Ix)
+import Data.Word (Word32)
 
 
 {- | The @ResistDispel@ enumeration type. -}
@@ -28,5 +29,5 @@ data ResistDispel
 
 {- | Smart constructor for the 'ResistDispel' type.-}
 {-# INLINE toResistDispel #-}
-toResistDispel :: Int -> Maybe ResistDispel
-toResistDispel n = if 0 <= n && n <= 3 then Just $ toEnum n else Nothing
+toResistDispel :: Word32 -> Maybe ResistDispel
+toResistDispel n = if n <= 3 then Just $ toEnum (fromIntegral n) else Nothing

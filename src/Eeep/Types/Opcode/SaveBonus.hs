@@ -14,7 +14,7 @@ module Eeep.Types.Opcode.SaveBonus (
 
 -- Imports.
 -- Base.
-import Data.Int (Int8)
+import Data.Int (Int8, Int32)
 import Data.Ix (Ix)
 
 
@@ -38,5 +38,5 @@ instance Bounded SaveBonus where
 
 {- | Smart constructor for the t'SaveBonus' type.-}
 {-# INLINE toSaveBonus #-}
-toSaveBonus :: Int -> Maybe SaveBonus
+toSaveBonus :: Int32 -> Maybe SaveBonus
 toSaveBonus n = if -20 <= n && n <= 20 then Just $ SaveBonus (fromIntegral n) else Nothing

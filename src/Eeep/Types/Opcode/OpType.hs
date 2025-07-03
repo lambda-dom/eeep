@@ -15,11 +15,11 @@ module Eeep.Types.Opcode.OpType (
 
 -- Imports.
 -- Base.
-import Data.Word (Word16)
+import Data.Word (Word32)
 import Data.Ix (Ix)
 
 -- Libraries.
-import Data.Vector.Strict (Vector, (!), fromListN, fromList, force)
+import Data.Vector.Strict (Vector, (!), fromList, force)
 import Data.Maybe (isJust)
 
 
@@ -377,7 +377,7 @@ data OpType
 
 
 {- | Enumeration of the opcode types for parsing and serialization. -}
-optypes :: [(Word16, Maybe OpType)]
+optypes :: [(Word32, Maybe OpType)]
 optypes = [
     (0,   Just ACDamageType),
     (1,   Just AttacksRound),
@@ -752,18 +752,18 @@ optypes = [
 
 {- | Vector @Index -> Maybe 'OpType'@. -}
 opTypes :: Vector (Maybe OpType)
-opTypes = fromListN 368 (snd <$> optypes)
+opTypes = force . fromList $ snd <$> optypes
 
 {- | Vector of 'OpType' indices. -}
-opIndices :: Vector Word16
+opIndices :: Vector Word32
 opIndices = force . fromList . fmap fst . filter (\ (_ , r) -> isJust r) $ optypes
 
 {- | Return the t'OpType' from an index. -}
-toOpType :: Word-> Maybe OpType
-toOpType m = if 0 <= n && n <= length opTypes then opTypes ! n else Nothing
+toOpType :: Word32 -> Maybe OpType
+toOpType m = if n <= length opTypes then opTypes ! n else Nothing
     where
         n = fromIntegral m
 
-{- | Return the 'Word' index assocated to an t'OpType'. -}
-fromOpType :: OpType -> Word
-fromOpType op = fromIntegral $ opIndices ! fromEnum op
+{- | Return the 'Word32' index associated to an t'OpType'. -}
+fromOpType :: OpType -> Word32
+fromOpType op = opIndices ! fromEnum op

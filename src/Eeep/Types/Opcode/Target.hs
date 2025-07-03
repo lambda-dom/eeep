@@ -15,6 +15,7 @@ module Eeep.Types.Opcode.Target (
 -- Imports.
 -- Base.
 import Data.Ix (Ix)
+import Data.Word (Word32)
 
 
 {- | The @Target@ enumeration type. -}
@@ -34,5 +35,7 @@ data Target
 
 {- | Smart constructor for the 'Target' type.-}
 {-# INLINE toTarget #-}
-toTarget :: Int -> Maybe Target
-toTarget n = if 0 <= n && n <= 9 then Just $ toEnum n else Nothing
+toTarget :: Word32 -> Maybe Target
+toTarget n = if m <= fromEnum (maxBound @Target) then Just $ toEnum m else Nothing
+    where
+        m = fromIntegral n
