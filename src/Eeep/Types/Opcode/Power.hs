@@ -14,12 +14,12 @@ module Eeep.Types.Opcode.Power (
 
 -- Imports.
 -- Base.
-import Data.Word (Word8)
+import Data.Word (Word32)
 import Data.Ix (Ix)
 
 
 {- | Refinement type containing values in the interval @[0 .. 10]@. -}
-newtype Power = Power Word8
+newtype Power = Power Word32
     deriving stock (Eq, Ord, Ix, Show)
 
 -- Instances.
@@ -35,5 +35,5 @@ instance Bounded Power where
 
 {- | Smart constructor for the t'Power' type.-}
 {-# INLINE toPower #-}
-toPower :: Int -> Maybe Power
-toPower n = if 0 <= n && n <= 10 then Just $ Power (fromIntegral n) else Nothing
+toPower :: Word32 -> Maybe Power
+toPower n = if n <= 10 then Just $ Power n else Nothing

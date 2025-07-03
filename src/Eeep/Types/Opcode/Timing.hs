@@ -15,6 +15,7 @@ module Eeep.Types.Opcode.Timing (
 -- Imports.
 -- Base.
 import Data.Ix (Ix)
+import Data.Word (Word32)
 
 
 {- | The @Timing@ enumeration type. -}
@@ -35,5 +36,7 @@ data Timing
 
 {- | Smart constructor for the 'Timing' type.-}
 {-# INLINE toTiming #-}
-toTiming :: Int -> Maybe Timing
-toTiming n = if 0 <= n && n <= toEnum maxBound then Just (toEnum n) else Nothing
+toTiming :: Word32 -> Maybe Timing
+toTiming n = if m <= fromEnum (maxBound @Timing) then Just $ toEnum m else Nothing
+    where
+        m = fromIntegral n
