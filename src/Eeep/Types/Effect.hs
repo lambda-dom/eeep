@@ -3,30 +3,14 @@ Module: Eeep.Types.Effect
 
 The @Effect@ type.
 -}
+{-# LANGUAGE RecordWildCards #-}
 
 module Eeep.Types.Effect (
     -- * Types.
     Effect (..),
 
     -- * Parsers.
-    getHeader,
-    getOptype,
-    getParameter,
-    getTarget,
-    getPower,
-    getTiming,
-    getDuration,
-    getProbability,
-    getResref,
-    getDiceNumber,
-    getDiceSides,
-    getSaveFlags,
-    getSaveBonus,
-    getSpecial,
-    getResistDispel,
-    getProjectile,
-    getSchool,
-    getSectype,
+    getEffect,
 ) where
 
 -- Imports.
@@ -66,6 +50,7 @@ import Eeep.Types.Opcode.Special (Special (..))
 import Eeep.Types.Effect.Projectile (Projectile (..))
 import Eeep.Types.Effect.School (School (..))
 import Eeep.Types.Effect.Sectype (Sectype (..))
+import Trisagion.Parsers.Combinators (skip)
 
 
 {- | The t'EffectError' type. -}
@@ -97,9 +82,9 @@ data Effect = Effect {
     resource1   :: {-# UNPACK #-} !Resref,
     resource2   :: {-# UNPACK #-} !Resref,
     resource3   :: {-# UNPACK #-} !Resref,
-    dicethrown  :: {-# UNPACK #-} !DiceNumber,
+    dicenumber  :: {-# UNPACK #-} !DiceNumber,
     dicesides   :: {-# UNPACK #-} !DiceSides,
-    flags       :: {-# UNPACK #-} !SaveFlags,
+    saveflags   :: {-# UNPACK #-} !SaveFlags,
     savebonus   :: {-# UNPACK #-} !SaveBonus,
     projectile  :: {-# UNPACK #-} !Projectile,
     school      :: {-# UNPACK #-} !School,
@@ -235,3 +220,40 @@ getSectype
     :: (Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
     => Parser s (ParseError EffectError) Sectype
 getSectype = Sectype <$> first (fmap absurd) word32Le
+
+{- | Parser for the t'Effect' type. -}
+getEffect
+    :: (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
+    => Parser s (ParseError EffectError) Effect
+getEffect = do
+    _ <- getHeader
+    _ <- skip (first (fmap absurd) $ takeExact 8)
+    optype <- getOptype
+    target <- getTarget
+    power <- getPower
+    parameter1 <- getParameter
+    parameter2 <- getParameter
+    timing <- getTiming
+    _ <- skip (first (fmap absurd) word16Le)
+    duration <- getDuration
+    probability <- getProbability
+    resource1 <- getResref
+    dicenumber <- getDiceNumber
+    dicesides <- getDiceSides
+    saveflags <- getSaveFlags
+    savebonus <- getSaveBonus
+    special <- getSpecial
+    school <- getSchool
+    _ <- skip (first (fmap absurd) $ takeExact 12)
+    dispel <- getResistDispel
+    parameter3 <- getParameter
+    parameter4 <- getParameter
+    _ <- skip (first (fmap absurd) $ takeExact 8)
+    resource2 <- getResref
+    resource3 <- getResref
+    _ <- skip (first (fmap absurd) $ takeExact 32)
+    projectile <- getProjectile
+    _ <- skip (first (fmap absurd) $ takeExact 44)
+    sectype <- getSectype
+    _ <- skip (first (fmap absurd) $ takeExact 60)
+    pure Effect {..}
