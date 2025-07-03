@@ -17,4 +17,4 @@ import Data.Word (Word64)
 
 {- | The t'Resref' type for resource references. -}
 newtype Resref = Resref Word64
-    deriving stock (Eq, Ord, Ix)
+    deriving stock (Eq, Ord, Ix, Show)
