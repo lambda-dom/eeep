@@ -25,6 +25,7 @@ library
     default-extensions:
         DerivingStrategies
         DerivingVia
+        RecordWildCards
     ghc-options:
         -Wall
         -Wcompat

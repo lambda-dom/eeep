@@ -3,7 +3,6 @@ Module: Eeep.Types.Effect
 
 The @Effect@ type.
 -}
-{-# LANGUAGE RecordWildCards #-}
 
 module Eeep.Types.Effect (
     -- * Types.
