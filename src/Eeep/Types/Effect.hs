@@ -7,9 +7,28 @@ The @Effect@ type.
 module Eeep.Types.Effect (
     -- * Types.
     Effect (..),
+
+    -- * Parsers.
+    header,
 ) where
 
 -- Imports.
+-- Base.
+import Data.Bifunctor (Bifunctor (..))
+import Data.Char (ord)
+import Data.Void (absurd)
+import Data.Word (Word8)
+
+-- non-Hackage libraries.
+import Mono.Typeclasses.MonoFunctor (MonoFunctor (ElementOf))
+import Mono.Typeclasses.MonoFoldable (MonoFoldable (monotoList))
+import Trisagion.Typeclasses.HasOffset (HasOffset)
+import Trisagion.Typeclasses.Splittable (Splittable (..))
+import Trisagion.Types.ParseError (ParseError)
+import Trisagion.Parser (Parser)
+import Trisagion.Parsers.Splittable (takeExact)
+import Trisagion.Parsers.ParseError (throwParseError)
+
 -- Package.
 import Eeep.Types.Opcode.OpType (OpType)
 import Eeep.Types.Opcode.Parameter (Parameter)
@@ -28,6 +47,11 @@ import Eeep.Types.Effect.Projectile (Projectile)
 import Eeep.Types.Effect.School (School)
 import Eeep.Types.Effect.Sectype (Sectype)
 import Eeep.Types.Opcode.Special (Special)
+
+
+{- | The t'EffectError' type. -}
+data EffectError = HeaderError
+    deriving stock (Eq, Show)
 
 
 {- | The @Effect@ type. -}
@@ -55,3 +79,14 @@ data Effect = Effect {
     sectype     :: {-# UNPACK #-} !Sectype,
     special     :: {-# UNPACK #-} !Special
     } deriving stock (Eq, Show)
+
+
+-- Parsers.
+header
+    :: (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ ElementOf s, ElementOf s ~ Word8)
+    => Parser s (ParseError EffectError) (PrefixOf s)
+header = do
+    prefix <- first (fmap absurd) $ takeExact 8
+    if monotoList prefix == (fromIntegral . ord <$> "2DA V1.0")
+        then pure prefix
+        else throwParseError HeaderError
