@@ -1,9 +1,10 @@
+{-# LANGUAGE RecordWildCards #-}
+
 {- |
 Module: Eeep.Types.Effect
 
 The @Effect@ type.
 -}
-{-# LANGUAGE RecordWildCards #-}
 
 module Eeep.Types.Effect (
     -- * Types.
@@ -56,13 +57,13 @@ import Trisagion.Parsers.Combinators (skip)
 {- | The t'EffectError' type. -}
 data EffectError
     = HeaderError
-    | OpTypeError !Word32
-    | TargetError !Word32
-    | PowerError !Word32
-    | TimingError !Word32
-    | ProbabilityError !Word16 !Word16
-    | SaveBonusError !Int32
-    | ResistDispelError !Word32
+    | OpTypeError {-# UNPACK #-} !Word32
+    | TargetError {-# UNPACK #-} !Word32
+    | PowerError {-# UNPACK #-} !Word32
+    | TimingError {-# UNPACK #-} !Word32
+    | ProbabilityError {-# UNPACK #-} !Word16 {-# UNPACK #-} !Word16
+    | SaveBonusError {-# UNPACK #-} !Int32
+    | ResistDispelError {-# UNPACK #-} !Word32
     deriving stock (Eq, Show)
 
 
