@@ -66,6 +66,7 @@ library
         Eeep.Types.Opcode.SaveBonus
         Eeep.Types.Opcode.SaveFlags
         Eeep.Types.Opcode.Special
+        Eeep.Types.Opcode
         Eeep.Types.Effect.Projectile
         Eeep.Types.Effect.School
         Eeep.Types.Effect.Sectype
