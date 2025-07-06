@@ -29,6 +29,7 @@ import Trisagion.Typeclasses.HasOffset (HasOffset)
 import Trisagion.Typeclasses.Splittable (Splittable (..))
 import Trisagion.Types.ParseError (ParseError)
 import Trisagion.Parser (Parser)
+import Trisagion.Parsers.Combinators (skip)
 import Trisagion.Parsers.Splittable (takeExact)
 import Trisagion.Parsers.ParseError (throwParseError)
 import Trisagion.Parsers.Word8 (word32Le, word16Le, word64Le)
@@ -51,13 +52,12 @@ import Eeep.Types.Opcode.Special (Special (..))
 import Eeep.Types.Effect.Projectile (Projectile (..))
 import Eeep.Types.Effect.School (School (..))
 import Eeep.Types.Effect.Sectype (Sectype (..))
-import Trisagion.Parsers.Combinators (skip)
 
 
 {- | The t'EffectError' type. -}
 data EffectError
     = HeaderError
-    | OpTypeError {-# UNPACK #-} !Word32
+    | OpTypeError {-# UNPACK #-} !Word16
     | TargetError {-# UNPACK #-} !Word32
     | PowerError {-# UNPACK #-} !Word32
     | TimingError {-# UNPACK #-} !Word32
@@ -109,7 +109,7 @@ getOptype
     :: (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
     => Parser s (ParseError EffectError) OpType
 getOptype = do
-    n <- first (fmap absurd) word32Le
+    n <- first (fmap absurd) word16Le
     maybe (throwParseError $ OpTypeError n) pure (toOpType n)
 
 {- | Parser for the t'Parameter' type. -}
@@ -124,7 +124,7 @@ getTarget
     => Parser s (ParseError EffectError) Target
 getTarget = do
     n <- first (fmap absurd) word32Le
-    maybe (throwParseError $ TargetError n) pure (toTarget n)
+    maybe (throwParseError $ TargetError n) pure (toTarget (fromIntegral n))
 
 {- | Parser for the t'Power' type. -}
 getPower
@@ -132,7 +132,7 @@ getPower
     => Parser s (ParseError EffectError) Power
 getPower = do
     n <- first (fmap absurd) word32Le
-    maybe (throwParseError $ PowerError n) pure (toPower n)
+    maybe (throwParseError $ PowerError n) pure (toPower (fromIntegral n))
 
 {- | Parser for the t'Timing' type. -}
 getTiming
@@ -140,7 +140,7 @@ getTiming
     => Parser s (ParseError EffectError) Timing
 getTiming = do
     n <- bimap (fmap absurd) fromIntegral word16Le
-    maybe (throwParseError $ TimingError n) pure (toTiming n)
+    maybe (throwParseError $ TimingError n) pure (toTiming (fromIntegral n))
 
 {- | Parser for the t'Duration' type. -}
 getDuration
@@ -155,7 +155,7 @@ getProbability
 getProbability = do
     n <- first (fmap absurd) word16Le
     m <- first (fmap absurd) word16Le
-    maybe (throwParseError $ ProbabilityError n m) pure (toProbability n m)
+    maybe (throwParseError $ ProbabilityError n m) pure (toProbability (fromIntegral n) (fromIntegral m))
 
 {- | Parser for the t'Resref' type. -}
 getResref
@@ -201,7 +201,7 @@ getResistDispel
     => Parser s (ParseError EffectError) ResistDispel
 getResistDispel = do
     n <- first (fmap absurd) word32Le
-    maybe (throwParseError $ ResistDispelError n) pure (toResistDispel n)
+    maybe (throwParseError $ ResistDispelError n) pure (toResistDispel (fromIntegral n))
 
 {- | Parser for the t'Projectile' type. -}
 getProjectile
@@ -230,6 +230,7 @@ getEffect = do
     _ <- getHeader
     _ <- skip (first (fmap absurd) $ takeExact 8)
     optype <- getOptype
+    _ <- skip (first (fmap absurd) word16Le)
     target <- getTarget
     power <- getPower
     parameter1 <- getParameter

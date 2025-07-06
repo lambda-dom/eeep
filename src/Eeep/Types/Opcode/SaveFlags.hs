@@ -1,3 +1,5 @@
+{-# LANGUAGE UndecidableInstances #-}
+
 {- |
 Module: Eeep.Types.Opcode.SaveFlags
 
@@ -25,15 +27,36 @@ module Eeep.Types.Opcode.SaveFlags (
 -- Imports.
 -- Base.
 import Data.Bits ((.&.), (.|.), bit, zeroBits)
-import Data.Word (Word32)
+import Data.Void (Void)
+import Data.Word (Word8, Word32)
 
 -- Libraries.
 import Optics.Core (Lens', lens)
+
+-- non-Hackage libraries.
+import Mono.Typeclasses.MonoFunctor (ElementOf)
+import Mono.Typeclasses.MonoFoldable (MonoFoldable)
+import Trisagion.Typeclasses.HasOffset (HasOffset)
+import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
+import Trisagion.Parser (Parser)
+import Trisagion.Parsers.ParseError (capture)
+import Trisagion.Parsers.Streamable (InputError)
+import Trisagion.Parsers.Word8 (word32Le)
+
+-- Package.
+import Eeep.Typeclasses.Binary (Reader (..))
 
 
 {- | The t'SaveFlags' type.-}
 newtype SaveFlags = SaveFlags Word32
     deriving stock (Eq, Show)
+
+
+-- Instances.
+instance (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
+    => Reader s Void SaveFlags where
+    parser :: Parser s InputError SaveFlags
+    parser = capture . fmap toSaveFlags $ word32Le
 
 
 {- | Generic bit lens. -}
