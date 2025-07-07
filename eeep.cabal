@@ -72,5 +72,5 @@ library
         Eeep.Types.Effect.Projectile
         Eeep.Types.Effect.School
         Eeep.Types.Effect.Sectype
-        -- Eeep.Types.Effect
+        Eeep.Types.Effect
         Eeep.IO
