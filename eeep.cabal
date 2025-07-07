@@ -25,6 +25,7 @@ library
     default-extensions:
         DerivingStrategies
         DerivingVia
+        RecordWildCards
     ghc-options:
         -Wall
         -Wcompat
@@ -52,6 +53,7 @@ library
         mono >=0.1 && <0.2,
     other-modules:
     exposed-modules:
+        Eeep.Typeclasses.Binary
         Eeep.Types.Opcode.OpType
         Eeep.Types.Opcode.Target
         Eeep.Types.Opcode.Power
@@ -66,6 +68,7 @@ library
         Eeep.Types.Opcode.SaveBonus
         Eeep.Types.Opcode.SaveFlags
         Eeep.Types.Opcode.Special
+        Eeep.Types.Opcode
         Eeep.Types.Effect.Projectile
         Eeep.Types.Effect.School
         Eeep.Types.Effect.Sectype

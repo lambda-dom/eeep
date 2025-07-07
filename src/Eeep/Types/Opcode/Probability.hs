@@ -5,32 +5,81 @@ The @Probability@ type.
 -}
 
 module Eeep.Types.Opcode.Probability (
+    -- * Error types.
+    ProbabilityError (..),
+
     -- * Types.
     Probability,
 
     -- ** Constructors.
     toProbability,
+
+    -- * Parsers.
+    parseProbability,
+    parseProbability16Le,
 ) where
 
 -- Imports.
 -- Base.
-import Data.Word (Word8, Word16)
+import Data.Bifunctor (Bifunctor (..))
+import Data.Void (absurd)
+import Data.Word (Word8)
+
+
+-- non-Hackage libraries.
+import Mono.Typeclasses.MonoFunctor (ElementOf)
+import Mono.Typeclasses.MonoFoldable (MonoFoldable)
+import Trisagion.Types.ParseError (ParseError)
+import Trisagion.Typeclasses.HasOffset (HasOffset)
+import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
+import Trisagion.Parser (Parser)
+import Trisagion.Parsers.ParseError (throwParseError, capture)
+import Trisagion.Parsers.Word8 (word8, word16Le)
+
+
+{- | The t'ProbabilityError' type. -}
+data ProbabilityError = ProbabilityError !Word8 !Word8
+    deriving stock (Eq, Show)
 
 
 {- | The (non-empty) @Probability@ interval type. -}
-data Probability = Probability {
-    _lower :: {-# UNPACK #-} !Word8,
-    _upper :: {-# UNPACK #-} !Word8
-    } deriving stock (Eq, Show)
+data Probability = Probability {-# UNPACK #-} !Word8 {-# UNPACK #-} !Word8
+    deriving stock (Eq, Show)
 
 
 {- | Construct a @t'Probability'@ pair from a pair of integers. -}
 {-# INLINE toProbability #-}
 toProbability
-    :: Word16                              -- ^ Lower bound.
-    -> Word16                              -- ^ Upper bound.
+    :: Word8                            -- ^ Lower bound.
+    -> Word8                            -- ^ Upper bound.
     -> Maybe Probability
 toProbability l u =
-    if 0 <= l && l <= u && u <= 100
-        then Just $ Probability {_lower = fromIntegral l, _upper = fromIntegral u}
+    if l <= u && u <= 100
+        then Just $ Probability l u
         else Nothing
+
+
+{- | Parse a t'Probability' from two 'Word8'. -}
+parseProbability
+    :: (HasOffset s, ElementOf s ~ Word8)
+    => Parser s (ParseError ProbabilityError) Probability
+parseProbability = capture $ do
+        n <- first (fmap absurd) word8
+        m <- first (fmap absurd) word8
+        maybe (throwParseError $ ProbabilityError n m) pure (toProbability n m)
+
+{- | Parse a t'Probability' from two 'Word16'. -}
+parseProbability16Le
+    :: (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
+    => Parser s (ParseError ProbabilityError) Probability
+parseProbability16Le = capture $ do
+        n <- first (fmap absurd) word16Le
+        m <- first (fmap absurd) word16Le
+        let
+            n' = fromIntegral n
+            m' = fromIntegral m
+        if (n > upper) || (m > upper)
+            then throwParseError $ ProbabilityError n' m'
+            else maybe (throwParseError $ ProbabilityError n' m') pure (toProbability n' m')
+    where
+        upper = fromIntegral (maxBound @Word8)

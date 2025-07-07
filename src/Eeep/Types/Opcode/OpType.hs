@@ -5,22 +5,48 @@ The @OpType@ type.
 -}
 
 module Eeep.Types.Opcode.OpType (
+    -- * Error types.
+    OpTypeError (..),
+
     -- * Types.
     OpType (..),
 
-    -- * Basic functions.
+    -- ** Basic functions.
     toOpType,
     fromOpType,
+
+    -- * Parsers.
+    parseOpType,
+
 ) where
 
 -- Imports.
 -- Base.
-import Data.Word (Word32)
+import Data.Bifunctor (Bifunctor (..))
 import Data.Ix (Ix)
+import Data.Maybe (isJust)
+import Data.Void (absurd)
+import Data.Word (Word8, Word16)
 
 -- Libraries.
 import Data.Vector.Strict (Vector, (!), fromList, force)
-import Data.Maybe (isJust)
+
+-- non-Hackage libraries.
+import Mono.Typeclasses.MonoFunctor (ElementOf)
+import Mono.Typeclasses.MonoFoldable (MonoFoldable)
+import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
+import Trisagion.Types.ParseError (ParseError)
+import Trisagion.Parser (Parser)
+
+-- Package.
+import Trisagion.Parsers.Word8 (word16Le)
+import Trisagion.Parsers.ParseError (throwParseError, capture)
+import Trisagion.Typeclasses.HasOffset (HasOffset)
+
+
+{- | The t'OpTypeError' type. -}
+newtype OpTypeError = OpTypeError Word16
+    deriving stock (Eq, Show)
 
 
 {- | The @OpType@ enumeration type for all IE opcodes up to BG2 EE. -}
@@ -377,7 +403,7 @@ data OpType
 
 
 {- | Enumeration of the opcode types for parsing and serialization. -}
-optypes :: [(Word32, Maybe OpType)]
+optypes :: [(Word16, Maybe OpType)]
 optypes = [
     (0,   Just ACDamageType),
     (1,   Just AttacksRound),
@@ -755,15 +781,24 @@ opTypes :: Vector (Maybe OpType)
 opTypes = force . fromList $ snd <$> optypes
 
 {- | Vector of 'OpType' indices. -}
-opIndices :: Vector Word32
+opIndices :: Vector Word16
 opIndices = force . fromList . fmap fst . filter (\ (_ , r) -> isJust r) $ optypes
 
 {- | Return the t'OpType' from an index. -}
-toOpType :: Word32 -> Maybe OpType
+toOpType :: Word16 -> Maybe OpType
 toOpType m = if n <= length opTypes then opTypes ! n else Nothing
     where
         n = fromIntegral m
 
-{- | Return the 'Word32' index associated to an t'OpType'. -}
-fromOpType :: OpType -> Word32
+{- | Return the 'Word16' index associated to an t'OpType'. -}
+fromOpType :: OpType -> Word16
 fromOpType op = opIndices ! fromEnum op
+
+
+{- | Parse an 'OpType' from a 'Word16'. -}
+parseOpType
+    ::(HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
+    => Parser s (ParseError OpTypeError) OpType
+parseOpType = capture $ do
+        n <- first (fmap absurd) word16Le
+        maybe (throwParseError $ OpTypeError n) pure (toOpType n)

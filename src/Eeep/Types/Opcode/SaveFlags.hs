@@ -20,15 +20,30 @@ module Eeep.Types.Opcode.SaveFlags (
     ignorePrimary,
     ignoreSecondary,
     bypassMI,
+
+    -- * Parsers.
+    parseSaveFlags,
 ) where
 
 -- Imports.
 -- Base.
 import Data.Bits ((.&.), (.|.), bit, zeroBits)
-import Data.Word (Word32)
+import Data.Word (Word8, Word32)
 
 -- Libraries.
 import Optics.Core (Lens', lens)
+
+-- non-Hackage libraries.
+import Mono.Typeclasses.MonoFunctor (ElementOf)
+import Mono.Typeclasses.MonoFoldable (MonoFoldable)
+import Trisagion.Typeclasses.HasOffset (HasOffset)
+import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
+import Trisagion.Parser (Parser)
+import Trisagion.Parsers.ParseError (capture)
+import Trisagion.Parsers.Streamable (InputError)
+import Trisagion.Parsers.Word8 (word32Le)
+
+-- Package.
 
 
 {- | The t'SaveFlags' type.-}
@@ -94,3 +109,11 @@ toSaveFlags n = SaveFlags $ n .&. mask
     where
         -- Mask to constrain values with only valid bits enabled.
         mask = 16780319
+
+
+{- | Parse an opcode's t'SaveFlags'. -}
+parseSaveFlags
+    :: (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
+    => Parser s InputError SaveFlags
+parseSaveFlags = capture . fmap toSaveFlags $ word32Le
+

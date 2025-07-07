@@ -5,17 +5,38 @@ The @Timing@ type.
 -}
 
 module Eeep.Types.Opcode.Timing (
+    -- * Error types.
+    TimingError (..),
+
     -- * Types.
     Timing,
 
     -- ** Constructors.
     toTiming,
+
+    -- * Parsers.
+    parseTiming,
 ) where
 
 -- Imports.
 -- Base.
+import Data.Bifunctor (Bifunctor (..))
 import Data.Ix (Ix)
-import Data.Word (Word32)
+import Data.Void (absurd)
+import Data.Word (Word8)
+
+-- non-Hackage libraries.
+import Mono.Typeclasses.MonoFunctor (ElementOf)
+import Trisagion.Types.ParseError (ParseError)
+import Trisagion.Typeclasses.HasOffset (HasOffset)
+import Trisagion.Parser (Parser)
+import Trisagion.Parsers.ParseError (throwParseError, capture)
+import Trisagion.Parsers.Word8 (word8)
+
+
+{- | The t'TimingError' type. -}
+newtype TimingError = TimingError Word8
+    deriving stock (Eq, Show)
 
 
 {- | The @Timing@ enumeration type. -}
@@ -36,7 +57,14 @@ data Timing
 
 {- | Smart constructor for the 'Timing' type.-}
 {-# INLINE toTiming #-}
-toTiming :: Word32 -> Maybe Timing
+toTiming :: Word8 -> Maybe Timing
 toTiming n = if m <= fromEnum (maxBound @Timing) then Just $ toEnum m else Nothing
     where
         m = fromIntegral n
+
+
+{- | Parse a t'Timing'. -}
+parseTiming :: (HasOffset s, ElementOf s ~ Word8) => Parser s (ParseError TimingError) Timing
+parseTiming = capture $ do
+    n <- first (fmap absurd) word8
+    maybe (throwParseError $ TimingError n) pure (toTiming n)
