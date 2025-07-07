@@ -1,5 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 {- |
 Module: Eeep.Types.Opcode.SaveBonus
 
@@ -15,6 +13,9 @@ module Eeep.Types.Opcode.SaveBonus (
 
     -- ** Constructors.
     toSaveBonus,
+
+    -- * Parsers.
+    parseSaveBonus,
 ) where
 
 -- Imports.
@@ -34,9 +35,6 @@ import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.ParseError (throwParseError, capture)
 import Trisagion.Parsers.Word8 (word32Le)
-
--- Package.
-import Eeep.Typeclasses.Binary (Reader (..))
 
 
 {- | The t'SaveBonusError' type. -}
@@ -61,16 +59,18 @@ instance Bounded SaveBonus where
     maxBound :: SaveBonus
     maxBound = SaveBonus 20
 
-instance (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
-    => Reader s SaveBonusError SaveBonus where
-    parser :: Parser s (ParseError SaveBonusError) SaveBonus
-    parser = capture $ do
-        n <- first (fmap absurd) word32Le
-        let m = fromIntegral n :: Int32
-        maybe (throwParseError $ SaveBonusError m) pure (toSaveBonus m)
-
 
 {- | Smart constructor for the t'SaveBonus' type.-}
 {-# INLINE toSaveBonus #-}
 toSaveBonus :: Int32 -> Maybe SaveBonus
 toSaveBonus n = if -20 <= n && n <= 20 then Just $ SaveBonus (fromIntegral n) else Nothing
+
+
+{- | Parse a t'SaveBonus'. -}
+parseSaveBonus
+    :: (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
+    => Parser s (ParseError SaveBonusError) SaveBonus
+parseSaveBonus = capture $ do
+    n <- first (fmap absurd) word32Le
+    let m = fromIntegral n :: Int32
+    maybe (throwParseError $ SaveBonusError m) pure (toSaveBonus m)

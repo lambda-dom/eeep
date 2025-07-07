@@ -1,5 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 {- |
 Module: Eeep.Types.Opcode.Duration
 
@@ -8,7 +6,10 @@ The @Duration@ type.
 
 module Eeep.Types.Opcode.Duration (
     -- * Types.
-    Duration (..)
+    Duration (..),
+
+    -- * Parsers.
+    parseDuration,
 ) where
 
 -- Imports.
@@ -25,18 +26,14 @@ import Trisagion.Parsers.ParseError (capture)
 import Trisagion.Parsers.Streamable (InputError)
 import Trisagion.Parsers.Word8 (word32Le)
 
--- Package.
-import Eeep.Typeclasses.Binary (Reader (..))
-import Data.Void (Void)
-
 
 {- | The t'Duration' type. -}
 newtype Duration = Duration Word32
     deriving stock (Eq, Ord, Show)
 
 
--- Instances.
-instance (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
-    => Reader s Void Duration where
-    parser :: Parser s InputError Duration
-    parser = capture . fmap Duration $ word32Le
+{- | Parse a timing t'Duration'. -}
+parseDuration
+    :: (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
+    => Parser s InputError Duration
+parseDuration = capture . fmap Duration $ word32Le

@@ -1,5 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 {- |
 Module: Eeep.Types.Opcode.Parameter
 
@@ -8,12 +6,14 @@ The @Parameter@ type.
 
 module Eeep.Types.Opcode.Parameter (
     -- * Types.
-    Parameter (..)
+    Parameter (..),
+
+    -- * Parsers.
+    parseParameter,
 ) where
 
 -- Imports.
 -- Base.
-import Data.Void (Void)
 import Data.Word (Word8, Word32)
 
 -- non-Hackage libraries.
@@ -26,16 +26,14 @@ import Trisagion.Parsers.ParseError (capture)
 import Trisagion.Parsers.Streamable (InputError)
 import Trisagion.Parsers.Word8 (word32Le)
 
--- Package.
-import Eeep.Typeclasses.Binary (Reader (..))
-
 
 {- | The t'Parameter' type. -}
 newtype Parameter = Parameter Word32
     deriving stock (Eq, Ord, Show)
 
--- Instances.
-instance (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
-    => Reader s Void Parameter where
-    parser :: Parser s InputError Parameter
-    parser = capture . fmap Parameter $ word32Le
+
+{- | Parse a t'Parameter'. -}
+parseParameter
+    :: (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
+    => Parser s InputError Parameter
+parseParameter = capture . fmap Parameter $ word32Le

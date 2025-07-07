@@ -1,5 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 {- |
 Module: Eeep.Types.Opcode.SaveFlags
 
@@ -22,12 +20,14 @@ module Eeep.Types.Opcode.SaveFlags (
     ignorePrimary,
     ignoreSecondary,
     bypassMI,
+
+    -- * Parsers.
+    parseSaveFlags,
 ) where
 
 -- Imports.
 -- Base.
 import Data.Bits ((.&.), (.|.), bit, zeroBits)
-import Data.Void (Void)
 import Data.Word (Word8, Word32)
 
 -- Libraries.
@@ -44,19 +44,11 @@ import Trisagion.Parsers.Streamable (InputError)
 import Trisagion.Parsers.Word8 (word32Le)
 
 -- Package.
-import Eeep.Typeclasses.Binary (Reader (..))
 
 
 {- | The t'SaveFlags' type.-}
 newtype SaveFlags = SaveFlags Word32
     deriving stock (Eq, Show)
-
-
--- Instances.
-instance (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
-    => Reader s Void SaveFlags where
-    parser :: Parser s InputError SaveFlags
-    parser = capture . fmap toSaveFlags $ word32Le
 
 
 {- | Generic bit lens. -}
@@ -117,3 +109,11 @@ toSaveFlags n = SaveFlags $ n .&. mask
     where
         -- Mask to constrain values with only valid bits enabled.
         mask = 16780319
+
+
+{- | Parse an opcode's t'SaveFlags'. -}
+parseSaveFlags
+    :: (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
+    => Parser s InputError SaveFlags
+parseSaveFlags = capture . fmap toSaveFlags $ word32Le
+

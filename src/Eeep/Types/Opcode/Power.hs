@@ -13,6 +13,9 @@ module Eeep.Types.Opcode.Power (
 
     -- ** Constructors.
     toPower,
+
+    -- * Parsers.
+    parsePower,
 ) where
 
 -- Imports.
@@ -29,9 +32,6 @@ import Trisagion.Typeclasses.HasOffset (HasOffset)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.ParseError (throwParseError, capture)
 import Trisagion.Parsers.Word8 (word8)
-
--- Package.
-import Eeep.Typeclasses.Binary (Reader (..))
 
 
 {- | The t'PowerError' type. -}
@@ -53,15 +53,17 @@ instance Bounded Power where
     maxBound :: Power
     maxBound = Power 10
 
-instance (HasOffset s, ElementOf s ~ Word8) => Reader s PowerError Power where
-    parser :: Parser s (ParseError PowerError) Power
-    parser = capture $ do
-        n <- first (fmap absurd) word8
-        maybe (throwParseError $ PowerError n) pure (toPower n)
-
-
 
 {- | Smart constructor for the t'Power' type.-}
 {-# INLINE toPower #-}
 toPower :: Word8 -> Maybe Power
 toPower n = if n <= 10 then Just $ Power n else Nothing
+
+
+{- | Parse a t'Power' from a single 'Word8'. -}
+parsePower :: (HasOffset s, ElementOf s ~ Word8) => Parser s (ParseError PowerError) Power
+parsePower = capture $ do
+    n <- first (fmap absurd) word8
+    maybe (throwParseError $ PowerError n) pure (toPower n)
+
+

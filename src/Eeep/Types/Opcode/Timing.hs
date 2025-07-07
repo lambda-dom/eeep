@@ -13,6 +13,9 @@ module Eeep.Types.Opcode.Timing (
 
     -- ** Constructors.
     toTiming,
+
+    -- * Parsers.
+    parseTiming,
 ) where
 
 -- Imports.
@@ -29,9 +32,6 @@ import Trisagion.Typeclasses.HasOffset (HasOffset)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.ParseError (throwParseError, capture)
 import Trisagion.Parsers.Word8 (word8)
-
--- Package.
-import Eeep.Typeclasses.Binary (Reader (..))
 
 
 {- | The t'TimingError' type. -}
@@ -55,17 +55,16 @@ data Timing
     deriving stock (Eq, Ord, Enum, Bounded, Ix, Show)
 
 
--- Instances
-instance (HasOffset s, ElementOf s ~ Word8) => Reader s TimingError Timing where
-    parser :: Parser s (ParseError TimingError) Timing
-    parser = capture $ do
-        n <- first (fmap absurd) word8
-        maybe (throwParseError $ TimingError n) pure (toTiming n)
-
-
 {- | Smart constructor for the 'Timing' type.-}
 {-# INLINE toTiming #-}
 toTiming :: Word8 -> Maybe Timing
 toTiming n = if m <= fromEnum (maxBound @Timing) then Just $ toEnum m else Nothing
     where
         m = fromIntegral n
+
+
+{- | Parse a t'Timing'. -}
+parseTiming :: (HasOffset s, ElementOf s ~ Word8) => Parser s (ParseError TimingError) Timing
+parseTiming = capture $ do
+    n <- first (fmap absurd) word8
+    maybe (throwParseError $ TimingError n) pure (toTiming n)

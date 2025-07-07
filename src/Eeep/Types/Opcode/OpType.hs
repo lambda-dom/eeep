@@ -1,5 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 {- |
 Module: Eeep.Types.Opcode.OpType
 
@@ -16,6 +14,9 @@ module Eeep.Types.Opcode.OpType (
     -- ** Basic functions.
     toOpType,
     fromOpType,
+
+    -- * Parsers.
+    parseOpType,
 
 ) where
 
@@ -38,7 +39,6 @@ import Trisagion.Types.ParseError (ParseError)
 import Trisagion.Parser (Parser)
 
 -- Package.
-import Eeep.Typeclasses.Binary (Reader (..))
 import Trisagion.Parsers.Word8 (word16Le)
 import Trisagion.Parsers.ParseError (throwParseError, capture)
 import Trisagion.Typeclasses.HasOffset (HasOffset)
@@ -400,14 +400,6 @@ data OpType
     | EffectOnMove
     | MinimumBaseStats
     deriving stock (Eq, Ord, Enum, Bounded, Ix, Show)
-
--- Instances.
-instance (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
-    => Reader s OpTypeError OpType where
-    parser :: Parser s (ParseError OpTypeError) OpType
-    parser = capture $ do
-        n <- first (fmap absurd) word16Le
-        maybe (throwParseError $ OpTypeError n) pure (toOpType n)
 
 
 {- | Enumeration of the opcode types for parsing and serialization. -}
@@ -801,3 +793,12 @@ toOpType m = if n <= length opTypes then opTypes ! n else Nothing
 {- | Return the 'Word16' index associated to an t'OpType'. -}
 fromOpType :: OpType -> Word16
 fromOpType op = opIndices ! fromEnum op
+
+
+{- | Parse an 'OpType' from a 'Word16'. -}
+parseOpType
+    ::(HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
+    => Parser s (ParseError OpTypeError) OpType
+parseOpType = capture $ do
+        n <- first (fmap absurd) word16Le
+        maybe (throwParseError $ OpTypeError n) pure (toOpType n)

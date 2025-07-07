@@ -15,7 +15,8 @@ module Eeep.Types.Opcode.Probability (
     toProbability,
 
     -- * Parsers.
-    probability16Le,
+    parseProbability,
+    parseProbability16Le,
 ) where
 
 -- Imports.
@@ -35,9 +36,6 @@ import Trisagion.Parser (Parser)
 import Trisagion.Parsers.ParseError (throwParseError, capture)
 import Trisagion.Parsers.Word8 (word8, word16Le)
 
--- Package.
-import Eeep.Typeclasses.Binary (Reader (..))
-
 
 {- | The t'ProbabilityError' type. -}
 data ProbabilityError = ProbabilityError !Word8 !Word8
@@ -47,15 +45,6 @@ data ProbabilityError = ProbabilityError !Word8 !Word8
 {- | The (non-empty) @Probability@ interval type. -}
 data Probability = Probability {-# UNPACK #-} !Word8 {-# UNPACK #-} !Word8
     deriving stock (Eq, Show)
-
-
--- Instances
-instance (HasOffset s, ElementOf s ~ Word8) => Reader s ProbabilityError Probability where
-    parser :: Parser s (ParseError ProbabilityError) Probability
-    parser = capture $ do
-        n <- first (fmap absurd) word8
-        m <- first (fmap absurd) word8
-        maybe (throwParseError $ ProbabilityError n m) pure (toProbability n m)
 
 
 {- | Construct a @t'Probability'@ pair from a pair of integers. -}
@@ -70,11 +59,20 @@ toProbability l u =
         else Nothing
 
 
+{- | Parse a t'Probability' from two 'Word8'. -}
+parseProbability
+    :: (HasOffset s, ElementOf s ~ Word8)
+    => Parser s (ParseError ProbabilityError) Probability
+parseProbability = capture $ do
+        n <- first (fmap absurd) word8
+        m <- first (fmap absurd) word8
+        maybe (throwParseError $ ProbabilityError n m) pure (toProbability n m)
+
 {- | Parse a t'Probability' from two 'Word16'. -}
-probability16Le
+parseProbability16Le
     :: (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
     => Parser s (ParseError ProbabilityError) Probability
-probability16Le = capture $ do
+parseProbability16Le = capture $ do
         n <- first (fmap absurd) word16Le
         m <- first (fmap absurd) word16Le
         let
