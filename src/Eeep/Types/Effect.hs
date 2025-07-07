@@ -33,6 +33,7 @@ import Trisagion.Parsers.ParseError (throwParseError, onParseError)
 import Trisagion.Parsers.Word8 (word16Le)
 
 -- Package.
+import Eeep.Typeclasses.Binary (Reader (..))
 import Eeep.Types.Opcode.OpType (OpType, parseOpType)
 import Eeep.Types.Opcode.Parameter (Parameter (..), parseParameter)
 import Eeep.Types.Opcode.Power (Power, parsePower)
@@ -86,6 +87,11 @@ data Effect = Effect {
     sectype     :: {-# UNPACK #-} !Sectype,
     special     :: {-# UNPACK #-} !Special
     } deriving stock (Eq, Show)
+
+
+-- Instances.
+instance Reader (ParseError EffectError) Effect where
+    parser = parseEffect
 
 
 {- | Parser for the signature header of an t'Effect'. -}
