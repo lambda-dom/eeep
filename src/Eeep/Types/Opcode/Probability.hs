@@ -15,15 +15,15 @@ module Eeep.Types.Opcode.Probability (
     toProbability,
 
     -- * Parsers.
-    parseProbability,
-    parseProbability16Le,
+    parseProbability8,
+    parseProbability16,
 ) where
 
 -- Imports.
 -- Base.
 import Data.Bifunctor (Bifunctor (..))
 import Data.Void (absurd)
-import Data.Word (Word8)
+import Data.Word (Word8, Word16)
 
 
 -- non-Hackage libraries.
@@ -38,7 +38,7 @@ import Trisagion.Parsers.Word8 (word8, word16Le)
 
 
 {- | The t'ProbabilityError' type. -}
-data ProbabilityError = ProbabilityError !Word8 !Word8
+data ProbabilityError = ProbabilityError !Word16 !Word16
     deriving stock (Eq, Show)
 
 
@@ -60,26 +60,29 @@ toProbability l u =
 
 
 {- | Parse a t'Probability' from two 'Word8'. -}
-parseProbability
+parseProbability8
     :: (HasOffset s, ElementOf s ~ Word8)
     => Parser s (ParseError ProbabilityError) Probability
-parseProbability = capture $ do
+parseProbability8 = capture $ do
         n <- first (fmap absurd) word8
         m <- first (fmap absurd) word8
-        maybe (throwParseError $ ProbabilityError n m) pure (toProbability n m)
+        maybe
+            (throwParseError $ ProbabilityError (fromIntegral n) (fromIntegral m))
+            pure
+            (toProbability n m)
 
 {- | Parse a t'Probability' from two 'Word16'. -}
-parseProbability16Le
+parseProbability16
     :: (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
     => Parser s (ParseError ProbabilityError) Probability
-parseProbability16Le = capture $ do
+parseProbability16 = capture $ do
         n <- first (fmap absurd) word16Le
         m <- first (fmap absurd) word16Le
         let
             n' = fromIntegral n
             m' = fromIntegral m
         if (n > upper) || (m > upper)
-            then throwParseError $ ProbabilityError n' m'
-            else maybe (throwParseError $ ProbabilityError n' m') pure (toProbability n' m')
+            then throwParseError $ ProbabilityError m n
+            else maybe (throwParseError $ ProbabilityError m n) pure (toProbability m' n')
     where
         upper = fromIntegral (maxBound @Word8)

@@ -16,8 +16,8 @@ module Eeep.Types.Opcode.OpType (
     fromOpType,
 
     -- * Parsers.
-    parseOpType,
-
+    parseOpType16,
+    parseOpType32,
 ) where
 
 -- Imports.
@@ -26,7 +26,7 @@ import Data.Bifunctor (Bifunctor (..))
 import Data.Ix (Ix)
 import Data.Maybe (isJust)
 import Data.Void (absurd)
-import Data.Word (Word8, Word16)
+import Data.Word (Word8, Word16, Word32)
 
 -- Libraries.
 import Data.Vector.Strict (Vector, (!), fromList, force)
@@ -39,13 +39,13 @@ import Trisagion.Types.ParseError (ParseError)
 import Trisagion.Parser (Parser)
 
 -- Package.
-import Trisagion.Parsers.Word8 (word16Le)
+import Trisagion.Parsers.Word8 (word16Le, word32Le)
 import Trisagion.Parsers.ParseError (throwParseError, capture)
 import Trisagion.Typeclasses.HasOffset (HasOffset)
 
 
 {- | The t'OpTypeError' type. -}
-newtype OpTypeError = OpTypeError Word16
+newtype OpTypeError = OpTypeError Word32
     deriving stock (Eq, Show)
 
 
@@ -796,9 +796,21 @@ fromOpType op = opIndices ! fromEnum op
 
 
 {- | Parse an 'OpType' from a 'Word16'. -}
-parseOpType
+parseOpType16
     ::(HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
     => Parser s (ParseError OpTypeError) OpType
-parseOpType = capture $ do
+parseOpType16 = capture $ do
         n <- first (fmap absurd) word16Le
-        maybe (throwParseError $ OpTypeError n) pure (toOpType n)
+        maybe (throwParseError . OpTypeError . fromIntegral $ n) pure (toOpType n)
+
+{- | Parse an 'OpType' from a 'Word32'. -}
+parseOpType32
+    ::(HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
+    => Parser s (ParseError OpTypeError) OpType
+parseOpType32 = capture $ do
+        n <- first (fmap absurd) word32Le
+        if n > upper
+            then throwParseError . OpTypeError $ n
+            else maybe (throwParseError . OpTypeError $ n) pure (toOpType . fromIntegral $ n)
+    where
+        upper = fromIntegral (maxBound @Word16)
