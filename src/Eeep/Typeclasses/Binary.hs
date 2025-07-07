@@ -1,3 +1,5 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
+
 {- |
 Module: Eeep.Typeclasses.Binary
 
@@ -37,5 +39,5 @@ class Reader e a where
 {- | Parse an @a@ from a binary file. -}
 parseBinary :: Reader e a => OsPath -> IO (Either e a)
 parseBinary path = do
-    xs <- initialize <$> readBinary path 
+    xs <- initialize <$> readBinary path
     pure $ eval parser xs

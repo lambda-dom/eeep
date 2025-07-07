@@ -10,6 +10,9 @@ module Eeep.Types.Effect (
 
     -- * Parsers.
     parseEffect,
+
+    -- * Testing.
+    testEffect,
 ) where
 
 -- Imports.
@@ -20,6 +23,9 @@ import Data.Typeable (Typeable)
 import Data.Word (Word8)
 import Data.Void (absurd)
 
+-- Libraries.
+import System.OsPath (OsPath)
+
 -- non-Hackage libraries.
 import Mono.Typeclasses.MonoFunctor (MonoFunctor (ElementOf))
 import Mono.Typeclasses.MonoFoldable (MonoFoldable (monotoList))
@@ -29,20 +35,20 @@ import Trisagion.Types.ParseError (ParseError)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Combinators (skip)
 import Trisagion.Parsers.Splittable (takeExact)
-import Trisagion.Parsers.ParseError (throwParseError, onParseError)
+import Trisagion.Parsers.ParseError (throwParseError, onParseError, capture)
 import Trisagion.Parsers.Word8 (word16Le)
 
 -- Package.
-import Eeep.Typeclasses.Binary (Reader (..))
-import Eeep.Types.Opcode.OpType (OpType, parseOpType)
+import Eeep.Typeclasses.Binary (Reader (..), parseBinary)
+import Eeep.Types.Opcode.OpType (OpType, parseOpType32)
 import Eeep.Types.Opcode.Parameter (Parameter (..), parseParameter)
-import Eeep.Types.Opcode.Power (Power, parsePower)
-import Eeep.Types.Opcode.Target (Target, parseTarget)
-import Eeep.Types.Opcode.Timing (Timing, parseTiming)
+import Eeep.Types.Opcode.Power (Power, parsePower32)
+import Eeep.Types.Opcode.Target (Target, parseTarget32)
+import Eeep.Types.Opcode.Timing (Timing, parseTiming16)
 import Eeep.Types.Opcode.Duration (Duration (..), parseDuration)
-import Eeep.Types.Opcode.Probability (Probability, parseProbability16Le)
+import Eeep.Types.Opcode.Probability (Probability, parseProbability16)
 import Eeep.Types.Opcode.Resref (Resref, parseResref)
-import Eeep.Types.Opcode.ResistDispel (ResistDispel, parseResistDispel)
+import Eeep.Types.Opcode.ResistDispel (ResistDispel, parseResistDispel32)
 import Eeep.Types.Opcode.DiceNumber (DiceNumber, parseDiceNumber)
 import Eeep.Types.Opcode.DiceSides (DiceSides, parseDiceSides)
 import Eeep.Types.Opcode.SaveFlags (SaveFlags, parseSaveFlags)
@@ -51,6 +57,7 @@ import Eeep.Types.Opcode.Special (Special, parseSpecial)
 import Eeep.Types.Effect.Projectile (Projectile, parseProjectile)
 import Eeep.Types.Effect.School (School, parseSchool)
 import Eeep.Types.Effect.Sectype (Sectype, parseSectype)
+import Eeep.IO (makePath)
 
 
 {- | The t'EffectError' type. -}
@@ -106,21 +113,20 @@ parseEffectSignature = do
 
 {- | Parser for the t'Effect' type. -}
 parseEffect
-    :: forall s . (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf s ~ Word8, ElementOf (PrefixOf s) ~ Word8)
+    :: forall s . (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
     => Parser s (ParseError EffectError) Effect
-parseEffect = do
+parseEffect = capture $ do
         _           <- onError parseEffectSignature
         _           <- skip (first (fmap absurd) $ takeExact 8)
-        optype      <- onError parseOpType
-        _           <- skip (first (fmap absurd) word16Le)
-        target      <- onError parseTarget
-        power       <- onError parsePower
+        optype      <- onError parseOpType32
+        target      <- onError parseTarget32
+        power       <- onError parsePower32
         parameter1  <- onError parseParameter
         parameter2  <- onError parseParameter
-        timing      <- onError parseTiming
+        timing      <- onError parseTiming16
         _           <- skip (first (fmap absurd) word16Le)
         duration    <- onError parseDuration
-        probability <- onError parseProbability16Le
+        probability <- onError parseProbability16
         resource1   <- onError parseResref
         dicenumber  <- onError parseDiceNumber
         dicesides   <- onError parseDiceSides
@@ -129,7 +135,7 @@ parseEffect = do
         special     <- onError parseSpecial
         school      <- onError parseSchool
         _           <- skip (first (fmap absurd) $ takeExact 12)
-        dispel      <- onError parseResistDispel
+        dispel      <- onError parseResistDispel32
         parameter3  <- onError parseParameter
         parameter4  <- onError parseParameter
         _           <- skip (first (fmap absurd) $ takeExact 8)
@@ -144,3 +150,14 @@ parseEffect = do
     where
         onError :: (Typeable e, Eq e, Show e) => Parser s (ParseError e) a -> Parser s (ParseError EffectError) a
         onError = onParseError EffectError
+
+
+{- | Helper to test t'Effect' parser. -}
+testEffect :: String -> IO ()
+testEffect str = do
+        path <- makePath str
+        x <- parse path
+        print x
+    where
+        parse :: OsPath -> IO (Either (ParseError EffectError) Effect)
+        parse = parseBinary
