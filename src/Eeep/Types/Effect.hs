@@ -54,9 +54,9 @@ import Eeep.Types.Opcode.DiceSides (DiceSides, decodeDiceSides)
 import Eeep.Types.Opcode.SaveFlags (SaveFlags, decodeSaveFlags)
 import Eeep.Types.Opcode.SaveBonus (SaveBonus, decodeSaveBonus)
 import Eeep.Types.Opcode.Special (Special, decodeSpecial)
-import Eeep.Types.Effect.Projectile (Projectile, parseProjectile)
-import Eeep.Types.Effect.School (School, parseSchool)
-import Eeep.Types.Effect.Sectype (Sectype, parseSectype)
+import Eeep.Types.Effect.School (School, decodeSchool)
+import Eeep.Types.Effect.Sectype (Sectype, decodeSectype)
+import Eeep.Types.Effect.Projectile (Projectile, decodeProjectile)
 import Eeep.IO (makePath)
 
 
@@ -133,7 +133,7 @@ parseEffect = capture $ do
         saveflags   <- onError decodeSaveFlags
         savebonus   <- onError decodeSaveBonus
         special     <- onError decodeSpecial
-        school      <- onError parseSchool
+        school      <- onError decodeSchool
         _           <- skip (first (fmap absurd) $ takeExact 12)
         dispel      <- onError decodeResistDispel32
         parameter3  <- onError decodeParameter
@@ -142,9 +142,9 @@ parseEffect = capture $ do
         resource2   <- onError decodeResref
         resource3   <- onError decodeResref
         _           <- skip (first (fmap absurd) $ takeExact 32)
-        projectile  <- onError parseProjectile
+        projectile  <- onError decodeProjectile
         _           <- skip (first (fmap absurd) $ takeExact 44)
-        sectype     <- onError parseSectype
+        sectype     <- onError decodeSectype
         _           <- skip (first (fmap absurd) $ takeExact 60)
         pure Effect {..}
     where
