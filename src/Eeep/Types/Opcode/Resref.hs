@@ -6,15 +6,19 @@ The @Resref@ type.
 
 module Eeep.Types.Opcode.Resref (
     -- * Types.
-    Resref (..),
+    Resref,
 
     -- * Parsers.
-    parseResref,
+    decodeResref,
+
+    -- * Serializers.
+    encodeResref,
 ) where
 
 -- Imports.
 -- Base.
-import Data.Bifunctor (Bifunctor(..))
+import Data.Bifunctor (Bifunctor (..))
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Char (isAscii, isControl, chr)
 import Data.Void (absurd)
 import Data.Word (Word8, Word64)
@@ -26,9 +30,12 @@ import Mono.Types.ByteArray (bytes, pack)
 import Trisagion.Types.ParseError (ParseError)
 import Trisagion.Typeclasses.HasOffset (HasOffset)
 import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
+import Trisagion.Typeclasses.Binary (Binary)
+import Trisagion.Typeclasses.Builder (Builder (many))
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.ParseError (capture, throwParseError)
 import Trisagion.Parsers.Splittable (takeExact)
+import Trisagion.Serializer (Serializer, embed)
 
 
 {- | The t'ResrefError' type. -}
@@ -60,12 +67,20 @@ validate n =
         isValid :: Char -> Bool
         isValid c = isAscii c && not (isControl c) && c /= '\\' && c /= '/' && c /= '.'
 
-{- | Parse a resource t'Resref'. -}
-parseResref
+{- | Decode a resource t'Resref'. -}
+decodeResref
     :: (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
     => Parser s (ParseError ResrefError) Resref
-parseResref = capture $ do
+decodeResref = capture $ do
     xs <- takeWhile (/= 0) . monotoList <$> first (fmap absurd) (takeExact 8)
     case mapM validate xs of
         Left  e  -> throwParseError e
         Right ys -> pure . Resref . pack $ ys
+
+
+{- | Encode a resource t'Resref'. -}
+encodeResref :: Binary m => Serializer m Resref
+encodeResref = contramap unwrap $ embed many
+    where
+        unwrap :: Resref -> [Word8]
+        unwrap (Resref n) = bytes n

@@ -14,16 +14,19 @@ module Eeep.Types.Opcode.ResistDispel (
     -- ** Constructors.
     toResistDispel,
 
-    -- * Types.
-    parseResistDispel8,
+    -- * Parsers.
+    decodeResistDispel8,
+    decodeResistDispel32,
 
-    -- * Types.
-    parseResistDispel32,
+    -- * Serializers.
+    encodeResistDispel8,
+    encodeResistDispel32,
 ) where
 
 -- Imports.
 -- Base.
 import Data.Bifunctor (Bifunctor (..))
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Ix (Ix)
 import Data.Void (absurd)
 import Data.Word (Word8, Word32)
@@ -34,9 +37,13 @@ import Mono.Typeclasses.MonoFoldable (MonoFoldable)
 import Trisagion.Types.ParseError (ParseError)
 import Trisagion.Typeclasses.HasOffset (HasOffset)
 import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
+import Trisagion.Typeclasses.Binary (Binary)
+import qualified Trisagion.Typeclasses.Builder as Builder (one)
+import qualified Trisagion.Typeclasses.Binary as Binary (word32Le)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.ParseError (throwParseError, capture)
 import Trisagion.Parsers.Word8 (word8, word32Le)
+import Trisagion.Serializer (Serializer, embed)
 
 
 {- | The t'ResistDispelError' type. -}
@@ -60,21 +67,29 @@ toResistDispel n = if n <= 3 then Just $ toEnum (fromIntegral n) else Nothing
 
 
 {- | Parse a t'ResistDispel' from a 'Word8'. -}
-parseResistDispel8
+decodeResistDispel8
     :: (HasOffset s, ElementOf s ~ Word8)
     => Parser s (ParseError ResistDispelError) ResistDispel
-parseResistDispel8 = capture $ do
+decodeResistDispel8 = capture $ do
     n <- first (fmap absurd) word8
     maybe (throwParseError . ResistDispelError . fromIntegral $ n) pure (toResistDispel n)
 
 {- | Parse a t'ResistDispel' from a single 'Word32'. -}
-parseResistDispel32
+decodeResistDispel32
     :: (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
     => Parser s (ParseError ResistDispelError) ResistDispel
-parseResistDispel32 = capture $ do
+decodeResistDispel32 = capture $ do
         n <- first (fmap absurd) word32Le
         if n > upper
             then throwParseError . ResistDispelError $ n
             else maybe (throwParseError . ResistDispelError $ n) pure (toResistDispel (fromIntegral n))
     where
         upper = fromIntegral (maxBound @Word8)
+
+{- | Encode a t'ResistDispel' into a 'Word8'. -}
+encodeResistDispel8 :: Binary m => Serializer m ResistDispel
+encodeResistDispel8 = contramap (fromIntegral . fromEnum) $ embed Builder.one
+
+{- | Encode a t'ResistDispel' into a 'Word32'. -}
+encodeResistDispel32 :: Binary m => Serializer m ResistDispel
+encodeResistDispel32 = contramap (fromIntegral . fromEnum) $ embed Binary.word32Le

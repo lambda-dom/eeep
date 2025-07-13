@@ -6,7 +6,7 @@ The @Parameter@ type.
 
 module Eeep.Types.Opcode.Parameter (
     -- * Types.
-    Parameter (..),
+    Parameter,
 
     -- * Parsers.
     decodeParameter,

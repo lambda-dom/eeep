@@ -7,7 +7,7 @@ The @Opcode@ type.
 
 module Eeep.Types.Opcode (
     -- * Error types.
-    OpcodeError (..),
+    OpcodeError,
 
     -- * Types.
     Opcode (..),
@@ -37,14 +37,14 @@ import Eeep.Types.Opcode.Target (Target, decodeTarget8)
 import Eeep.Types.Opcode.Parameter (Parameter, decodeParameter)
 import Eeep.Types.Opcode.Timing (Timing, decodeTiming8)
 import Eeep.Types.Opcode.Duration (Duration, decodeDuration)
-import Eeep.Types.Opcode.Probability (Probability, parseProbability8)
-import Eeep.Types.Opcode.Resref (Resref, parseResref)
-import Eeep.Types.Opcode.ResistDispel (ResistDispel, parseResistDispel8)
-import Eeep.Types.Opcode.DiceNumber (DiceNumber, parseDiceNumber)
-import Eeep.Types.Opcode.DiceSides (DiceSides, parseDiceSides)
-import Eeep.Types.Opcode.SaveFlags (SaveFlags, parseSaveFlags)
-import Eeep.Types.Opcode.SaveBonus (SaveBonus, parseSaveBonus)
-import Eeep.Types.Opcode.Special (Special, parseSpecial)
+import Eeep.Types.Opcode.ResistDispel (ResistDispel, decodeResistDispel8)
+import Eeep.Types.Opcode.Probability (Probability, decodeProbability8)
+import Eeep.Types.Opcode.Resref (Resref, decodeResref)
+import Eeep.Types.Opcode.DiceNumber (DiceNumber, decodeDiceNumber)
+import Eeep.Types.Opcode.DiceSides (DiceSides, decodeDiceSides)
+import Eeep.Types.Opcode.SaveFlags (SaveFlags, decodeSaveFlags)
+import Eeep.Types.Opcode.SaveBonus (SaveBonus, decodeSaveBonus)
+import Eeep.Types.Opcode.Special (Special, decodeSpecial)
 
 
 {- | The t'OpcodeError' type. -}
@@ -83,15 +83,15 @@ parseOpcode = capture $ do
         parameter1  <- onError decodeParameter
         parameter2  <- onError decodeParameter
         timing      <- onError decodeTiming8
-        dispel      <- onError parseResistDispel8
+        dispel      <- onError decodeResistDispel8
         duration    <- onError decodeDuration
-        probability <- onError parseProbability8
-        resource    <- onError parseResref
-        dicenumber  <- onError parseDiceNumber
-        dicesides   <- onError parseDiceSides
-        saveflags   <- onError parseSaveFlags
-        savebonus   <- onError parseSaveBonus
-        special     <- onError parseSpecial
+        probability <- onError decodeProbability8
+        resource    <- onError decodeResref
+        dicenumber  <- onError decodeDiceNumber
+        dicesides   <- onError decodeDiceSides
+        saveflags   <- onError decodeSaveFlags
+        savebonus   <- onError decodeSaveBonus
+        special     <- onError decodeSpecial
         pure Opcode {..}
     where
         onError :: (Typeable e, Eq e, Show e) => Parser s (ParseError e) a -> Parser s (ParseError OpcodeError) a

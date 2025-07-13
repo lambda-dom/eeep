@@ -6,7 +6,7 @@ The @Effect@ type.
 
 module Eeep.Types.Effect (
     -- * Types.
-    Effect (..),
+    Effect,
 
     -- * Parsers.
     parseEffect,
@@ -41,19 +41,19 @@ import Trisagion.Parsers.Word8 (word16Le)
 -- Package.
 import Eeep.Typeclasses.Binary (Reader (..), parseBinary)
 import Eeep.Types.Opcode.OpType (OpType, decodeOpType32)
-import Eeep.Types.Opcode.Parameter (Parameter (..), decodeParameter)
+import Eeep.Types.Opcode.Parameter (Parameter, decodeParameter)
 import Eeep.Types.Opcode.Power (Power, decodePower32)
 import Eeep.Types.Opcode.Target (Target, decodeTarget32)
 import Eeep.Types.Opcode.Timing (Timing, decodeTiming16)
 import Eeep.Types.Opcode.Duration (Duration, decodeDuration)
-import Eeep.Types.Opcode.Probability (Probability, parseProbability16)
-import Eeep.Types.Opcode.Resref (Resref, parseResref)
-import Eeep.Types.Opcode.ResistDispel (ResistDispel, parseResistDispel32)
-import Eeep.Types.Opcode.DiceNumber (DiceNumber, parseDiceNumber)
-import Eeep.Types.Opcode.DiceSides (DiceSides, parseDiceSides)
-import Eeep.Types.Opcode.SaveFlags (SaveFlags, parseSaveFlags)
-import Eeep.Types.Opcode.SaveBonus (SaveBonus, parseSaveBonus)
-import Eeep.Types.Opcode.Special (Special, parseSpecial)
+import Eeep.Types.Opcode.Probability (Probability, decodeProbability16)
+import Eeep.Types.Opcode.Resref (Resref, decodeResref)
+import Eeep.Types.Opcode.ResistDispel (ResistDispel, decodeResistDispel32)
+import Eeep.Types.Opcode.DiceNumber (DiceNumber, decodeDiceNumber)
+import Eeep.Types.Opcode.DiceSides (DiceSides, decodeDiceSides)
+import Eeep.Types.Opcode.SaveFlags (SaveFlags, decodeSaveFlags)
+import Eeep.Types.Opcode.SaveBonus (SaveBonus, decodeSaveBonus)
+import Eeep.Types.Opcode.Special (Special, decodeSpecial)
 import Eeep.Types.Effect.Projectile (Projectile, parseProjectile)
 import Eeep.Types.Effect.School (School, parseSchool)
 import Eeep.Types.Effect.Sectype (Sectype, parseSectype)
@@ -126,21 +126,21 @@ parseEffect = capture $ do
         timing      <- onError decodeTiming16
         _           <- skip (first (fmap absurd) word16Le)
         duration    <- onError decodeDuration
-        probability <- onError parseProbability16
-        resource1   <- onError parseResref
-        dicenumber  <- onError parseDiceNumber
-        dicesides   <- onError parseDiceSides
-        saveflags   <- onError parseSaveFlags
-        savebonus   <- onError parseSaveBonus
-        special     <- onError parseSpecial
+        probability <- onError decodeProbability16
+        resource1   <- onError decodeResref
+        dicenumber  <- onError decodeDiceNumber
+        dicesides   <- onError decodeDiceSides
+        saveflags   <- onError decodeSaveFlags
+        savebonus   <- onError decodeSaveBonus
+        special     <- onError decodeSpecial
         school      <- onError parseSchool
         _           <- skip (first (fmap absurd) $ takeExact 12)
-        dispel      <- onError parseResistDispel32
+        dispel      <- onError decodeResistDispel32
         parameter3  <- onError decodeParameter
         parameter4  <- onError decodeParameter
         _           <- skip (first (fmap absurd) $ takeExact 8)
-        resource2   <- onError parseResref
-        resource3   <- onError parseResref
+        resource2   <- onError decodeResref
+        resource3   <- onError decodeResref
         _           <- skip (first (fmap absurd) $ takeExact 32)
         projectile  <- onError parseProjectile
         _           <- skip (first (fmap absurd) $ takeExact 44)

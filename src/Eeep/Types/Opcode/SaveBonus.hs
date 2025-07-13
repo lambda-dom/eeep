@@ -15,16 +15,20 @@ module Eeep.Types.Opcode.SaveBonus (
     toSaveBonus,
 
     -- * Parsers.
-    parseSaveBonus,
+    decodeSaveBonus,
+
+    -- * Serializers.
+    encodeSaveBonus,
 ) where
 
 -- Imports.
 -- Base.
 import Data.Bifunctor (Bifunctor(..))
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Int (Int8, Int32)
 import Data.Ix (Ix)
 import Data.Void (absurd)
-import Data.Word (Word8)
+import Data.Word (Word8, Word32)
 
 -- non-Hackage libraries.
 import Mono.Typeclasses.MonoFunctor (ElementOf)
@@ -32,9 +36,12 @@ import Mono.Typeclasses.MonoFoldable (MonoFoldable)
 import Trisagion.Types.ParseError (ParseError)
 import Trisagion.Typeclasses.HasOffset (HasOffset)
 import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
+import Trisagion.Typeclasses.Binary (Binary)
+import qualified Trisagion.Typeclasses.Binary as Binary (word32Le)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.ParseError (throwParseError, capture)
 import Trisagion.Parsers.Word8 (word32Le)
+import Trisagion.Serializer (Serializer, embed)
 
 
 {- | The t'SaveBonusError' type. -}
@@ -67,10 +74,18 @@ toSaveBonus n = if -20 <= n && n <= 20 then Just $ SaveBonus (fromIntegral n) el
 
 
 {- | Parse a t'SaveBonus'. -}
-parseSaveBonus
+decodeSaveBonus
     :: (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
     => Parser s (ParseError SaveBonusError) SaveBonus
-parseSaveBonus = capture $ do
+decodeSaveBonus = capture $ do
     n <- first (fmap absurd) word32Le
     let m = fromIntegral n :: Int32
     maybe (throwParseError $ SaveBonusError m) pure (toSaveBonus m)
+
+
+{- | Encode a t'SaveBonus' into a 'Word32'. -}
+encodeSaveBonus :: Binary m => Serializer m SaveBonus
+encodeSaveBonus = contramap unwrap $ embed Binary.word32Le
+    where
+        unwrap :: SaveBonus -> Word32
+        unwrap (SaveBonus n) = fromIntegral n

@@ -6,7 +6,7 @@ The @Duration@ type.
 
 module Eeep.Types.Opcode.Duration (
     -- * Types.
-    Duration (..),
+    Duration,
 
     -- * Parsers.
     decodeDuration,
