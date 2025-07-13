@@ -40,12 +40,12 @@ import Trisagion.Parsers.Word8 (word16Le)
 
 -- Package.
 import Eeep.Typeclasses.Binary (Reader (..), parseBinary)
-import Eeep.Types.Opcode.OpType (OpType, parseOpType32)
-import Eeep.Types.Opcode.Parameter (Parameter (..), parseParameter)
-import Eeep.Types.Opcode.Power (Power, parsePower32)
-import Eeep.Types.Opcode.Target (Target, parseTarget32)
-import Eeep.Types.Opcode.Timing (Timing, parseTiming16)
-import Eeep.Types.Opcode.Duration (Duration (..), parseDuration)
+import Eeep.Types.Opcode.OpType (OpType, decodeOpType32)
+import Eeep.Types.Opcode.Parameter (Parameter (..), decodeParameter)
+import Eeep.Types.Opcode.Power (Power, decodePower32)
+import Eeep.Types.Opcode.Target (Target, decodeTarget32)
+import Eeep.Types.Opcode.Timing (Timing, decodeTiming16)
+import Eeep.Types.Opcode.Duration (Duration, decodeDuration)
 import Eeep.Types.Opcode.Probability (Probability, parseProbability16)
 import Eeep.Types.Opcode.Resref (Resref, parseResref)
 import Eeep.Types.Opcode.ResistDispel (ResistDispel, parseResistDispel32)
@@ -118,14 +118,14 @@ parseEffect
 parseEffect = capture $ do
         _           <- onError parseEffectSignature
         _           <- skip (first (fmap absurd) $ takeExact 8)
-        optype      <- onError parseOpType32
-        target      <- onError parseTarget32
-        power       <- onError parsePower32
-        parameter1  <- onError parseParameter
-        parameter2  <- onError parseParameter
-        timing      <- onError parseTiming16
+        optype      <- onError decodeOpType32
+        target      <- onError decodeTarget32
+        power       <- onError decodePower32
+        parameter1  <- onError decodeParameter
+        parameter2  <- onError decodeParameter
+        timing      <- onError decodeTiming16
         _           <- skip (first (fmap absurd) word16Le)
-        duration    <- onError parseDuration
+        duration    <- onError decodeDuration
         probability <- onError parseProbability16
         resource1   <- onError parseResref
         dicenumber  <- onError parseDiceNumber
@@ -136,8 +136,8 @@ parseEffect = capture $ do
         school      <- onError parseSchool
         _           <- skip (first (fmap absurd) $ takeExact 12)
         dispel      <- onError parseResistDispel32
-        parameter3  <- onError parseParameter
-        parameter4  <- onError parseParameter
+        parameter3  <- onError decodeParameter
+        parameter4  <- onError decodeParameter
         _           <- skip (first (fmap absurd) $ takeExact 8)
         resource2   <- onError parseResref
         resource3   <- onError parseResref

@@ -31,12 +31,12 @@ import Trisagion.Parser (Parser)
 import Trisagion.Parsers.ParseError (capture, onParseError)
 
 -- Package.
-import Eeep.Types.Opcode.OpType (OpType, parseOpType16)
-import Eeep.Types.Opcode.Parameter (Parameter, parseParameter)
-import Eeep.Types.Opcode.Power (Power, parsePower8)
-import Eeep.Types.Opcode.Target (Target, parseTarget8)
-import Eeep.Types.Opcode.Timing (Timing, parseTiming8)
-import Eeep.Types.Opcode.Duration (Duration, parseDuration)
+import Eeep.Types.Opcode.OpType (OpType, decodeOpType16)
+import Eeep.Types.Opcode.Power (Power, decodePower8)
+import Eeep.Types.Opcode.Target (Target, decodeTarget8)
+import Eeep.Types.Opcode.Parameter (Parameter, decodeParameter)
+import Eeep.Types.Opcode.Timing (Timing, decodeTiming8)
+import Eeep.Types.Opcode.Duration (Duration, decodeDuration)
 import Eeep.Types.Opcode.Probability (Probability, parseProbability8)
 import Eeep.Types.Opcode.Resref (Resref, parseResref)
 import Eeep.Types.Opcode.ResistDispel (ResistDispel, parseResistDispel8)
@@ -77,14 +77,14 @@ parseOpcode
     :: forall s . (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf s ~ Word8, ElementOf (PrefixOf s) ~ Word8)
     => Parser s (ParseError OpcodeError) Opcode
 parseOpcode = capture $ do
-        optype      <- onError parseOpType16
-        target      <- onError parseTarget8
-        power       <- onError parsePower8
-        parameter1  <- onError parseParameter
-        parameter2  <- onError parseParameter
-        timing      <- onError parseTiming8
+        optype      <- onError decodeOpType16
+        target      <- onError decodeTarget8
+        power       <- onError decodePower8
+        parameter1  <- onError decodeParameter
+        parameter2  <- onError decodeParameter
+        timing      <- onError decodeTiming8
         dispel      <- onError parseResistDispel8
-        duration    <- onError parseDuration
+        duration    <- onError decodeDuration
         probability <- onError parseProbability8
         resource    <- onError parseResref
         dicenumber  <- onError parseDiceNumber

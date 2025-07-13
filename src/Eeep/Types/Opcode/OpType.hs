@@ -16,13 +16,18 @@ module Eeep.Types.Opcode.OpType (
     fromOpType,
 
     -- * Parsers.
-    parseOpType16,
-    parseOpType32,
+    decodeOpType16,
+    decodeOpType32,
+
+    -- * Serializers.
+    encodeOpType16,
+    encodeOpType32,
 ) where
 
 -- Imports.
 -- Base.
 import Data.Bifunctor (Bifunctor (..))
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Ix (Ix)
 import Data.Maybe (isJust)
 import Data.Void (absurd)
@@ -34,14 +39,15 @@ import Data.Vector.Strict (Vector, (!), fromList, force)
 -- non-Hackage libraries.
 import Mono.Typeclasses.MonoFunctor (ElementOf)
 import Mono.Typeclasses.MonoFoldable (MonoFoldable)
-import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
 import Trisagion.Types.ParseError (ParseError)
+import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
+import Trisagion.Typeclasses.HasOffset (HasOffset)
+import Trisagion.Typeclasses.Binary (Binary)
+import qualified Trisagion.Typeclasses.Binary as Binary (word16Le, word32Le)
 import Trisagion.Parser (Parser)
-
--- Package.
 import Trisagion.Parsers.Word8 (word16Le, word32Le)
 import Trisagion.Parsers.ParseError (throwParseError, capture)
-import Trisagion.Typeclasses.HasOffset (HasOffset)
+import Trisagion.Serializer (Serializer, embed)
 
 
 {- | The t'OpTypeError' type. -}
@@ -795,22 +801,30 @@ fromOpType :: OpType -> Word16
 fromOpType op = opIndices ! fromEnum op
 
 
-{- | Parse an 'OpType' from a 'Word16'. -}
-parseOpType16
+{- | Decode an 'OpType' from a 'Word16'. -}
+decodeOpType16
     ::(HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
     => Parser s (ParseError OpTypeError) OpType
-parseOpType16 = capture $ do
+decodeOpType16 = capture $ do
         n <- first (fmap absurd) word16Le
         maybe (throwParseError . OpTypeError . fromIntegral $ n) pure (toOpType n)
 
-{- | Parse an 'OpType' from a 'Word32'. -}
-parseOpType32
+{- | Decode an 'OpType' from a 'Word32'. -}
+decodeOpType32
     ::(HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
     => Parser s (ParseError OpTypeError) OpType
-parseOpType32 = capture $ do
+decodeOpType32 = capture $ do
         n <- first (fmap absurd) word32Le
         if n > upper
             then throwParseError . OpTypeError $ n
             else maybe (throwParseError . OpTypeError $ n) pure (toOpType . fromIntegral $ n)
     where
         upper = fromIntegral (maxBound @Word16)
+
+{- | Encode an 'OpType' into a 'Word16'. -}
+encodeOpType16 :: Binary m => Serializer m OpType
+encodeOpType16 = contramap fromOpType $ embed Binary.word16Le
+
+{- | Encode an 'OpType' into a 'Word16'. -}
+encodeOpType32 :: Binary m => Serializer m OpType
+encodeOpType32 = contramap (fromIntegral . fromOpType) $ embed Binary.word32Le

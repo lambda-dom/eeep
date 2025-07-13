@@ -15,15 +15,18 @@ module Eeep.Types.Opcode.Target (
     toTarget,
 
     -- * Parsers.
-    parseTarget8,
+    decodeTarget8,
+    decodeTarget32,
 
-    -- * Types.
-    parseTarget32,
+    -- * Serializers.
+    encodeTarget8,
+    encodeTarget32,
 ) where
 
 -- Imports.
 -- Base.
-import Data.Bifunctor (Bifunctor(..))
+import Data.Bifunctor (Bifunctor (..))
+import Data.Functor.Contravariant (Contravariant(..))
 import Data.Ix (Ix)
 import Data.Void (absurd)
 import Data.Word (Word8, Word32)
@@ -34,9 +37,13 @@ import Mono.Typeclasses.MonoFoldable (MonoFoldable)
 import Trisagion.Types.ParseError (ParseError)
 import Trisagion.Typeclasses.HasOffset (HasOffset)
 import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
+import Trisagion.Typeclasses.Binary (Binary)
+import qualified Trisagion.Typeclasses.Builder as Builder (one)
+import qualified Trisagion.Typeclasses.Binary as Binary (word32Le)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.ParseError (throwParseError, capture)
 import Trisagion.Parsers.Word8 (word8, word32Le)
+import Trisagion.Serializer (Serializer, embed)
 
 
 {- | The t'TargetError' type. -}
@@ -67,20 +74,28 @@ toTarget n = if m <= fromEnum (maxBound @Target) then Just $ toEnum m else Nothi
         m = fromIntegral n
 
 
-{- | Parse a t'Target' from a single 'Word8'. -}
-parseTarget8 :: (HasOffset s, ElementOf s ~ Word8) => Parser s (ParseError TargetError) Target
-parseTarget8 = capture $ do
+{- | Decode a t'Target' from a single 'Word8'. -}
+decodeTarget8 :: (HasOffset s, ElementOf s ~ Word8) => Parser s (ParseError TargetError) Target
+decodeTarget8 = capture $ do
     n <- first (fmap absurd) word8
     maybe (throwParseError . TargetError . fromIntegral $ n) pure (toTarget n)
 
-{- | Parse a t'Target' from a single 'Word32'. -}
-parseTarget32
+{- | Decode a t'Target' from a single 'Word32'. -}
+decodeTarget32
     :: (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
     => Parser s (ParseError TargetError) Target
-parseTarget32 = capture $ do
+decodeTarget32 = capture $ do
         n <- first (fmap absurd) word32Le
         if n > upper
             then throwParseError . TargetError $ n
             else maybe (throwParseError . TargetError $ n) pure (toTarget (fromIntegral n))
     where
         upper = fromIntegral (maxBound @Word8)
+
+{- | Encode an t'Target' into a 'Word8'. -}
+encodeTarget8 :: Binary m => Serializer m Target
+encodeTarget8 = contramap (fromIntegral . fromEnum) $ embed Builder.one
+
+{- | Encode a t'Target' into a 'Word32'. -}
+encodeTarget32 :: Binary m => Serializer m Target
+encodeTarget32 = contramap (fromIntegral . fromEnum) $ embed Binary.word32Le
