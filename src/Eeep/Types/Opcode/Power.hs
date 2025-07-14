@@ -15,15 +15,18 @@ module Eeep.Types.Opcode.Power (
     toPower,
 
     -- * Parsers.
-    parsePower8,
+    decodePower8,
+    decodePower32,
 
     -- * Types.
-    parsePower32,
+    encodePower8,
+    encodePower32,
 ) where
 
 -- Imports.
 -- Base.
-import Data.Bifunctor (Bifunctor(..))
+import Data.Bifunctor (Bifunctor (..))
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Ix (Ix)
 import Data.Void (absurd)
 import Data.Word (Word8, Word32)
@@ -34,9 +37,13 @@ import Mono.Typeclasses.MonoFoldable (MonoFoldable)
 import Trisagion.Types.ParseError (ParseError)
 import Trisagion.Typeclasses.HasOffset (HasOffset)
 import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
+import Trisagion.Typeclasses.Binary (Binary)
+import qualified Trisagion.Typeclasses.Builder as Builder (one)
+import qualified Trisagion.Typeclasses.Binary as Binary (word32Le)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.ParseError (throwParseError, capture)
 import Trisagion.Parsers.Word8 (word8, word32Le)
+import Trisagion.Serializer (Serializer, embed)
 
 
 {- | The t'PowerError' type. -}
@@ -65,20 +72,34 @@ toPower :: Word8 -> Maybe Power
 toPower n = if n <= 10 then Just $ Power n else Nothing
 
 
-{- | Parse a t'Power' from a single 'Word8'. -}
-parsePower8 :: (HasOffset s, ElementOf s ~ Word8) => Parser s (ParseError PowerError) Power
-parsePower8 = capture $ do
+{- | Decode a t'Power' from a single 'Word8'. -}
+decodePower8 :: (HasOffset s, ElementOf s ~ Word8) => Parser s (ParseError PowerError) Power
+decodePower8 = capture $ do
     n <- first (fmap absurd) word8
     maybe (throwParseError . PowerError . fromIntegral $ n) pure (toPower n)
 
-{- | Parse a t'Power' from a single 'Word32'. -}
-parsePower32
+{- | Decode a t'Power' from a single 'Word32'. -}
+decodePower32
     :: (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
     => Parser s (ParseError PowerError) Power
-parsePower32 = capture $ do
+decodePower32 = capture $ do
         n <- first (fmap absurd) word32Le
         if n > upper
             then throwParseError . PowerError $ n
             else maybe (throwParseError . PowerError $ n) pure (toPower (fromIntegral n))
     where
         upper = fromIntegral (maxBound @Word8)
+
+{- | Encode a 'Power' into a 'Word8'. -}
+encodePower8 :: Binary m => Serializer m Power
+encodePower8 = contramap unwrap $ embed Builder.one
+    where
+        unwrap :: Power -> Word8
+        unwrap (Power n) = n
+
+{- | Encode a 'Power' into a 'Word32'. -}
+encodePower32 :: Binary m => Serializer m Power
+encodePower32 = contramap (fromIntegral . unwrap) $ embed Binary.word32Le
+    where
+        unwrap :: Power -> Word8
+        unwrap (Power n) = n

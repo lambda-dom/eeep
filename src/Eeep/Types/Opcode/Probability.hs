@@ -15,16 +15,23 @@ module Eeep.Types.Opcode.Probability (
     toProbability,
 
     -- * Parsers.
-    parseProbability8,
-    parseProbability16,
+    decodeProbability8,
+    decodeProbability16,
+
+    -- * Serializers.
+    encodeProbability8,
+    encodeProbability16,
 ) where
 
 -- Imports.
 -- Base.
 import Data.Bifunctor (Bifunctor (..))
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Void (absurd)
 import Data.Word (Word8, Word16)
 
+-- Libraries.
+import Data.Functor.Contravariant.Divisible (Divisible (..))
 
 -- non-Hackage libraries.
 import Mono.Typeclasses.MonoFunctor (ElementOf)
@@ -32,9 +39,13 @@ import Mono.Typeclasses.MonoFoldable (MonoFoldable)
 import Trisagion.Types.ParseError (ParseError)
 import Trisagion.Typeclasses.HasOffset (HasOffset)
 import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
+import Trisagion.Typeclasses.Binary (Binary)
+import qualified Trisagion.Typeclasses.Builder as Builder (one)
+import qualified Trisagion.Typeclasses.Binary as Binary (word16Le)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.ParseError (throwParseError, capture)
 import Trisagion.Parsers.Word8 (word8, word16Le)
+import Trisagion.Serializer (Serializer, embed)
 
 
 {- | The t'ProbabilityError' type. -}
@@ -60,10 +71,10 @@ toProbability l u =
 
 
 {- | Parse a t'Probability' from two 'Word8'. -}
-parseProbability8
+decodeProbability8
     :: (HasOffset s, ElementOf s ~ Word8)
     => Parser s (ParseError ProbabilityError) Probability
-parseProbability8 = capture $ do
+decodeProbability8 = capture $ do
         n <- first (fmap absurd) word8
         m <- first (fmap absurd) word8
         maybe
@@ -72,10 +83,10 @@ parseProbability8 = capture $ do
             (toProbability n m)
 
 {- | Parse a t'Probability' from two 'Word16'. -}
-parseProbability16
+decodeProbability16
     :: (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
     => Parser s (ParseError ProbabilityError) Probability
-parseProbability16 = capture $ do
+decodeProbability16 = capture $ do
         n <- first (fmap absurd) word16Le
         m <- first (fmap absurd) word16Le
         let
@@ -86,3 +97,17 @@ parseProbability16 = capture $ do
             else maybe (throwParseError $ ProbabilityError m n) pure (toProbability m' n')
     where
         upper = fromIntegral (maxBound @Word8)
+
+{- | Encode a t'Probability' into two 'Word8'. -}
+encodeProbability8 :: Binary m => Serializer m Probability
+encodeProbability8 = contramap unwrap $ divide id (embed Builder.one) (embed Builder.one)
+    where
+        unwrap :: Probability -> (Word8, Word8)
+        unwrap (Probability n m) = (n, m)
+
+{- | Encode a t'Probability' into two 'Word16'. -}
+encodeProbability16 :: Binary m => Serializer m Probability
+encodeProbability16 = contramap unwrap $ divide id (embed Binary.word16Le) (embed Binary.word16Le)
+    where
+        unwrap :: Probability -> (Word16, Word16)
+        unwrap (Probability n m) = (fromIntegral n, fromIntegral m)

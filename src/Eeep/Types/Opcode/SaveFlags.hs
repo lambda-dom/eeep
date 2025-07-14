@@ -22,12 +22,16 @@ module Eeep.Types.Opcode.SaveFlags (
     bypassMI,
 
     -- * Parsers.
-    parseSaveFlags,
+    decodeSaveFlags,
+
+    -- * Serializers.
+    encodeSaveFlags,
 ) where
 
 -- Imports.
 -- Base.
 import Data.Bits ((.&.), (.|.), bit, zeroBits)
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Word (Word8, Word32)
 
 -- Libraries.
@@ -38,10 +42,13 @@ import Mono.Typeclasses.MonoFunctor (ElementOf)
 import Mono.Typeclasses.MonoFoldable (MonoFoldable)
 import Trisagion.Typeclasses.HasOffset (HasOffset)
 import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
+import Trisagion.Typeclasses.Binary (Binary)
+import qualified Trisagion.Typeclasses.Binary as Binary (word32Le)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.ParseError (capture)
 import Trisagion.Parsers.Streamable (InputError)
 import Trisagion.Parsers.Word8 (word32Le)
+import Trisagion.Serializer (Serializer, embed)
 
 -- Package.
 
@@ -111,9 +118,16 @@ toSaveFlags n = SaveFlags $ n .&. mask
         mask = 16780319
 
 
-{- | Parse an opcode's t'SaveFlags'. -}
-parseSaveFlags
+{- | Decode an opcode's t'SaveFlags'. -}
+decodeSaveFlags
     :: (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
     => Parser s InputError SaveFlags
-parseSaveFlags = capture . fmap toSaveFlags $ word32Le
+decodeSaveFlags = capture . fmap toSaveFlags $ word32Le
 
+
+{- | Encode a t'SaveFlags' into a 'Word32'. -}
+encodeSaveFlags :: Binary m => Serializer m SaveFlags
+encodeSaveFlags = contramap unwrap $ embed Binary.word32Le
+    where
+        unwrap :: SaveFlags -> Word32
+        unwrap (SaveFlags n) = n

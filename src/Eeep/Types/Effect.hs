@@ -6,7 +6,7 @@ The @Effect@ type.
 
 module Eeep.Types.Effect (
     -- * Types.
-    Effect (..),
+    Effect,
 
     -- * Parsers.
     parseEffect,
@@ -40,23 +40,23 @@ import Trisagion.Parsers.Word8 (word16Le)
 
 -- Package.
 import Eeep.Typeclasses.Binary (Reader (..), parseBinary)
-import Eeep.Types.Opcode.OpType (OpType, parseOpType32)
-import Eeep.Types.Opcode.Parameter (Parameter (..), parseParameter)
-import Eeep.Types.Opcode.Power (Power, parsePower32)
-import Eeep.Types.Opcode.Target (Target, parseTarget32)
-import Eeep.Types.Opcode.Timing (Timing, parseTiming16)
-import Eeep.Types.Opcode.Duration (Duration (..), parseDuration)
-import Eeep.Types.Opcode.Probability (Probability, parseProbability16)
-import Eeep.Types.Opcode.Resref (Resref, parseResref)
-import Eeep.Types.Opcode.ResistDispel (ResistDispel, parseResistDispel32)
-import Eeep.Types.Opcode.DiceNumber (DiceNumber, parseDiceNumber)
-import Eeep.Types.Opcode.DiceSides (DiceSides, parseDiceSides)
-import Eeep.Types.Opcode.SaveFlags (SaveFlags, parseSaveFlags)
-import Eeep.Types.Opcode.SaveBonus (SaveBonus, parseSaveBonus)
-import Eeep.Types.Opcode.Special (Special, parseSpecial)
-import Eeep.Types.Effect.Projectile (Projectile, parseProjectile)
-import Eeep.Types.Effect.School (School, parseSchool)
-import Eeep.Types.Effect.Sectype (Sectype, parseSectype)
+import Eeep.Types.Opcode.OpType (OpType, decodeOpType32)
+import Eeep.Types.Opcode.Parameter (Parameter, decodeParameter)
+import Eeep.Types.Opcode.Power (Power, decodePower32)
+import Eeep.Types.Opcode.Target (Target, decodeTarget32)
+import Eeep.Types.Opcode.Timing (Timing, decodeTiming16)
+import Eeep.Types.Opcode.Duration (Duration, decodeDuration)
+import Eeep.Types.Opcode.Probability (Probability, decodeProbability16)
+import Eeep.Types.Opcode.Resref (Resref, decodeResref)
+import Eeep.Types.Opcode.ResistDispel (ResistDispel, decodeResistDispel32)
+import Eeep.Types.Opcode.DiceNumber (DiceNumber, decodeDiceNumber)
+import Eeep.Types.Opcode.DiceSides (DiceSides, decodeDiceSides)
+import Eeep.Types.Opcode.SaveFlags (SaveFlags, decodeSaveFlags)
+import Eeep.Types.Opcode.SaveBonus (SaveBonus, decodeSaveBonus)
+import Eeep.Types.Opcode.Special (Special, decodeSpecial)
+import Eeep.Types.Effect.School (School, decodeSchool)
+import Eeep.Types.Effect.Sectype (Sectype, decodeSectype)
+import Eeep.Types.Effect.Projectile (Projectile, decodeProjectile)
 import Eeep.IO (makePath)
 
 
@@ -118,33 +118,33 @@ parseEffect
 parseEffect = capture $ do
         _           <- onError parseEffectSignature
         _           <- skip (first (fmap absurd) $ takeExact 8)
-        optype      <- onError parseOpType32
-        target      <- onError parseTarget32
-        power       <- onError parsePower32
-        parameter1  <- onError parseParameter
-        parameter2  <- onError parseParameter
-        timing      <- onError parseTiming16
+        optype      <- onError decodeOpType32
+        target      <- onError decodeTarget32
+        power       <- onError decodePower32
+        parameter1  <- onError decodeParameter
+        parameter2  <- onError decodeParameter
+        timing      <- onError decodeTiming16
         _           <- skip (first (fmap absurd) word16Le)
-        duration    <- onError parseDuration
-        probability <- onError parseProbability16
-        resource1   <- onError parseResref
-        dicenumber  <- onError parseDiceNumber
-        dicesides   <- onError parseDiceSides
-        saveflags   <- onError parseSaveFlags
-        savebonus   <- onError parseSaveBonus
-        special     <- onError parseSpecial
-        school      <- onError parseSchool
+        duration    <- onError decodeDuration
+        probability <- onError decodeProbability16
+        resource1   <- onError decodeResref
+        dicenumber  <- onError decodeDiceNumber
+        dicesides   <- onError decodeDiceSides
+        saveflags   <- onError decodeSaveFlags
+        savebonus   <- onError decodeSaveBonus
+        special     <- onError decodeSpecial
+        school      <- onError decodeSchool
         _           <- skip (first (fmap absurd) $ takeExact 12)
-        dispel      <- onError parseResistDispel32
-        parameter3  <- onError parseParameter
-        parameter4  <- onError parseParameter
+        dispel      <- onError decodeResistDispel32
+        parameter3  <- onError decodeParameter
+        parameter4  <- onError decodeParameter
         _           <- skip (first (fmap absurd) $ takeExact 8)
-        resource2   <- onError parseResref
-        resource3   <- onError parseResref
+        resource2   <- onError decodeResref
+        resource3   <- onError decodeResref
         _           <- skip (first (fmap absurd) $ takeExact 32)
-        projectile  <- onError parseProjectile
+        projectile  <- onError decodeProjectile
         _           <- skip (first (fmap absurd) $ takeExact 44)
-        sectype     <- onError parseSectype
+        sectype     <- onError decodeSectype
         _           <- skip (first (fmap absurd) $ takeExact 60)
         pure Effect {..}
     where

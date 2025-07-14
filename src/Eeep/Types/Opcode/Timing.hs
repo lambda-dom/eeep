@@ -15,10 +15,12 @@ module Eeep.Types.Opcode.Timing (
     toTiming,
 
     -- * Parsers.
-    parseTiming8,
+    decodeTiming8,
+    decodeTiming16,
 
-    -- * Types.
-    parseTiming16,
+    -- * Serializers.
+    encodeTiming8,
+    encodeTiming16,
 ) where
 
 -- Imports.
@@ -34,9 +36,14 @@ import Mono.Typeclasses.MonoFoldable (MonoFoldable)
 import Trisagion.Types.ParseError (ParseError)
 import Trisagion.Typeclasses.HasOffset (HasOffset)
 import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
+import Trisagion.Typeclasses.Binary (Binary)
+import qualified Trisagion.Typeclasses.Builder as Builder (one)
+import qualified Trisagion.Typeclasses.Binary as Binary (word16Le)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.ParseError (throwParseError, capture)
 import Trisagion.Parsers.Word8 (word8, word16Le)
+import Trisagion.Serializer (Serializer, embed)
+import Data.Functor.Contravariant (Contravariant(..))
 
 
 {- | The t'TimingError' type. -}
@@ -68,20 +75,29 @@ toTiming n = if m <= fromEnum (maxBound @Timing) then Just $ toEnum m else Nothi
         m = fromIntegral n
 
 
-{- | Parse a t'Timing' from a 'Word8'. -}
-parseTiming8 :: (HasOffset s, ElementOf s ~ Word8) => Parser s (ParseError TimingError) Timing
-parseTiming8 = capture $ do
+{- | Decode a t'Timing' from a 'Word8'. -}
+decodeTiming8 :: (HasOffset s, ElementOf s ~ Word8) => Parser s (ParseError TimingError) Timing
+decodeTiming8 = capture $ do
     n <- first (fmap absurd) word8
     maybe (throwParseError . TimingError . fromIntegral $ n) pure (toTiming n)
 
-{- | Parse a t'Timing' from a single 'Word16'. -}
-parseTiming16
+{- | Decode a t'Timing' from a single 'Word16'. -}
+decodeTiming16
     :: (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
     => Parser s (ParseError TimingError) Timing
-parseTiming16 = capture $ do
+decodeTiming16 = capture $ do
         n <- first (fmap absurd) word16Le
         if n > upper
             then throwParseError . TimingError $ n
             else maybe (throwParseError . TimingError $ n) pure (toTiming (fromIntegral n))
     where
         upper = fromIntegral (maxBound @Word8)
+
+
+{- | Encode a t'Timing' into a 'Word8'. -}
+encodeTiming8 :: Binary m => Serializer m Timing
+encodeTiming8 = contramap (fromIntegral . fromEnum) $ embed Builder.one
+
+{- | Encode a t'Timing' into a 'Word16'. -}
+encodeTiming16 :: Binary m => Serializer m Timing
+encodeTiming16 = contramap (fromIntegral . fromEnum) $ embed Binary.word16Le
