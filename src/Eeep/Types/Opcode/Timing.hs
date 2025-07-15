@@ -26,6 +26,7 @@ module Eeep.Types.Opcode.Timing (
 -- Imports.
 -- Base.
 import Data.Bifunctor (Bifunctor (..))
+import Data.Functor.Contravariant (Contravariant(..))
 import Data.Ix (Ix)
 import Data.Void (absurd)
 import Data.Word (Word8, Word16)
@@ -37,13 +38,11 @@ import Trisagion.Types.ParseError (ParseError)
 import Trisagion.Typeclasses.HasOffset (HasOffset)
 import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
 import Trisagion.Typeclasses.Binary (Binary)
-import qualified Trisagion.Typeclasses.Builder as Builder (one)
-import qualified Trisagion.Typeclasses.Binary as Binary (word16Le)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.ParseError (throwParseError, capture)
 import Trisagion.Parsers.Word8 (word8, word16Le)
-import Trisagion.Serializer (Serializer, embed)
-import Data.Functor.Contravariant (Contravariant(..))
+import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Binary (word16Le, word8)
 
 
 {- | The t'TimingError' type. -}
@@ -96,8 +95,8 @@ decodeTiming16 = capture $ do
 
 {- | Encode a t'Timing' into a 'Word8'. -}
 encodeTiming8 :: Binary m => Serializer m Timing
-encodeTiming8 = contramap (fromIntegral . fromEnum) $ embed Builder.one
+encodeTiming8 = contramap (fromIntegral . fromEnum) Binary.word8
 
 {- | Encode a t'Timing' into a 'Word16'. -}
 encodeTiming16 :: Binary m => Serializer m Timing
-encodeTiming16 = contramap (fromIntegral . fromEnum) $ embed Binary.word16Le
+encodeTiming16 = contramap (fromIntegral . fromEnum) Binary.word16Le

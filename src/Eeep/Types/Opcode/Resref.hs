@@ -31,11 +31,11 @@ import Trisagion.Types.ParseError (ParseError)
 import Trisagion.Typeclasses.HasOffset (HasOffset)
 import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
 import Trisagion.Typeclasses.Binary (Binary)
-import Trisagion.Typeclasses.Builder (Builder (many))
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.ParseError (capture, throwParseError)
 import Trisagion.Parsers.Splittable (takeExact)
-import Trisagion.Serializer (Serializer, embed)
+import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Binary (word64Le)
 
 
 {- | The t'ResrefError' type. -}
@@ -80,7 +80,8 @@ decodeResref = capture $ do
 
 {- | Encode a resource t'Resref'. -}
 encodeResref :: Binary m => Serializer m Resref
-encodeResref = contramap unwrap $ embed many
+encodeResref = contramap unwrap Binary.word64Le
     where
-        unwrap :: Resref -> [Word8]
-        unwrap (Resref n) = bytes n
+        -- Assumes normalized resref.
+        unwrap :: Resref -> Word64
+        unwrap (Resref n) = n

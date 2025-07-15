@@ -40,12 +40,11 @@ import Trisagion.Types.ParseError (ParseError)
 import Trisagion.Typeclasses.HasOffset (HasOffset)
 import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
 import Trisagion.Typeclasses.Binary (Binary)
-import qualified Trisagion.Typeclasses.Builder as Builder (one)
-import qualified Trisagion.Typeclasses.Binary as Binary (word16Le)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.ParseError (throwParseError, capture)
 import Trisagion.Parsers.Word8 (word8, word16Le)
-import Trisagion.Serializer (Serializer, embed)
+import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Binary (word16Le, word8)
 
 
 {- | The t'ProbabilityError' type. -}
@@ -100,14 +99,14 @@ decodeProbability16 = capture $ do
 
 {- | Encode a t'Probability' into two 'Word8'. -}
 encodeProbability8 :: Binary m => Serializer m Probability
-encodeProbability8 = contramap unwrap $ divide id (embed Builder.one) (embed Builder.one)
+encodeProbability8 = contramap unwrap $ divide id Binary.word8 Binary.word8
     where
         unwrap :: Probability -> (Word8, Word8)
         unwrap (Probability n m) = (n, m)
 
 {- | Encode a t'Probability' into two 'Word16'. -}
 encodeProbability16 :: Binary m => Serializer m Probability
-encodeProbability16 = contramap unwrap $ divide id (embed Binary.word16Le) (embed Binary.word16Le)
+encodeProbability16 = contramap unwrap $ divide id Binary.word16Le Binary.word16Le
     where
         unwrap :: Probability -> (Word16, Word16)
         unwrap (Probability n m) = (fromIntegral n, fromIntegral m)
