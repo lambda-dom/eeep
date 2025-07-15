@@ -43,11 +43,11 @@ import Trisagion.Types.ParseError (ParseError)
 import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
 import Trisagion.Typeclasses.HasOffset (HasOffset)
 import Trisagion.Typeclasses.Binary (Binary)
-import qualified Trisagion.Typeclasses.Binary as Binary (word16Le, word32Le)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Word8 (word16Le, word32Le)
 import Trisagion.Parsers.ParseError (throwParseError, capture)
-import Trisagion.Serializer (Serializer, embed)
+import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Binary (word16Le, word32Le)
 
 
 {- | The t'OpTypeError' type. -}
@@ -823,8 +823,8 @@ decodeOpType32 = capture $ do
 
 {- | Encode an 'OpType' into a 'Word16'. -}
 encodeOpType16 :: Binary m => Serializer m OpType
-encodeOpType16 = contramap fromOpType $ embed Binary.word16Le
+encodeOpType16 = contramap fromOpType Binary.word16Le
 
 {- | Encode an 'OpType' into a 'Word16'. -}
 encodeOpType32 :: Binary m => Serializer m OpType
-encodeOpType32 = contramap (fromIntegral . fromOpType) $ embed Binary.word32Le
+encodeOpType32 = contramap (fromIntegral . fromOpType) Binary.word32Le

@@ -26,12 +26,12 @@ import Mono.Typeclasses.MonoFoldable (MonoFoldable)
 import Trisagion.Typeclasses.HasOffset (HasOffset)
 import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
 import Trisagion.Typeclasses.Binary (Binary)
-import qualified Trisagion.Typeclasses.Binary as Binary (word32Le)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.ParseError (capture)
 import Trisagion.Parsers.Streamable (InputError)
 import Trisagion.Parsers.Word8 (word32Le)
-import Trisagion.Serializer (Serializer, embed)
+import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Binary (word32Le)
 
 
 {- | The magic t'School' numeric id type. -}
@@ -48,7 +48,7 @@ decodeSchool = capture . fmap School $ word32Le
 
 {- | Encode a t'School' into a 'Word32'. -}
 encodeSchool :: Binary m => Serializer m School
-encodeSchool = contramap unwrap $ embed Binary.word32Le
+encodeSchool = contramap unwrap Binary.word32Le
     where
         unwrap :: School -> Word32
         unwrap (School n) = n

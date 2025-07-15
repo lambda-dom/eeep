@@ -37,11 +37,11 @@ import Trisagion.Types.ParseError (ParseError)
 import Trisagion.Typeclasses.HasOffset (HasOffset)
 import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
 import Trisagion.Typeclasses.Binary (Binary)
-import qualified Trisagion.Typeclasses.Binary as Binary (word32Le)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.ParseError (throwParseError, capture)
 import Trisagion.Parsers.Word8 (word32Le)
-import Trisagion.Serializer (Serializer, embed)
+import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Binary (word32Le)
 
 
 {- | The t'SaveBonusError' type. -}
@@ -85,7 +85,7 @@ decodeSaveBonus = capture $ do
 
 {- | Encode a t'SaveBonus' into a 'Word32'. -}
 encodeSaveBonus :: Binary m => Serializer m SaveBonus
-encodeSaveBonus = contramap unwrap $ embed Binary.word32Le
+encodeSaveBonus = contramap unwrap Binary.word32Le
     where
         unwrap :: SaveBonus -> Word32
         unwrap (SaveBonus n) = fromIntegral n

@@ -43,14 +43,12 @@ import Mono.Typeclasses.MonoFoldable (MonoFoldable)
 import Trisagion.Typeclasses.HasOffset (HasOffset)
 import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
 import Trisagion.Typeclasses.Binary (Binary)
-import qualified Trisagion.Typeclasses.Binary as Binary (word32Le)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.ParseError (capture)
 import Trisagion.Parsers.Streamable (InputError)
 import Trisagion.Parsers.Word8 (word32Le)
-import Trisagion.Serializer (Serializer, embed)
-
--- Package.
+import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Binary (word32Le)
 
 
 {- | The t'SaveFlags' type.-}
@@ -127,7 +125,7 @@ decodeSaveFlags = capture . fmap toSaveFlags $ word32Le
 
 {- | Encode a t'SaveFlags' into a 'Word32'. -}
 encodeSaveFlags :: Binary m => Serializer m SaveFlags
-encodeSaveFlags = contramap unwrap $ embed Binary.word32Le
+encodeSaveFlags = contramap unwrap Binary.word32Le
     where
         unwrap :: SaveFlags -> Word32
         unwrap (SaveFlags n) = n

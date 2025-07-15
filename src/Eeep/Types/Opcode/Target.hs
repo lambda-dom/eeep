@@ -38,12 +38,11 @@ import Trisagion.Types.ParseError (ParseError)
 import Trisagion.Typeclasses.HasOffset (HasOffset)
 import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
 import Trisagion.Typeclasses.Binary (Binary)
-import qualified Trisagion.Typeclasses.Builder as Builder (one)
-import qualified Trisagion.Typeclasses.Binary as Binary (word32Le)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.ParseError (throwParseError, capture)
 import Trisagion.Parsers.Word8 (word8, word32Le)
-import Trisagion.Serializer (Serializer, embed)
+import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Binary (word32Le, word8)
 
 
 {- | The t'TargetError' type. -}
@@ -94,8 +93,8 @@ decodeTarget32 = capture $ do
 
 {- | Encode an t'Target' into a 'Word8'. -}
 encodeTarget8 :: Binary m => Serializer m Target
-encodeTarget8 = contramap (fromIntegral . fromEnum) $ embed Builder.one
+encodeTarget8 = contramap (fromIntegral . fromEnum) Binary.word8
 
 {- | Encode a t'Target' into a 'Word32'. -}
 encodeTarget32 :: Binary m => Serializer m Target
-encodeTarget32 = contramap (fromIntegral . fromEnum) $ embed Binary.word32Le
+encodeTarget32 = contramap (fromIntegral . fromEnum) Binary.word32Le

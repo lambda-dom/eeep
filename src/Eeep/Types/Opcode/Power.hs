@@ -38,12 +38,11 @@ import Trisagion.Types.ParseError (ParseError)
 import Trisagion.Typeclasses.HasOffset (HasOffset)
 import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
 import Trisagion.Typeclasses.Binary (Binary)
-import qualified Trisagion.Typeclasses.Builder as Builder (one)
-import qualified Trisagion.Typeclasses.Binary as Binary (word32Le)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.ParseError (throwParseError, capture)
 import Trisagion.Parsers.Word8 (word8, word32Le)
-import Trisagion.Serializer (Serializer, embed)
+import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Binary (word32Le, word8)
 
 
 {- | The t'PowerError' type. -}
@@ -92,14 +91,14 @@ decodePower32 = capture $ do
 
 {- | Encode a 'Power' into a 'Word8'. -}
 encodePower8 :: Binary m => Serializer m Power
-encodePower8 = contramap unwrap $ embed Builder.one
+encodePower8 = contramap unwrap Binary.word8
     where
         unwrap :: Power -> Word8
         unwrap (Power n) = n
 
 {- | Encode a 'Power' into a 'Word32'. -}
 encodePower32 :: Binary m => Serializer m Power
-encodePower32 = contramap (fromIntegral . unwrap) $ embed Binary.word32Le
+encodePower32 = contramap (fromIntegral . unwrap) Binary.word32Le
     where
         unwrap :: Power -> Word8
         unwrap (Power n) = n
