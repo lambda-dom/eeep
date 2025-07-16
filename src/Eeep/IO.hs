@@ -10,12 +10,17 @@ module Eeep.IO (
 
     -- * 'IO' reads.
     readBinary,
+
+    -- * 'IO' writes.
+    writeBinary,
 ) where
 
 -- Imports.
 -- Libraries.
 import Data.ByteString (ByteString)
-import System.OsPath (OsPath, encodeUtf)
+import Data.ByteString.Builder (Builder)
+import qualified Data.ByteString.Builder as Builder (writeFile)
+import System.OsPath (OsPath, encodeUtf, decodeUtf)
 import System.File.OsPath (readFile')
 
 
@@ -23,6 +28,14 @@ import System.File.OsPath (readFile')
 makePath :: String -> IO OsPath
 makePath = encodeUtf
 
+
 {- | Read the entire contents of the binary file into memory. -}
 readBinary :: OsPath -> IO ByteString
 readBinary = readFile'
+
+
+{- | Write a 'ByteString' 'Builder' to a file. -}
+writeBinary :: OsPath -> Builder -> IO ()
+writeBinary path builder = do
+    p <- decodeUtf path
+    Builder.writeFile p builder

@@ -10,15 +10,6 @@ module Eeep.Types.Effect (
 
     -- * Types.
     Effect,
-
-    -- * Parsers.
-    decodeEffect,
-
-    -- * Serializers.
-    encodeEffect,
-
-    -- * Testing.
-    testEffect,
 ) where
 
 -- Imports.
@@ -31,7 +22,6 @@ import Data.Word (Word8)
 import Data.Void (absurd)
 
 -- Libraries.
-import System.OsPath (OsPath)
 import qualified Data.ByteString as Bytes (replicate)
 
 -- non-Hackage libraries.
@@ -50,7 +40,7 @@ import Trisagion.Serializer (Serializer, serialize, (|*>))
 import qualified Trisagion.Serializers.Binary as Binary (string, bytestring, word16Le)
 
 -- Package.
-import Eeep.Typeclasses.Binary (Reader (..), parseBinary)
+import Eeep.Typeclasses.Binary (Reader (..), Writer (..))
 import Eeep.Types.Opcode.OpType (OpType, decodeOpType32, encodeOpType32)
 import Eeep.Types.Opcode.Parameter (Parameter, decodeParameter, encodeParameter)
 import Eeep.Types.Opcode.Power (Power, decodePower32, encodePower32)
@@ -68,7 +58,6 @@ import Eeep.Types.Opcode.Special (Special, decodeSpecial, encodeSpecial)
 import Eeep.Types.Effect.School (School, decodeSchool, encodeSchool)
 import Eeep.Types.Effect.Sectype (Sectype, decodeSectype, encodeSectype)
 import Eeep.Types.Effect.Projectile (Projectile, decodeProjectile, encodeProjectile)
-import Eeep.IO (makePath)
 
 
 {- | The t'EffectError' type. -}
@@ -110,6 +99,9 @@ data Effect = Effect {
 -- Instances.
 instance Reader (ParseError EffectError) Effect where
     parser = decodeEffect
+
+instance Writer Effect where
+    serializer = encodeEffect
 
 
 {- | Parser for the signature header of an t'Effect'. -}
@@ -196,14 +188,3 @@ encodeEffect
     <>  contramap (const (Bytes.replicate 44 0)) Binary.bytestring
     <>  contramap sectype encodeSectype
     <>  contramap (const (Bytes.replicate 60 0)) Binary.bytestring
-
-
-{- | Helper to test t'Effect' parser. -}
-testEffect :: String -> IO ()
-testEffect str = do
-        path <- makePath str
-        x <- parse path
-        print x
-    where
-        parse :: OsPath -> IO (Either (ParseError EffectError) Effect)
-        parse = parseBinary
