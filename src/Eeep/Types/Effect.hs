@@ -5,11 +5,17 @@ The @Effect@ type.
 -}
 
 module Eeep.Types.Effect (
+    -- * Error types.
+    EffectError (..),
+
     -- * Types.
     Effect,
 
     -- * Parsers.
-    parseEffect,
+    decodeEffect,
+
+    -- * Serializers.
+    encodeEffect,
 
     -- * Testing.
     testEffect,
@@ -18,6 +24,7 @@ module Eeep.Types.Effect (
 -- Imports.
 -- Base.
 import Data.Bifunctor (Bifunctor (..))
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Char (ord)
 import Data.Typeable (Typeable)
 import Data.Word (Word8)
@@ -25,38 +32,42 @@ import Data.Void (absurd)
 
 -- Libraries.
 import System.OsPath (OsPath)
+import qualified Data.ByteString as Bytes (replicate)
 
 -- non-Hackage libraries.
 import Mono.Typeclasses.MonoFunctor (MonoFunctor (ElementOf))
 import Mono.Typeclasses.MonoFoldable (MonoFoldable (monotoList))
 import Trisagion.Typeclasses.HasOffset (HasOffset)
 import Trisagion.Typeclasses.Splittable (Splittable (..))
+import Trisagion.Typeclasses.Binary (Binary)
 import Trisagion.Types.ParseError (ParseError)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Combinators (skip)
 import Trisagion.Parsers.Splittable (takeExact)
 import Trisagion.Parsers.ParseError (throwParseError, onParseError, capture)
 import Trisagion.Parsers.Word8 (word16Le)
+import Trisagion.Serializer (Serializer, serialize, (|*>))
+import qualified Trisagion.Serializers.Binary as Binary (string, bytestring, word16Le)
 
 -- Package.
 import Eeep.Typeclasses.Binary (Reader (..), parseBinary)
-import Eeep.Types.Opcode.OpType (OpType, decodeOpType32)
-import Eeep.Types.Opcode.Parameter (Parameter, decodeParameter)
-import Eeep.Types.Opcode.Power (Power, decodePower32)
-import Eeep.Types.Opcode.Target (Target, decodeTarget32)
-import Eeep.Types.Opcode.Timing (Timing, decodeTiming16)
-import Eeep.Types.Opcode.Duration (Duration, decodeDuration)
-import Eeep.Types.Opcode.Probability (Probability, decodeProbability16)
-import Eeep.Types.Opcode.Resref (Resref, decodeResref)
-import Eeep.Types.Opcode.ResistDispel (ResistDispel, decodeResistDispel32)
-import Eeep.Types.Opcode.DiceNumber (DiceNumber, decodeDiceNumber)
-import Eeep.Types.Opcode.DiceSides (DiceSides, decodeDiceSides)
-import Eeep.Types.Opcode.SaveFlags (SaveFlags, decodeSaveFlags)
-import Eeep.Types.Opcode.SaveBonus (SaveBonus, decodeSaveBonus)
-import Eeep.Types.Opcode.Special (Special, decodeSpecial)
-import Eeep.Types.Effect.School (School, decodeSchool)
-import Eeep.Types.Effect.Sectype (Sectype, decodeSectype)
-import Eeep.Types.Effect.Projectile (Projectile, decodeProjectile)
+import Eeep.Types.Opcode.OpType (OpType, decodeOpType32, encodeOpType32)
+import Eeep.Types.Opcode.Parameter (Parameter, decodeParameter, encodeParameter)
+import Eeep.Types.Opcode.Power (Power, decodePower32, encodePower32)
+import Eeep.Types.Opcode.Target (Target, decodeTarget32, encodeTarget32)
+import Eeep.Types.Opcode.Timing (Timing, decodeTiming16, encodeTiming16)
+import Eeep.Types.Opcode.Duration (Duration, decodeDuration, encodeDuration)
+import Eeep.Types.Opcode.Probability (Probability, decodeProbability16, encodeProbability16)
+import Eeep.Types.Opcode.Resref (Resref, decodeResref, encodeResref)
+import Eeep.Types.Opcode.ResistDispel (ResistDispel, decodeResistDispel32, encodeResistDispel32)
+import Eeep.Types.Opcode.DiceNumber (DiceNumber, decodeDiceNumber, encodeDiceNumber)
+import Eeep.Types.Opcode.DiceSides (DiceSides, decodeDiceSides, encodeDiceSides)
+import Eeep.Types.Opcode.SaveFlags (SaveFlags, decodeSaveFlags, encodeSaveFlags)
+import Eeep.Types.Opcode.SaveBonus (SaveBonus, decodeSaveBonus, encodeSaveBonus)
+import Eeep.Types.Opcode.Special (Special, decodeSpecial, encodeSpecial)
+import Eeep.Types.Effect.School (School, decodeSchool, encodeSchool)
+import Eeep.Types.Effect.Sectype (Sectype, decodeSectype, encodeSectype)
+import Eeep.Types.Effect.Projectile (Projectile, decodeProjectile, encodeProjectile)
 import Eeep.IO (makePath)
 
 
@@ -98,25 +109,25 @@ data Effect = Effect {
 
 -- Instances.
 instance Reader (ParseError EffectError) Effect where
-    parser = parseEffect
+    parser = decodeEffect
 
 
 {- | Parser for the signature header of an t'Effect'. -}
-parseEffectSignature
+decodeEffectSignature
     :: (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
     => Parser s (ParseError EffectSignatureError) (PrefixOf s)
-parseEffectSignature = do
+decodeEffectSignature = do
     prefix <- first (fmap absurd) $ takeExact 8
     if monotoList prefix == (fromIntegral . ord <$> "EFF V2.0")
         then pure prefix
         else throwParseError EffectSignatureError
 
 {- | Parser for the t'Effect' type. -}
-parseEffect
+decodeEffect
     :: forall s . (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf (PrefixOf s) ~ Word8)
     => Parser s (ParseError EffectError) Effect
-parseEffect = capture $ do
-        _           <- onError parseEffectSignature
+decodeEffect = capture $ do
+        _           <- onError decodeEffectSignature
         _           <- skip (first (fmap absurd) $ takeExact 8)
         optype      <- onError decodeOpType32
         target      <- onError decodeTarget32
@@ -150,6 +161,41 @@ parseEffect = capture $ do
     where
         onError :: (Typeable e, Eq e, Show e) => Parser s (ParseError e) a -> Parser s (ParseError EffectError) a
         onError = onParseError EffectError
+
+
+{- | Serializer for an t'Effect'. -}
+encodeEffect :: Binary m => Serializer m Effect
+encodeEffect
+    =   serialize Binary.string "EFF V2.0"
+    |*> serialize Binary.bytestring (Bytes.replicate 8 0)
+    |*> contramap optype encodeOpType32
+    <>  contramap target encodeTarget32
+    <>  contramap power encodePower32
+    <>  contramap parameter1 encodeParameter
+    <>  contramap parameter2 encodeParameter
+    <>  contramap timing encodeTiming16
+    <>  contramap (const 0) Binary.word16Le
+    <>  contramap duration encodeDuration
+    <>  contramap probability encodeProbability16
+    <>  contramap resource1 encodeResref
+    <>  contramap dicenumber encodeDiceNumber
+    <>  contramap dicesides encodeDiceSides
+    <>  contramap saveflags encodeSaveFlags
+    <>  contramap savebonus encodeSaveBonus
+    <>  contramap special encodeSpecial
+    <>  contramap school encodeSchool
+    <>  contramap (const (Bytes.replicate 12 0)) Binary.bytestring
+    <>  contramap dispel encodeResistDispel32
+    <>  contramap parameter3 encodeParameter
+    <>  contramap parameter4 encodeParameter
+    <>  contramap (const (Bytes.replicate 8 0)) Binary.bytestring
+    <>  contramap resource2 encodeResref
+    <>  contramap resource3 encodeResref
+    <>  contramap (const (Bytes.replicate 32 0)) Binary.bytestring
+    <>  contramap projectile encodeProjectile
+    <>  contramap (const (Bytes.replicate 44 0)) Binary.bytestring
+    <>  contramap sectype encodeSectype
+    <>  contramap (const (Bytes.replicate 60 0)) Binary.bytestring
 
 
 {- | Helper to test t'Effect' parser. -}

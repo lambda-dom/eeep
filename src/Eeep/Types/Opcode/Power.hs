@@ -89,14 +89,14 @@ decodePower32 = capture $ do
     where
         upper = fromIntegral (maxBound @Word8)
 
-{- | Encode a 'Power' into a 'Word8'. -}
+{- | Encode a t'Power' into a 'Word8'. -}
 encodePower8 :: Binary m => Serializer m Power
 encodePower8 = contramap unwrap Binary.word8
     where
         unwrap :: Power -> Word8
         unwrap (Power n) = n
 
-{- | Encode a 'Power' into a 'Word32'. -}
+{- | Encode a t'Power' into a 'Word32'. -}
 encodePower32 :: Binary m => Serializer m Power
 encodePower32 = contramap (fromIntegral . unwrap) Binary.word32Le
     where

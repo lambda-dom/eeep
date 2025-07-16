@@ -5,6 +5,9 @@ The @Resref@ type.
 -}
 
 module Eeep.Types.Opcode.Resref (
+    -- * Error types.
+    ResrefError (..),
+
     -- * Types.
     Resref,
 

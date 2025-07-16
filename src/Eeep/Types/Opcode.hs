@@ -78,7 +78,7 @@ data Opcode = Opcode {
     } deriving stock (Eq, Show)
 
 
-{- | Decode an t'Ocode'. -}
+{- | Decode an t'Opcode'. -}
 decodeOpcode
     :: forall s . (HasOffset s, Splittable s, MonoFoldable (PrefixOf s), ElementOf s ~ Word8, ElementOf (PrefixOf s) ~ Word8)
     => Parser s (ParseError OpcodeError) Opcode
