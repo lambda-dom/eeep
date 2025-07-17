@@ -2,7 +2,6 @@
 {-# LANGUAGE NoFieldSelectors #-}
 {-# LANGUAGE OverloadedLabels #-}
 
-
 {- |
 Module: Eeep.Types.Opcode
 
@@ -16,12 +15,6 @@ module Eeep.Types.Opcode (
 
     -- * Types.
     Opcode,
-
-    -- * Parsers.
-    decodeOpcode,
-
-    -- * Serializers.
-    encodeOpcode,
 ) where
 
 -- Imports.
@@ -46,6 +39,7 @@ import Trisagion.Parsers.ParseError (capture, onParseError)
 import Trisagion.Serializer (Serializer)
 
 -- Package.
+import Eeep.Typeclasses.Binary (Reader (..), Writer (..))
 import Eeep.Types.Opcode.OpType (OpType, decodeOpType16, encodeOpType16)
 import Eeep.Types.Opcode.Power (Power, decodePower8, encodePower8)
 import Eeep.Types.Opcode.Target (Target, decodeTarget8, encodeTarget8)
@@ -85,6 +79,14 @@ data Opcode = Opcode {
     savebonus   :: {-# UNPACK #-} !SaveBonus,
     special     :: {-# UNPACK #-} !Special
     } deriving stock (Eq, Show, Generic)
+
+
+-- Instances.
+instance Reader (ParseError OpcodeError) Opcode where
+    parser = decodeOpcode
+
+instance Writer Opcode where
+    serializer = encodeOpcode
 
 
 {- | Decode an t'Opcode'. -}
