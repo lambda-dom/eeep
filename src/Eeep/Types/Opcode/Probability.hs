@@ -11,8 +11,8 @@ module Eeep.Types.Opcode.Probability (
     -- * Types.
     Probability,
 
-    -- ** Constructors.
-    toProbability,
+    -- ** Prisms.
+    probability,
 
     -- * Parsers.
     decodeProbability8,
@@ -32,6 +32,7 @@ import Data.Word (Word8, Word16)
 
 -- Libraries.
 import Data.Functor.Contravariant.Divisible (Divisible (..))
+import Optics.Core (Prism', prism', preview, review)
 
 -- non-Hackage libraries.
 import Mono.Typeclasses.MonoFunctor (ElementOf)
@@ -57,16 +58,17 @@ data Probability = Probability {-# UNPACK #-} !Word8 {-# UNPACK #-} !Word8
     deriving stock (Eq, Show)
 
 
-{- | Construct a @t'Probability'@ pair from a pair of integers. -}
-{-# INLINE toProbability #-}
-toProbability
-    :: Word8                            -- ^ Lower bound.
-    -> Word8                            -- ^ Upper bound.
-    -> Maybe Probability
-toProbability l u =
-    if l <= u && u <= 100
-        then Just $ Probability l u
-        else Nothing
+{- | Prism for a t'Probability' interval with lower and upper bounds @(n, m)@. -}
+{-# INLINE probability #-}
+probability :: Prism' (Word8, Word8) Probability
+probability = prism' construct match
+    where
+        construct :: Probability -> (Word8, Word8)
+        construct (Probability lower upper) = (lower, upper)
+
+        match :: (Word8, Word8) -> Maybe Probability
+        match (lower, upper) =
+            if lower <= upper && upper <= 100 then Just $ Probability lower upper else Nothing
 
 
 {- | Parse a t'Probability' from two 'Word8'. -}
@@ -79,7 +81,7 @@ decodeProbability8 = capture $ do
         maybe
             (throwParseError $ ProbabilityError (fromIntegral n) (fromIntegral m))
             pure
-            (toProbability n m)
+            (preview probability (n, m))
 
 {- | Parse a t'Probability' from two 'Word16'. -}
 decodeProbability16
@@ -93,20 +95,20 @@ decodeProbability16 = capture $ do
             m' = fromIntegral m
         if (n > upper) || (m > upper)
             then throwParseError $ ProbabilityError m n
-            else maybe (throwParseError $ ProbabilityError m n) pure (toProbability m' n')
+            else maybe (throwParseError $ ProbabilityError m n) pure (preview probability (m', n'))
     where
         upper = fromIntegral (maxBound @Word8)
 
 {- | Encode a t'Probability' into two 'Word8'. -}
 encodeProbability8 :: Binary m => Serializer m Probability
-encodeProbability8 = contramap unwrap $ divide id Binary.word8 Binary.word8
-    where
-        unwrap :: Probability -> (Word8, Word8)
-        unwrap (Probability n m) = (n, m)
+encodeProbability8 =
+    contramap
+        (review probability)
+        (divide id Binary.word8 Binary.word8)
 
 {- | Encode a t'Probability' into two 'Word16'. -}
 encodeProbability16 :: Binary m => Serializer m Probability
-encodeProbability16 = contramap unwrap $ divide id Binary.word16Le Binary.word16Le
-    where
-        unwrap :: Probability -> (Word16, Word16)
-        unwrap (Probability n m) = (fromIntegral n, fromIntegral m)
+encodeProbability16 =
+    contramap
+        (bimap fromIntegral fromIntegral . review probability)
+        (divide id Binary.word16Le Binary.word16Le)
