@@ -1,3 +1,7 @@
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE NoFieldSelectors #-}
+{-# LANGUAGE OverloadedLabels #-}
+
 {- |
 Module: Eeep.Types.Effect
 
@@ -14,6 +18,7 @@ module Eeep.Types.Effect (
 
 -- Imports.
 -- Base.
+import GHC.Generics (Generic)
 import Data.Bifunctor (Bifunctor (..))
 import Data.Functor.Contravariant (Contravariant (..))
 import Data.Char (ord)
@@ -23,6 +28,7 @@ import Data.Void (absurd)
 
 -- Libraries.
 import qualified Data.ByteString as Bytes (replicate)
+import Optics.Core ((^.))
 
 -- non-Hackage libraries.
 import Mono.Typeclasses.MonoFunctor (MonoFunctor (ElementOf))
@@ -93,7 +99,7 @@ data Effect = Effect {
     school      :: {-# UNPACK #-} !School,
     sectype     :: {-# UNPACK #-} !Sectype,
     special     :: {-# UNPACK #-} !Special
-    } deriving stock (Eq, Show)
+    } deriving stock (Eq, Show, Generic)
 
 
 -- Instances.
@@ -160,31 +166,31 @@ encodeEffect :: Binary m => Serializer m Effect
 encodeEffect
     =   serialize Binary.string "EFF V2.0"
     |*> serialize Binary.bytestring (Bytes.replicate 8 0)
-    |*> contramap optype encodeOpType32
-    <>  contramap target encodeTarget32
-    <>  contramap power encodePower32
-    <>  contramap parameter1 encodeParameter
-    <>  contramap parameter2 encodeParameter
-    <>  contramap timing encodeTiming16
+    |*> contramap (^. #optype) encodeOpType32
+    <>  contramap (^. #target) encodeTarget32
+    <>  contramap (^. #power) encodePower32
+    <>  contramap (^. #parameter1) encodeParameter
+    <>  contramap (^. #parameter2) encodeParameter
+    <>  contramap (^. #timing) encodeTiming16
     <>  contramap (const 0) Binary.word16Le
-    <>  contramap duration encodeDuration
-    <>  contramap probability encodeProbability16
-    <>  contramap resource1 encodeResref
-    <>  contramap dicenumber encodeDiceNumber
-    <>  contramap dicesides encodeDiceSides
-    <>  contramap saveflags encodeSaveFlags
-    <>  contramap savebonus encodeSaveBonus
-    <>  contramap special encodeSpecial
-    <>  contramap school encodeSchool
+    <>  contramap (^. #duration) encodeDuration
+    <>  contramap (^. #probability) encodeProbability16
+    <>  contramap (^. #resource1) encodeResref
+    <>  contramap (^. #dicenumber) encodeDiceNumber
+    <>  contramap (^. #dicesides) encodeDiceSides
+    <>  contramap (^. #saveflags) encodeSaveFlags
+    <>  contramap (^. #savebonus) encodeSaveBonus
+    <>  contramap (^. #special) encodeSpecial
+    <>  contramap (^. #school) encodeSchool
     <>  contramap (const (Bytes.replicate 12 0)) Binary.bytestring
-    <>  contramap dispel encodeResistDispel32
-    <>  contramap parameter3 encodeParameter
-    <>  contramap parameter4 encodeParameter
+    <>  contramap (^. #dispel) encodeResistDispel32
+    <>  contramap (^. #parameter3) encodeParameter
+    <>  contramap (^. #parameter4) encodeParameter
     <>  contramap (const (Bytes.replicate 8 0)) Binary.bytestring
-    <>  contramap resource2 encodeResref
-    <>  contramap resource3 encodeResref
+    <>  contramap (^. #resource2) encodeResref
+    <>  contramap (^. #resource3) encodeResref
     <>  contramap (const (Bytes.replicate 32 0)) Binary.bytestring
-    <>  contramap projectile encodeProjectile
+    <>  contramap (^. #projectile) encodeProjectile
     <>  contramap (const (Bytes.replicate 44 0)) Binary.bytestring
-    <>  contramap sectype encodeSectype
+    <>  contramap (^. #sectype) encodeSectype
     <>  contramap (const (Bytes.replicate 60 0)) Binary.bytestring

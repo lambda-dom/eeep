@@ -1,3 +1,7 @@
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE NoFieldSelectors #-}
+{-# LANGUAGE OverloadedLabels #-}
+
 {- |
 Module: Eeep.Types.Opcode
 
@@ -10,19 +14,18 @@ module Eeep.Types.Opcode (
     OpcodeError,
 
     -- * Types.
-    Opcode (..),
-
-    -- * Parsers.
-    decodeOpcode,
-
-    -- * Serializers.
-    encodeOpcode,
+    Opcode,
 ) where
 
 -- Imports.
 -- Base.
+import GHC.Generics (Generic)
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Typeable (Typeable)
 import Data.Word (Word8)
+
+-- Libraries.
+import Optics.Core ((^.))
 
 -- non-Hackage libraries.
 import Mono.Typeclasses.MonoFunctor (ElementOf)
@@ -33,8 +36,10 @@ import Trisagion.Typeclasses.Splittable (Splittable (PrefixOf))
 import Trisagion.Typeclasses.Binary (Binary)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.ParseError (capture, onParseError)
+import Trisagion.Serializer (Serializer)
 
 -- Package.
+import Eeep.Typeclasses.Binary (Reader (..), Writer (..))
 import Eeep.Types.Opcode.OpType (OpType, decodeOpType16, encodeOpType16)
 import Eeep.Types.Opcode.Power (Power, decodePower8, encodePower8)
 import Eeep.Types.Opcode.Target (Target, decodeTarget8, encodeTarget8)
@@ -49,8 +54,6 @@ import Eeep.Types.Opcode.DiceSides (DiceSides, decodeDiceSides, encodeDiceSides)
 import Eeep.Types.Opcode.SaveFlags (SaveFlags, decodeSaveFlags, encodeSaveFlags)
 import Eeep.Types.Opcode.SaveBonus (SaveBonus, decodeSaveBonus, encodeSaveBonus)
 import Eeep.Types.Opcode.Special (Special, decodeSpecial, encodeSpecial)
-import Trisagion.Serializer (Serializer)
-import Data.Functor.Contravariant (Contravariant(..))
 
 
 {- | The t'OpcodeError' type. -}
@@ -75,7 +78,15 @@ data Opcode = Opcode {
     saveflags   :: {-# UNPACK #-} !SaveFlags,
     savebonus   :: {-# UNPACK #-} !SaveBonus,
     special     :: {-# UNPACK #-} !Special
-    } deriving stock (Eq, Show)
+    } deriving stock (Eq, Show, Generic)
+
+
+-- Instances.
+instance Reader (ParseError OpcodeError) Opcode where
+    parser = decodeOpcode
+
+instance Writer Opcode where
+    serializer = encodeOpcode
 
 
 {- | Decode an t'Opcode'. -}
@@ -107,18 +118,18 @@ decodeOpcode = capture $ do
 {- | Encode an t'Opcode'. -}
 encodeOpcode :: Binary m => Serializer m Opcode
 encodeOpcode
-    =  contramap optype encodeOpType16
-    <> contramap target encodeTarget8
-    <> contramap power encodePower8
-    <> contramap parameter1 encodeParameter
-    <> contramap parameter2 encodeParameter
-    <> contramap timing encodeTiming8
-    <> contramap dispel encodeResistDispel8
-    <> contramap duration encodeDuration
-    <> contramap probability encodeProbability8
-    <> contramap resource encodeResref
-    <> contramap dicenumber encodeDiceNumber
-    <> contramap dicesides encodeDiceSides
-    <> contramap saveflags encodeSaveFlags
-    <> contramap savebonus encodeSaveBonus
-    <> contramap special encodeSpecial
+    =  contramap (^. #optype) encodeOpType16
+    <> contramap (^. #target) encodeTarget8
+    <> contramap (^. #power) encodePower8
+    <> contramap (^. #parameter1) encodeParameter
+    <> contramap (^. #parameter2) encodeParameter
+    <> contramap (^. #timing) encodeTiming8
+    <> contramap (^. #dispel) encodeResistDispel8
+    <> contramap (^. #duration) encodeDuration
+    <> contramap (^. #probability) encodeProbability8
+    <> contramap (^. #resource) encodeResref
+    <> contramap (^. #dicenumber) encodeDiceNumber
+    <> contramap (^. #dicesides) encodeDiceSides
+    <> contramap (^. #saveflags) encodeSaveFlags
+    <> contramap (^. #savebonus) encodeSaveBonus
+    <> contramap (^. #special) encodeSpecial
