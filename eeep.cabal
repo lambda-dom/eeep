@@ -45,7 +45,13 @@ library
     build-depends:
         -- GHC >= 9.10 && < 9.12
         base >=4.20 && <4.21,
+        -- Libraries.
+        -- mtl >=2.3 && <2.4,
+        bytestring >=0.12 && <0.13,
+        -- Non-hackage libraries.
+        trisagion >=0.1 && <0.2,
     other-modules:
     exposed-modules:
         Eeep.Utils.Enum
+        Eeep.Typeclasses.Binary
         Eeep.Types.Opcode.Target
