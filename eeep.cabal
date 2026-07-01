@@ -24,6 +24,8 @@ source-repository head
 library
     default-language: GHC2021
     default-extensions:
+        DerivingStrategies
+        DuplicateRecordFields
     ghc-options:
         -Wall
         -Wcompat
@@ -45,3 +47,5 @@ library
         base >=4.20 && <4.21,
     other-modules:
     exposed-modules:
+        Eeep.Utils.Enum
+        Eeep.Types.Opcode.Target
