@@ -1,0 +1,47 @@
+cabal-version:      3.0
+name:               eeep
+version:            0.1.0.0
+synopsis:           A Haskell library for modding Infinity Engine games.
+description:        Please see the README on GitHub at <https://github.com/lambda-dom/eeep#readme>
+category:           Data
+homepage:           https://github.com/lambda-dom/eeep#readme
+author:             lambda-dom
+license:            BSD-3-Clause
+license-file:       LICENSE
+maintainer:         grodrigues.math@gmail.com
+copyright:          2026 G. Rodrigues
+build-type:         Simple
+tested-with:
+extra-doc-files:
+    LICENSE
+    README.md
+    CHANGELOG.md
+
+source-repository head
+    type: git
+    location: https://github.com/lambda-dom/eeep
+
+library
+    default-language: GHC2021
+    default-extensions:
+    ghc-options:
+        -Wall
+        -Wcompat
+        -Widentities
+        -Wincomplete-record-updates
+        -Wincomplete-uni-patterns
+        -Wmissing-export-lists
+        -Wmissing-home-modules
+        -Wpartial-fields
+        -Wredundant-constraints
+        -Wmissing-deriving-strategies
+        -Wunused-packages
+        -- Prepare for dependent types.
+        -Wterm-variable-capture
+    hs-source-dirs:
+        src
+    build-depends:
+        -- GHC >= 9.10 && < 9.12
+        base >=4.20 && <4.21,
+    other-modules:
+    exposed-modules:
