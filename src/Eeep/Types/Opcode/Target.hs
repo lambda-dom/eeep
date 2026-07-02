@@ -30,7 +30,7 @@ import Trisagion.Serializer (Serializer)
 
 -- Package.
 import Eeep.Typeclasses.Binary (Reader (..), Writer (..))
-import Eeep.Utils.Enum (maybeEnum)
+import Eeep.Utils.Enum (eitherEnum)
 import Trisagion.Serializers.Binary (Binary (word8))
 import Trisagion.Typeclasses.Sink (Sink)
 
@@ -60,12 +60,7 @@ data Target
 instance Source Word8 s => Reader s (TargetError :+: InputError) Target where
     {-# INLINE parser #-}
     parser :: Parser s (TargetError :+: InputError) Target
-    parser = validate v one
-        where
-            v :: Word8 -> TargetError :+: Target
-            v n = case maybeEnum n of
-                Nothing -> Left $ TargetError n
-                Just x  -> Right x
+    parser = validate (eitherEnum TargetError) one
 
 instance (Sink Word8 b s, Binary b s) => Writer b s Target where
     {-# INLINE serializer #-}
