@@ -63,3 +63,4 @@ library
         Eeep.Types.Opcode.DiceNumber
         Eeep.Types.Opcode.DiceSides
         Eeep.Types.Opcode.SaveBonus
+        Eeep.Types.Opcode.Special
