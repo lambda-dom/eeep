@@ -3,6 +3,7 @@ Module: Eeep.Types.Opcode.SaveFlags
 
 The @SaveFlags@ type.
 -}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Eeep.Types.Opcode.SaveFlags (
     -- * Types.
@@ -25,14 +26,25 @@ module Eeep.Types.Opcode.SaveFlags (
 -- Imports.
 -- Base.
 import Data.Bits (Bits (..))
-import Data.Word (Word32)
+import Data.Functor.Contravariant (Contravariant (..))
+import Data.Word (Word32, Word8)
 
 -- Libraries.
 import Optics.Core (Lens', (%))
 import Optics.Iso (Iso', coercedTo)
 
+-- non-Hackage libraries.
+import Trisagion.Typeclasses.Source (Source)
+import Trisagion.Typeclasses.Sink (Sink)
+import Trisagion.Parser (Parser)
+import Trisagion.Parsers.Source (InputError)
+import qualified Trisagion.Parsers.Binary as Parsers (Binary, word32Le)
+import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Serializers (Binary, word32Le)
+
 -- Package.
 import Eeep.Utils.Bits (bitAt)
+import Eeep.Typeclasses.Binary (Reader (..), Writer (..))
 
 
 {- | The t'SaveFlags' type.-}
@@ -93,3 +105,18 @@ saveFlags n = SaveFlags $ n .&. mask
     where
         -- Mask to normalize values to have only valid bits enabled.
         mask = 16780319
+
+
+-- Instances.
+instance (Source Word8 s, Parsers.Binary b s) => Reader s InputError SaveFlags where
+    {-# INLINE parser #-}
+    parser :: Parser s InputError SaveFlags
+    parser = fmap SaveFlags Parsers.word32Le
+
+instance (Sink Word8 b s, Serializers.Binary b s) => Writer b s SaveFlags where
+    {-# INLINE serializer #-}
+    serializer :: Serializer s SaveFlags
+    serializer = contramap unwrap Serializers.word32Le
+        where
+            unwrap :: SaveFlags -> Word32
+            unwrap (SaveFlags n) = n
