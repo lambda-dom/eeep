@@ -59,3 +59,4 @@ library
         Eeep.Types.Opcode.Timing
         Eeep.Types.Opcode.Duration
         Eeep.Types.Opcode.ResistDispel
+        Eeep.Types.Opcode.SaveBonus
