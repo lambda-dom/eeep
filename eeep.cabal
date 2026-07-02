@@ -55,3 +55,4 @@ library
         Eeep.Utils.Enum
         Eeep.Typeclasses.Binary
         Eeep.Types.Opcode.Target
+        Eeep.Types.Opcode.Power
