@@ -35,8 +35,8 @@ import Eeep.Typeclasses.Binary (Reader (..), Writer (..))
 
 {- | The @Dice@ type. -}
 data Dice = Dice {
-    number :: !Word32,
-    sides  :: !Word32
+    number :: {-# UNPACK #-} !Word32,
+    sides  :: {-# UNPACK #-} !Word32
     } deriving stock (Eq, Ord, Generic, Show)
 
 
