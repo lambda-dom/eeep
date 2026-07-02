@@ -37,7 +37,7 @@ import Trisagion.Typeclasses.Sink (Sink)
 
 {- | The t'TargetError' error type. -}
 newtype TargetError = TargetError Word8
-    deriving stock (Eq, Ord, Bounded, Show)
+    deriving stock (Eq, Ord, Bounded, Ix, Show)
     deriving newtype Enum
 
 

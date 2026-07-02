@@ -37,7 +37,7 @@ import Eeep.Typeclasses.Binary (Reader (..), Writer (..))
 
 {- | The t'TimingError' type. -}
 newtype TimingError = TimingError Word8
-    deriving stock (Eq, Ord, Bounded, Show)
+    deriving stock (Eq, Ord, Bounded, Ix, Show)
     deriving newtype Enum
 
 

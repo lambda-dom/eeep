@@ -57,3 +57,4 @@ library
         Eeep.Types.Opcode.Target
         Eeep.Types.Opcode.Power
         Eeep.Types.Opcode.Timing
+        Eeep.Types.Opcode.Duration

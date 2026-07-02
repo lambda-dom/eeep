@@ -33,7 +33,7 @@ import Eeep.Utils.Enum (eitherEnum)
 
 {- | The t'PowerError' type. -}
 newtype PowerError = PowerError Word8
-    deriving stock (Eq, Ord, Bounded, Show)
+    deriving stock (Eq, Ord, Bounded, Ix, Show)
     deriving newtype Enum
 
 
