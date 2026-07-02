@@ -64,4 +64,7 @@ instance Source Word8 s => Reader s (PowerError :+: InputError) Power where
 instance (Sink Word8 b s, Binary b s) => Writer b s Power where
     {-# INLINE serializer #-}
     serializer :: Serializer s Power
-    serializer = contramap (fromIntegral . fromEnum) word8
+    serializer = contramap unwrap word8
+        where
+            unwrap :: Power -> Word8
+            unwrap (Power n) = n

@@ -56,3 +56,4 @@ library
         Eeep.Typeclasses.Binary
         Eeep.Types.Opcode.Target
         Eeep.Types.Opcode.Power
+        Eeep.Types.Opcode.Timing
