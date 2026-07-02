@@ -26,6 +26,7 @@ library
     default-extensions:
         DerivingStrategies
         DuplicateRecordFields
+        OverloadedLabels
     ghc-options:
         -Wall
         -Wcompat
@@ -63,7 +64,6 @@ library
         Eeep.Types.Opcode.Duration
         Eeep.Types.Opcode.Probability
         Eeep.Types.Opcode.ResistDispel
-        Eeep.Types.Opcode.DiceNumber
-        Eeep.Types.Opcode.DiceSides
+        Eeep.Types.Opcode.Dice
         Eeep.Types.Opcode.SaveBonus
         Eeep.Types.Opcode.Special
