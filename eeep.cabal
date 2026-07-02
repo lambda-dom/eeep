@@ -66,6 +66,7 @@ library
         Eeep.Types.Opcode.Duration
         Eeep.Types.Opcode.Probability
         Eeep.Types.Opcode.ResistDispel
+        Eeep.Types.Opcode.Resref
         Eeep.Types.Opcode.Dice
         Eeep.Types.Opcode.SaveFlags
         Eeep.Types.Opcode.SaveBonus
