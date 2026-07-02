@@ -55,8 +55,11 @@ library
         Eeep.Utils.Enum
         Eeep.Typeclasses.Binary
         Eeep.Types.Opcode.Target
+        Eeep.Types.Opcode.Parameter
         Eeep.Types.Opcode.Power
         Eeep.Types.Opcode.Timing
         Eeep.Types.Opcode.Duration
         Eeep.Types.Opcode.ResistDispel
+        Eeep.Types.Opcode.DiceNumber
+        Eeep.Types.Opcode.DiceSides
         Eeep.Types.Opcode.SaveBonus

@@ -1,14 +1,14 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 {- |
-Module: Eeep.Types.Opcode.Duration
+Module: Eeep.Types.Opcode.Parameter
 
-The @Duration@ type.
+The @Parameter@ type.
 -}
 
-module Eeep.Types.Opcode.Duration (
+module Eeep.Types.Opcode.Parameter (
     -- * Types.
-    Duration (..),
+    Parameter (..),
 ) where
 
 -- Imports.
@@ -30,22 +30,27 @@ import qualified Trisagion.Serializers.Binary as Serializers (Binary, word32Le)
 import Eeep.Typeclasses.Binary (Reader (..), Writer (..))
 
 
-{- | The @Duration@ type. -}
-newtype Duration = Duration Word32
+{- | The t'Parameter' type.
+
+note(s):
+
+    * Eventually, this type will be folded into a beefed up GADT OpcodeType.
+-}
+newtype Parameter = Parameter Word32
     deriving stock (Eq, Ord, Bounded, Ix, Show)
     deriving newtype Enum
 
 
 -- Instances.
-instance (Source Word8 s, Parsers.Binary b s) => Reader s InputError Duration where
+instance (Source Word8 s, Parsers.Binary b s) => Reader s InputError Parameter where
     {-# INLINE parser #-}
-    parser :: Parser s InputError Duration
-    parser = fmap Duration Parsers.word32Le
+    parser :: Parser s InputError Parameter
+    parser = fmap Parameter Parsers.word32Le
 
-instance (Sink Word8 b s, Serializers.Binary b s) => Writer b s Duration where
+instance (Sink Word8 b s, Serializers.Binary b s) => Writer b s Parameter where
     {-# INLINE serializer #-}
-    serializer :: Serializer s Duration
+    serializer :: Serializer s Parameter
     serializer = contramap unwrap Serializers.word32Le
         where
-            unwrap :: Duration -> Word32
-            unwrap (Duration n) = n
+            unwrap :: Parameter -> Word32
+            unwrap (Parameter n) = n

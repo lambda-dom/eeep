@@ -1,14 +1,14 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 {- |
-Module: Eeep.Types.Opcode.Duration
+Module: Eeep.Types.Opcode.DiceNumber
 
-The @Duration@ type.
+The @DiceNumber@ type.
 -}
 
-module Eeep.Types.Opcode.Duration (
+module Eeep.Types.Opcode.DiceNumber (
     -- * Types.
-    Duration (..),
+    DiceNumber (..),
 ) where
 
 -- Imports.
@@ -30,22 +30,22 @@ import qualified Trisagion.Serializers.Binary as Serializers (Binary, word32Le)
 import Eeep.Typeclasses.Binary (Reader (..), Writer (..))
 
 
-{- | The @Duration@ type. -}
-newtype Duration = Duration Word32
+{- | The t'DiceNumber' type. -}
+newtype DiceNumber = DiceNumber Word32
     deriving stock (Eq, Ord, Bounded, Ix, Show)
     deriving newtype Enum
 
 
 -- Instances.
-instance (Source Word8 s, Parsers.Binary b s) => Reader s InputError Duration where
+instance (Source Word8 s, Parsers.Binary b s) => Reader s InputError DiceNumber where
     {-# INLINE parser #-}
-    parser :: Parser s InputError Duration
-    parser = fmap Duration Parsers.word32Le
+    parser :: Parser s InputError DiceNumber
+    parser = fmap DiceNumber Parsers.word32Le
 
-instance (Sink Word8 b s, Serializers.Binary b s) => Writer b s Duration where
+instance (Sink Word8 b s, Serializers.Binary b s) => Writer b s DiceNumber where
     {-# INLINE serializer #-}
-    serializer :: Serializer s Duration
+    serializer :: Serializer s DiceNumber
     serializer = contramap unwrap Serializers.word32Le
         where
-            unwrap :: Duration -> Word32
-            unwrap (Duration n) = n
+            unwrap :: DiceNumber -> Word32
+            unwrap (DiceNumber n) = n

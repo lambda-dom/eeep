@@ -7,7 +7,11 @@ The @SaveBonus@ type.
 -}
 
 module Eeep.Types.Opcode.SaveBonus (
+    -- * Error types.
+    SaveBonusError (..),
+
     -- * Types.
+    SaveBonus,
 ) where
 
 -- Imports.

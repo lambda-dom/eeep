@@ -8,6 +8,7 @@ The @Power@ type.
 
 module Eeep.Types.Opcode.Power (
     -- * Types.
+    Power,
 ) where
 
 -- Imports.
