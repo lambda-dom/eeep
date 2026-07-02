@@ -26,6 +26,7 @@ library
     default-extensions:
         DerivingStrategies
         DuplicateRecordFields
+        OverloadedLabels
     ghc-options:
         -Wall
         -Wcompat
@@ -46,21 +47,25 @@ library
         -- GHC >= 9.10 && < 9.12
         base >=4.20 && <4.21,
         -- Libraries.
-        -- mtl >=2.3 && <2.4,
+        contravariant >=1.5 && <1.6,
+        mtl >=2.3 && <2.4,
+        optics-core >= 0.4.2 && <0.4.3,
         -- bytestring >=0.12 && <0.13,
         -- Non-hackage libraries.
         trisagion >=0.1 && <0.2,
     other-modules:
     exposed-modules:
         Eeep.Utils.Enum
+        Eeep.Utils.Bits
         Eeep.Typeclasses.Binary
         Eeep.Types.Opcode.Target
         Eeep.Types.Opcode.Parameter
         Eeep.Types.Opcode.Power
         Eeep.Types.Opcode.Timing
         Eeep.Types.Opcode.Duration
+        Eeep.Types.Opcode.Probability
         Eeep.Types.Opcode.ResistDispel
-        Eeep.Types.Opcode.DiceNumber
-        Eeep.Types.Opcode.DiceSides
+        Eeep.Types.Opcode.Dice
+        Eeep.Types.Opcode.SaveFlags
         Eeep.Types.Opcode.SaveBonus
         Eeep.Types.Opcode.Special
