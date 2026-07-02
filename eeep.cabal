@@ -56,6 +56,7 @@ library
     other-modules:
     exposed-modules:
         Eeep.Utils.Enum
+        Eeep.Utils.Bits
         Eeep.Typeclasses.Binary
         Eeep.Types.Opcode.Target
         Eeep.Types.Opcode.Parameter
@@ -65,5 +66,6 @@ library
         Eeep.Types.Opcode.Probability
         Eeep.Types.Opcode.ResistDispel
         Eeep.Types.Opcode.Dice
+        Eeep.Types.Opcode.SaveFlags
         Eeep.Types.Opcode.SaveBonus
         Eeep.Types.Opcode.Special
