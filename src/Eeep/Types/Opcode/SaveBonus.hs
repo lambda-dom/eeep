@@ -64,7 +64,7 @@ instance Bounded SaveBonus where
 instance (Source Word8 s, Parsers.Binary b s) => Reader s (SaveBonusError :+: InputError) SaveBonus where
     {-# INLINE parser #-}
     parser :: Parser s (SaveBonusError :+: InputError) SaveBonus
-    parser = validate (eitherEnum SaveBonusError) (fmap fromIntegral Parsers.word32Le)
+    parser = validate saveBonus (fmap fromIntegral Parsers.word32Le)
 
 instance (Sink Word8 b s, Serializers.Binary b s) => Writer b s SaveBonus where
     {-# INLINE serializer #-}
@@ -73,3 +73,9 @@ instance (Sink Word8 b s, Serializers.Binary b s) => Writer b s SaveBonus where
         where
             unwrap :: SaveBonus -> Int32
             unwrap (SaveBonus n) = n
+
+
+{- | Smart constructor for the @t'SaveBonus'@ type. -}
+{-# INLINE saveBonus #-}
+saveBonus :: Int32 -> SaveBonusError :+: SaveBonus
+saveBonus n = eitherEnum (SaveBonusError n) n

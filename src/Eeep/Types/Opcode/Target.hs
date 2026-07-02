@@ -12,6 +12,9 @@ module Eeep.Types.Opcode.Target (
 
     -- * Types.
     Target (..),
+
+    -- ** Constructors.
+    target,
 ) where
 
 -- Imports.
@@ -60,9 +63,15 @@ data Target
 instance Source Word8 s => Reader s (TargetError :+: InputError) Target where
     {-# INLINE parser #-}
     parser :: Parser s (TargetError :+: InputError) Target
-    parser = validate (eitherEnum TargetError) one
+    parser = validate target one
 
 instance (Sink Word8 b s, Binary b s) => Writer b s Target where
     {-# INLINE serializer #-}
     serializer :: Serializer s Target
     serializer = contramap (fromIntegral . fromEnum) word8
+
+
+{- | Smart constructor for the @t'Target'@ type. -}
+{-# INLINE target #-}
+target :: Word8 -> TargetError :+: Target
+target n = eitherEnum (TargetError n) n

@@ -12,6 +12,9 @@ module Eeep.Types.Opcode.ResistDispel (
 
     -- * Types.
     ResistDispel (..),
+
+    -- ** Constructors.
+    resistDispel,
 ) where
 
 -- Imports.
@@ -54,9 +57,15 @@ data ResistDispel
 instance Source Word8 s => Reader s (ResistDispelError :+: InputError) ResistDispel where
     {-# INLINE parser #-}
     parser :: Parser s (ResistDispelError :+: InputError) ResistDispel
-    parser = validate (eitherEnum ResistDispelError) one
+    parser = validate resistDispel one
 
 instance (Sink Word8 b s, Binary b s) => Writer b s ResistDispel where
     {-# INLINE serializer #-}
     serializer :: Serializer s ResistDispel
     serializer = contramap (fromIntegral . fromEnum) word8
+
+
+{- | Smart constructor for the @t'ResistDispel'@ type. -}
+{-# INLINE resistDispel #-}
+resistDispel :: Word8 -> ResistDispelError :+: ResistDispel
+resistDispel n = eitherEnum (ResistDispelError n) n

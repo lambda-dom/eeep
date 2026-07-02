@@ -9,6 +9,12 @@ The @Power@ type.
 module Eeep.Types.Opcode.Power (
     -- * Types.
     Power,
+
+    -- * Error types.
+    PowerError (..),
+
+    -- ** Constructors.
+    power,
 ) where
 
 -- Imports.
@@ -60,7 +66,7 @@ instance Bounded Power where
 instance Source Word8 s => Reader s (PowerError :+: InputError) Power where
     {-# INLINE parser #-}
     parser :: Parser s (PowerError :+: InputError) Power
-    parser = validate (eitherEnum PowerError) one
+    parser = validate power one
 
 instance (Sink Word8 b s, Binary b s) => Writer b s Power where
     {-# INLINE serializer #-}
@@ -69,3 +75,9 @@ instance (Sink Word8 b s, Binary b s) => Writer b s Power where
         where
             unwrap :: Power -> Word8
             unwrap (Power n) = n
+
+
+{- | Smart constructor for the @t'Power'@ type. -}
+{-# INLINE power #-}
+power :: Word8 -> PowerError :+: Power
+power n = eitherEnum (PowerError n) n

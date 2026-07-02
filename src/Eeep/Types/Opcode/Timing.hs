@@ -12,6 +12,9 @@ module Eeep.Types.Opcode.Timing (
 
     -- * Types.
     Timing (..),
+
+    -- ** Constructors.
+    timing,
 ) where
 
 -- Imports.
@@ -61,9 +64,15 @@ data Timing
 instance Source Word8 s => Reader s (TimingError :+: InputError) Timing where
     {-# INLINE parser #-}
     parser :: Parser s (TimingError :+: InputError) Timing
-    parser = validate (eitherEnum TimingError) one
+    parser = validate timing one
 
 instance (Sink Word8 b s, Binary b s) => Writer b s Timing where
     {-# INLINE serializer #-}
     serializer :: Serializer s Timing
     serializer = contramap (fromIntegral . fromEnum) word8
+
+
+{- | Smart constructor for the @t'Timing'@ type. -}
+{-# INLINE timing #-}
+timing :: Word8 -> TimingError :+: Timing
+timing n = eitherEnum (TimingError n) n

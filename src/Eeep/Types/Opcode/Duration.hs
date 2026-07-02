@@ -30,7 +30,12 @@ import qualified Trisagion.Serializers.Binary as Serializers (Binary, word32Le)
 import Eeep.Typeclasses.Binary (Reader (..), Writer (..))
 
 
-{- | The @Duration@ type. -}
+{- | The @Duration@ type.
+
+note(s):
+
+    * Eventually to merge with the @Timing@ type.
+-}
 newtype Duration = Duration Word32
     deriving stock (Eq, Ord, Bounded, Ix, Show)
     deriving newtype Enum
