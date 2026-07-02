@@ -58,3 +58,4 @@ library
         Eeep.Types.Opcode.Power
         Eeep.Types.Opcode.Timing
         Eeep.Types.Opcode.Duration
+        Eeep.Types.Opcode.ResistDispel
