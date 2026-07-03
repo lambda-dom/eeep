@@ -1,5 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 {- |
 Module: Eeep.Types.Opcode.Power
 
@@ -15,6 +13,10 @@ module Eeep.Types.Opcode.Power (
 
     -- ** Constructors.
     power,
+
+    -- ** Parsers and serializers.
+    encodePower,
+    decodePower,
 ) where
 
 -- Imports.
@@ -26,7 +28,6 @@ import Data.Ix (Ix)
 -- non-Hackage libraries.
 import Trisagion.Utils.Either ((:+:))
 import Trisagion.Typeclasses.Source (Source)
-import Trisagion.Typeclasses.Sink (Sink)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Combinators (validate)
 import Trisagion.Parsers.Source (InputError, one)
@@ -34,7 +35,6 @@ import Trisagion.Serializer (Serializer)
 import Trisagion.Serializers.Binary (Binary (word8))
 
 -- Package.
-import Eeep.Typeclasses.Binary (Reader (..), Writer (..))
 import Eeep.Utils.Enum (eitherEnum)
 
 
@@ -63,21 +63,22 @@ instance Bounded Power where
     maxBound :: Power
     maxBound = Power 10
 
-instance Source Word8 s => Reader s (PowerError :+: InputError) Power where
-    {-# INLINE parser #-}
-    parser :: Parser s (PowerError :+: InputError) Power
-    parser = validate power one
-
-instance (Sink Word8 b s, Binary b s) => Writer b s Power where
-    {-# INLINE serializer #-}
-    serializer :: Serializer s Power
-    serializer = contramap unwrap word8
-        where
-            unwrap :: Power -> Word8
-            unwrap (Power n) = n
-
 
 {- | Smart constructor for the @t'Power'@ type. -}
 {-# INLINE power #-}
 power :: Word8 -> PowerError :+: Power
 power n = eitherEnum (PowerError n) n
+
+
+{- | Default parser for t'Power'. -}
+{-# INLINE encodePower #-}
+encodePower :: Source Word8 s => Parser s (PowerError :+: InputError) Power
+encodePower = validate power one
+
+{- | Default serializer for t'Power'. -}
+{-# INLINE decodePower #-}
+decodePower :: Binary b s => Serializer s Power
+decodePower = contramap unwrap word8
+    where
+        unwrap :: Power -> Word8
+        unwrap (Power n) = n
