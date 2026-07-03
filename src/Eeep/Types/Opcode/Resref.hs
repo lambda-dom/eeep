@@ -53,9 +53,15 @@ newtype ResrefError = ResrefError Char
     deriving newtype Enum
 
 
-{- | The t'Resref' type for resource references. -}
+{- | The t'Resref' type for resource references.
+
+note(s):
+
+    * The 'Ord' and 'Bounded' instances have no semantic significance and are here merely to be able
+    to use t'Resref' values as map keys, etc.
+-}
 newtype Resref = Resref Word64
-    deriving stock (Eq, Ord)
+    deriving stock (Eq, Ord, Bounded)
 
 
 -- Instances.
