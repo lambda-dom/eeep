@@ -63,7 +63,6 @@ library
         Eeep.Types.Opcode.Target
         Eeep.Types.Opcode.Parameter
         Eeep.Types.Opcode.Power
-        Eeep.Types.Opcode.Timing
         Eeep.Types.Opcode.Duration
         Eeep.Types.Opcode.Probability
         Eeep.Types.Opcode.ResistDispel
