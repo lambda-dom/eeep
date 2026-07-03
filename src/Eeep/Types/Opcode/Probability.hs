@@ -16,6 +16,10 @@ module Eeep.Types.Opcode.Probability (
     -- ** Prisms.
     probability,
 
+    -- ** Parsers and serializers.
+    encodeProbability,
+    decodeProbability,
+
     -- ** Functions.
     isEmpty,
     isElem,
@@ -36,14 +40,10 @@ import Optics.Core (Prism', prism', preview, review)
 -- non-Hackage libraries.
 import Trisagion.Utils.Either ((:+:))
 import Trisagion.Typeclasses.Source (Source)
-import Trisagion.Typeclasses.Sink (Sink)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Source (InputError, one)
 import Trisagion.Serializer (Serializer)
 import Trisagion.Serializers.Binary (Binary, word8)
-
--- Package.
-import Eeep.Typeclasses.Binary (Reader (..), Writer (..))
 
 
 {- | The t'ProbabilityError' type. -}
@@ -74,22 +74,21 @@ probability = prism' construct match
             if l < 100 && u <= 100 then Just $ Probability l u else Nothing
 
 
--- Instances.
-instance Source Word8 s => Reader s (ProbabilityError :+: InputError) Probability where
-    {-# INLINE parser #-}
-    parser :: Parser s (ProbabilityError :+: InputError) Probability
-    parser = do
-        l <- first Right one
-        u <- first Right one
-        maybe
-            (throwError . Left $ ProbabilityError l u)
-            pure
-            (preview probability (l, u))
+{- | Default parser for t'Probability'. -}
+{-# INLINE encodeProbability #-}
+encodeProbability :: Source Word8 s => Parser s (ProbabilityError :+: InputError) Probability
+encodeProbability = do
+    l <- first Right one
+    u <- first Right one
+    maybe
+        (throwError . Left $ ProbabilityError l u)
+        pure
+        (preview probability (l, u))
 
-instance (Sink Word8 b s, Binary b s) => Writer b s Probability where
-    {-# INLINE serializer #-}
-    serializer :: Serializer s Probability
-    serializer = contramap (review probability) (divided word8 word8)
+{- | Default serializer for t'Probability'. -}
+{-# INLINE decodeProbability #-}
+decodeProbability :: Binary b s => Serializer s Probability
+decodeProbability = contramap (review probability) (divided word8 word8)
 
 
 {- | Return 'True' if t'Probability' interval is empty. -}
@@ -97,7 +96,7 @@ instance (Sink Word8 b s, Binary b s) => Writer b s Probability where
 isEmpty :: Probability -> Bool
 isEmpty (Probability l u) = l >= u
 
-{- | Return 'True' if @elem@ is an element of the t'Probability' interval. -}
+{- | Return 'True' if @elem@ is an element in the t'Probability' interval. -}
 {-# INLINE isElem #-}
 isElem :: Word8 -> Probability -> Bool
 isElem n (Probability l u) = l <= n && n < u

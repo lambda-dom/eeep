@@ -5,9 +5,8 @@ Utilities for enumeration types.
 -}
 
 module Eeep.Utils.Enum (
-    -- * Prisms.
-    enum,
     -- * 'Enum' utilities.
+    enum,
     eitherEnum,
 ) where
 
