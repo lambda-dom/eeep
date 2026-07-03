@@ -3,7 +3,6 @@ Module: Eeep.Types.Opcode.SaveFlags
 
 The @SaveFlags@ type.
 -}
-{-# LANGUAGE UndecidableInstances #-}
 
 module Eeep.Types.Opcode.SaveFlags (
     -- * Types.
@@ -21,21 +20,23 @@ module Eeep.Types.Opcode.SaveFlags (
 
     -- ** Constructors.
     saveFlags,
+
+    -- ** Parsers and serializers.
+    encodeSaveFlags,
+    decodeSaveFlags,
 ) where
 
 -- Imports.
 -- Base.
 import Data.Bits (Bits (..))
 import Data.Functor.Contravariant (Contravariant (..))
-import Data.Word (Word32, Word8)
+import Data.Word (Word32)
 
 -- Libraries.
 import Optics.Core (Lens', (%))
 import Optics.Iso (Iso', coercedTo)
 
 -- non-Hackage libraries.
-import Trisagion.Typeclasses.Source (Source)
-import Trisagion.Typeclasses.Sink (Sink)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Source (InputError)
 import qualified Trisagion.Parsers.Binary as Parsers (Binary, word32Le)
@@ -44,7 +45,6 @@ import qualified Trisagion.Serializers.Binary as Serializers (Binary, word32Le)
 
 -- Package.
 import Eeep.Utils.Bits (bitAt)
-import Eeep.Typeclasses.Binary (Reader (..), Writer (..))
 
 
 {- | The t'SaveFlags' type.-}
@@ -107,16 +107,15 @@ saveFlags n = SaveFlags $ n .&. mask
         mask = 16780319
 
 
--- Instances.
-instance (Source Word8 s, Parsers.Binary b s) => Reader s InputError SaveFlags where
-    {-# INLINE parser #-}
-    parser :: Parser s InputError SaveFlags
-    parser = fmap SaveFlags Parsers.word32Le
+{- | Default parser for t'SaveFlags'. -}
+{-# INLINE encodeSaveFlags #-}
+encodeSaveFlags :: Parsers.Binary b s => Parser s InputError SaveFlags
+encodeSaveFlags = fmap SaveFlags Parsers.word32Le
 
-instance (Sink Word8 b s, Serializers.Binary b s) => Writer b s SaveFlags where
-    {-# INLINE serializer #-}
-    serializer :: Serializer s SaveFlags
-    serializer = contramap unwrap Serializers.word32Le
-        where
-            unwrap :: SaveFlags -> Word32
-            unwrap (SaveFlags n) = n
+{- | Default serializer for t'SaveFlags'. -}
+{-# INLINE decodeSaveFlags #-}
+decodeSaveFlags :: Serializers.Binary b s => Serializer s SaveFlags
+decodeSaveFlags = contramap unwrap Serializers.word32Le
+    where
+        unwrap :: SaveFlags -> Word32
+        unwrap (SaveFlags n) = n

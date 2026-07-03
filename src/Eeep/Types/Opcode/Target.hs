@@ -1,5 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 {- |
 Module: Eeep.Types.Opcode.Target
 
@@ -15,6 +13,10 @@ module Eeep.Types.Opcode.Target (
 
     -- ** Constructors.
     target,
+
+    -- ** Parsers and serializers.
+    encodeTarget,
+    decodeTarget,
 ) where
 
 -- Imports.
@@ -23,6 +25,9 @@ import Data.Functor.Contravariant (Contravariant (..))
 import Data.Ix (Ix)
 import Data.Word (Word8)
 
+-- Libraries.
+import Optics.Core (review)
+
 -- non-Hackage libraries.
 import Trisagion.Utils.Either ((:+:))
 import Trisagion.Typeclasses.Source (Source)
@@ -30,12 +35,10 @@ import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Combinators (validate)
 import Trisagion.Parsers.Source (InputError, one)
 import Trisagion.Serializer (Serializer)
+import Trisagion.Serializers.Binary (Binary (word8))
 
 -- Package.
-import Eeep.Typeclasses.Binary (Reader (..), Writer (..))
-import Eeep.Utils.Enum (eitherEnum)
-import Trisagion.Serializers.Binary (Binary (word8))
-import Trisagion.Typeclasses.Sink (Sink)
+import Eeep.Utils.Enum (eitherEnum, enum)
 
 
 {- | The t'TargetError' error type. -}
@@ -59,19 +62,18 @@ data Target
     deriving stock (Eq, Ord, Enum, Bounded, Ix, Show)
 
 
--- Instances.
-instance Source Word8 s => Reader s (TargetError :+: InputError) Target where
-    {-# INLINE parser #-}
-    parser :: Parser s (TargetError :+: InputError) Target
-    parser = validate target one
-
-instance (Sink Word8 b s, Binary b s) => Writer b s Target where
-    {-# INLINE serializer #-}
-    serializer :: Serializer s Target
-    serializer = contramap (fromIntegral . fromEnum) word8
-
-
 {- | Smart constructor for the @t'Target'@ type. -}
 {-# INLINE target #-}
 target :: Word8 -> TargetError :+: Target
 target n = eitherEnum (TargetError n) n
+
+
+{- | Default parser for t'Target'. -}
+{-# INLINE encodeTarget #-}
+encodeTarget :: Source Word8 s => Parser s (TargetError :+: InputError) Target
+encodeTarget = validate target one
+
+{- | Default serializer for t'Target'. -}
+{-# INLINE decodeTarget #-}
+decodeTarget :: Binary b s => Serializer s Target
+decodeTarget = contramap (review enum) word8

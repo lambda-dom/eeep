@@ -59,7 +59,6 @@ library
         Eeep.Utils.Enum
         Eeep.Utils.Bits
         Eeep.Utils.Char
-        Eeep.Typeclasses.Binary
         Eeep.Types.Opcode.Target
         Eeep.Types.Opcode.Parameter
         Eeep.Types.Opcode.Power

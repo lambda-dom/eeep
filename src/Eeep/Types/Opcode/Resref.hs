@@ -1,5 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 {- |
 Module: Eeep.Types.Opcode.Resref
 
@@ -15,6 +13,10 @@ module Eeep.Types.Opcode.Resref (
 
     -- ** Validators.
     isValid,
+
+    -- ** Parsers and serializers.
+    encodeResref,
+    decodeResref,
 ) where
 
 -- Imports.
@@ -34,17 +36,14 @@ import Mono.Typeclasses.MonoFoldable (MonoFoldable (..))
 import Trisagion.Utils.Either ((:+:))
 import Trisagion.Utils.Bits (unpack, pack)
 import Trisagion.Typeclasses.Split (Split)
-import Trisagion.Typeclasses.Source (Source)
-import Trisagion.Typeclasses.Sink (Sink)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Source (InputError)
 import Trisagion.Parsers.Split (takeExact)
 import Trisagion.Serializer (Serializer)
-import qualified Trisagion.Serializers.Binary as Serializers (Binary, word64Le)
+import Trisagion.Serializers.Binary (Binary, word64Le)
 
 -- Package.
 import Eeep.Utils.Char (char)
-import Eeep.Typeclasses.Binary (Writer (..), Reader (..))
 
 
 {- | The t'ResrefError' type. -}
@@ -73,25 +72,6 @@ instance Show Resref where
             showBytes :: Word64 -> String
             showBytes = fmap (review char) . takeWhile (/= 0) . unpack
 
-instance (Source Word8 s, Split Word8 b s, MonoFoldable Word8 b) => Reader s (ResrefError :+: InputError) Resref where
-    {-# INLINE parser #-}
-    parser :: Parser s (ResrefError :+: InputError) Resref
-    parser = do
-        xs <- first Right (takeExact 8)
-        -- Normalize sequence of bytes by dropping everything to the right of the first 0.
-        case mapM isValid (takeWhile (/= 0) $ monotoList xs) of
-            Left e   -> throwError $ Left e
-            Right ys -> pure . Resref . pack $ ys
-
-instance (Sink Word8 b s, Serializers.Binary b s) => Writer b s Resref where
-    {-# INLINE serializer #-}
-    serializer :: Serializer s Resref
-    serializer = contramap unwrap Serializers.word64Le
-        where
-            -- Assumes normalized resref.
-            unwrap :: Resref -> Word64
-            unwrap (Resref n) = n
-
 
 {- | Validate a 'Char' for a resource reference.
 
@@ -118,3 +98,25 @@ isValid n = if v c then Right n else Left $ ResrefError c
 
         v :: Char -> Bool
         v d = isAscii d && not (isControl d) && d /= '\\' && d /= '/' && d /= '.'
+
+
+{- | Default parser for t'Resref'. -}
+{-# INLINE encodeResref #-}
+encodeResref
+    :: (Split Word8 b s, MonoFoldable Word8 b)
+    => Parser s (ResrefError :+: InputError) Resref
+encodeResref = do
+    xs <- first Right (takeExact 8)
+    -- Normalize sequence of bytes by dropping everything to the right of the first 0.
+    case mapM isValid (takeWhile (/= 0) $ monotoList xs) of
+        Left e   -> throwError $ Left e
+        Right ys -> pure . Resref . pack $ ys
+
+{- | Default serializer for t'Resref'. -}
+{-# INLINE decodeResref #-}
+decodeResref :: Binary b s => Serializer s Resref
+decodeResref = contramap unwrap word64Le
+    where
+        -- Assumes normalized resref.
+        unwrap :: Resref -> Word64
+        unwrap (Resref n) = n

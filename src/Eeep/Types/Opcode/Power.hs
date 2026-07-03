@@ -1,5 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 {- |
 Module: Eeep.Types.Opcode.Power
 
