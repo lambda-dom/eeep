@@ -52,6 +52,7 @@ library
         optics-core >= 0.4.2 && <0.4.3,
         -- bytestring >=0.12 && <0.13,
         -- Non-hackage libraries.
+        mono >= 0.3 && <0.4,
         trisagion >=0.1 && <0.2,
     other-modules:
     exposed-modules:
