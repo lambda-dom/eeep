@@ -11,8 +11,14 @@ module Eeep.Types.Opcode.Duration (
     -- * Error types.
     TimingError (..),
 
-    -- * Types.
+    -- * The t'Timing' type.
     Timing (..),
+
+    -- ** Parsers and serializers.
+    encodeTiming,
+    decodeTiming,
+
+    -- * The t'Duration' type.
     Duration (..),
 
     -- ** Parsers and serializers.
@@ -29,7 +35,7 @@ import Data.Word (Word32, Word8)
 import GHC.Generics (Generic)
 
 -- Libraries.
-import Optics.Core ((^.), view, review)
+import Optics.Core ((^.), review)
 
 -- non-Hackage libraries.
 import Trisagion.Utils.Either ((:+:))
@@ -68,16 +74,26 @@ data Timing
 
 {- | The @Duration@ type. -}
 data Duration = Duration {
-    timing   :: !Timing,
-    duration :: !Word32
+    timing   :: {-# UNPACK #-} !Timing,
+    duration :: {-# UNPACK #-} !Word32
     } deriving stock (Eq, Ord, Bounded, Show, Generic)
 
+
+{- | Default parser for t'Timing'. -}
+{-# INLINE encodeTiming #-}
+encodeTiming :: Parsers.Binary b s => Parser s (TimingError :+: InputError) Timing
+encodeTiming = validate (\ n -> eitherEnum (TimingError n) n) one
+
+{- | Default serializer for t'Timing'. -}
+{-# INLINE decodeTiming #-}
+decodeTiming :: Serializers.Binary b s => Serializer s Timing
+decodeTiming = contramap (review enum) Serializers.word8
 
 {- | Default parser for t'Duration'. -}
 {-# INLINE encodeDuration #-}
 encodeDuration :: Parsers.Binary b s => Parser s (TimingError :+: InputError) Duration
 encodeDuration = do
-    timing   <- validate (\ n -> eitherEnum (TimingError n) n) one
+    timing   <- encodeTiming
     duration <- first Right Parsers.word32Le
     pure $ Duration {..}
 
@@ -85,5 +101,5 @@ encodeDuration = do
 {-# INLINE decodeDuration #-}
 decodeDuration :: Serializers.Binary b s => Serializer s Duration
 decodeDuration
-    = contramap ((review enum) . (view #timing)) Serializers.word8
+    = contramap (^. #timing) decodeTiming
     <> contramap (^. #duration) Serializers.word32Le
