@@ -52,7 +52,7 @@ data ProbabilityError = ProbabilityError !Word8 !Word8
 
 {- | The @Probability@ interval type.
 
-A _probability interval_ is a closed interval @[l, u]@ with @(0 <= l, u <= 100)@. If @l > u@ then
+A _probability interval_ is a closed interval @[l, u]@ with @0 <= l, u <= 100@. If @l > u@ then
 the interval is empty.
 -}
 data Probability = Probability !Word8 !Word8
@@ -69,7 +69,7 @@ probability = prism' construct match
 
         match :: (Word8, Word8) -> Maybe Probability
         match (l, u) =
-            -- Can have lower >= upper in which case interval is empty.
+            -- Can have lower > upper in which case interval is empty.
             if l <= 100 && u <= 100 then Just $ Probability l u else Nothing
 
 
@@ -93,12 +93,12 @@ decodeProbability = contramap (swap . review probability) (divided word8 word8)
 {- | Return 'True' if t'Probability' interval is empty. -}
 {-# INLINE isEmpty #-}
 isEmpty :: Probability -> Bool
-isEmpty (Probability l u) = l >= u
+isEmpty (Probability l u) = l > u
 
 {- | Return 'True' if @elem@ is an element in the t'Probability' interval. -}
 {-# INLINE isElem #-}
 isElem :: Word8 -> Probability -> Bool
-isElem n (Probability l u) = l <= n && n < u
+isElem n (Probability l u) = l <= n && n <= u
 
 {- | Return the list of elements of the t'Probability' interval. -}
 {-# INLINE toList #-}
