@@ -28,6 +28,7 @@ module Eeep.Types.Opcode.Probability (
 -- Base.
 import Data.Bifunctor (Bifunctor (..))
 import Data.Functor.Contravariant (Contravariant (..))
+import Data.Tuple (swap)
 import Data.Word (Word8)
 
 -- Libraries.
@@ -51,8 +52,8 @@ data ProbabilityError = ProbabilityError !Word8 !Word8
 
 {- | The @Probability@ interval type.
 
-A _probability interval_ is a closed-open interval @[l, u[@ with @(0 <= l < 100) && (0 <= u <= 100)@.
-If @l >= u@ then the interval is empty.
+A _probability interval_ is a closed interval @[l, u]@ with @(0 <= l, u <= 100)@. If @l > u@ then
+the interval is empty.
 -}
 data Probability = Probability !Word8 !Word8
     deriving stock (Eq, Show)
@@ -69,15 +70,15 @@ probability = prism' construct match
         match :: (Word8, Word8) -> Maybe Probability
         match (l, u) =
             -- Can have lower >= upper in which case interval is empty.
-            if l < 100 && u <= 100 then Just $ Probability l u else Nothing
+            if l <= 100 && u <= 100 then Just $ Probability l u else Nothing
 
 
 {- | Default parser for t'Probability'. -}
 {-# INLINE encodeProbability #-}
 encodeProbability :: Source Word8 s => Parser s (ProbabilityError :+: InputError) Probability
 encodeProbability = do
-    l <- first Right one
     u <- first Right one
+    l <- first Right one
     maybe
         (throwError . Left $ ProbabilityError l u)
         pure
@@ -86,7 +87,7 @@ encodeProbability = do
 {- | Default serializer for t'Probability'. -}
 {-# INLINE decodeProbability #-}
 decodeProbability :: Binary b s => Serializer s Probability
-decodeProbability = contramap (review probability) (divided word8 word8)
+decodeProbability = contramap (swap . review probability) (divided word8 word8)
 
 
 {- | Return 'True' if t'Probability' interval is empty. -}
