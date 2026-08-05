@@ -47,18 +47,17 @@ timing :: Prism' (Word8, Word32) Timing
 timing = prism' construct match
     where
         construct :: Timing -> (Word8, Word32)
-        construct = \case
-            Limited          d -> (0, view seconds d)
-            Instant            -> (1, 0)
-            Equipped           -> (2, 0)
-            DelayedLimited   d -> (3, view seconds d)
-            DelayedInstant   d -> (4, view seconds d)
-            DelayedEquipped  d -> (5, view seconds d)
-            DurationLimited  t -> (6, view ticks t)
-            DurationInstant  t -> (7, view ticks t)
-            DurationEquipped t -> (8, view ticks t)
-            Permanent          -> (9, 0)
-            InstantLimited   t -> (10, view ticks t)
+        construct (Limited          d) = (0, view seconds d)
+        construct Instant              = (1, 0)
+        construct Equipped             = (2, 0)
+        construct (DelayedLimited   d) = (3, view seconds d)
+        construct (DelayedInstant   d) = (4, view seconds d)
+        construct (DelayedEquipped  d) = (5, view seconds d)
+        construct (DurationLimited  t) = (6, view ticks t)
+        construct (DurationInstant  t) = (7, view ticks t)
+        construct (DurationEquipped t) = (8, view ticks t)
+        construct Permanent            = (9, 0)
+        construct (InstantLimited   t) = (10, view ticks t)
 
         match :: (Word8, Word32) -> Maybe Timing
         match (0, n)  = Just $ Limited (review seconds n)
