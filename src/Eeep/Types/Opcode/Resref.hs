@@ -8,13 +8,13 @@ module Eeep.Types.Opcode.Resref (
     -- * Types.
     Resref,
 
-    -- ** Validators.
+    -- ** Predicates.
     isValid,
 ) where
 
 -- Imports.
 -- Base.
-import Data.Char (isControl, isAscii)
+import Data.Char (isAscii)
 import Data.Word (Word64, Word8)
 
 -- Libraries.
@@ -40,7 +40,7 @@ newtype Resref = Resref Word64
 
 -- Instances.
 instance Show Resref where
-    {-# INLINEABLE show #-}
+    {-# INLINABLE show #-}
     show :: Resref -> String
     show (Resref n) = "Resref '" ++ showBytes n ++ "'"
         where
@@ -50,23 +50,23 @@ instance Show Resref where
 
 {- | Validate a t'Char' for a resource reference.
 
+A character is valid iff it is an ascii character that is not any of the file path special
+characters (slash, dot, etc.).
+
 === __Examples:__
 
 >>> isValid (fromIntegral . ord $ ' ')
-Just 32
+True
 
 >>> isValid 255
-Nothing
-
->>> isValid (fromIntegral . ord $ '\n')
-Nothing
+False
 
 >>> isValid (fromIntegral . ord $ '.')
-Nothing
+False
 -}
-{-# INLINE isValid #-}
-isValid :: Word8 -> Maybe Word8
-isValid n = if v (review char n) then Just n else Nothing
+{-# INLINABLE isValid #-}
+isValid :: Word8 -> Bool
+isValid n = isAscii c && ('\\' /= c) && ('/' /= c) && ('.' /= c) && (':' /= c)
     where
-        v :: Char -> Bool
-        v d = isAscii d && not (isControl d) && d /= '\\' && d /= '/' && d /= '.'
+        c :: Char
+        c = review char n
