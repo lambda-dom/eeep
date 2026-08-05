@@ -27,7 +27,7 @@ newtype Special = Special Word32
     deriving newtype Enum
 
 
-{- | Isomorphism for the t'Parameter' type. -}
+{- | Isomorphism for the t'Special' type. -}
 {-# INLINABLE special #-}
 special :: Iso' Special Word32
 special = coercedTo
