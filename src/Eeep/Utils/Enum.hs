@@ -7,15 +7,11 @@ Utilities for enumeration types.
 module Eeep.Utils.Enum (
     -- * 'Enum' utilities.
     enum,
-    eitherEnum,
 ) where
 
 -- Imports.
 -- Libraries.
-import Optics.Core (Prism', prism', preview)
-
--- non-Hackage libraries.
-import Trisagion.Utils.Either ((:+:))
+import Optics.Core (Prism', prism')
 
 
 {- | Prism for converting between integral types and enumerations.
@@ -40,9 +36,3 @@ enum = prism' construct match
                 else Nothing
             where
                 m = fromIntegral n
-
-
-{- | Smart validated constructor for bounded 'Enum' types.-}
-{-# INLINE eitherEnum #-}
-eitherEnum :: (Integral a, Enum b, Bounded b) => e -> a -> e :+: b
-eitherEnum e n = maybe (Left e) Right $ preview enum n

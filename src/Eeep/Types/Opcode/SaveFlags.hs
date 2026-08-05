@@ -8,6 +8,9 @@ module Eeep.Types.Opcode.SaveFlags (
     -- * Types.
     SaveFlags,
 
+    -- ** Isomorphisms.
+    saveFlags,
+
     -- ** Lenses.
     spells,
     breath,
@@ -17,105 +20,66 @@ module Eeep.Types.Opcode.SaveFlags (
     ignorePrimary,
     ignoreSecondary,
     bypassMI,
-
-    -- ** Constructors.
-    saveFlags,
-
-    -- ** Parsers and serializers.
-    encodeSaveFlags,
-    decodeSaveFlags,
 ) where
 
 -- Imports.
 -- Base.
-import Data.Bits (Bits (..))
-import Data.Functor.Contravariant (Contravariant (..))
 import Data.Word (Word32)
 
 -- Libraries.
-import Optics.Core (Lens', (%))
-import Optics.Iso (Iso', coercedTo)
-
--- non-Hackage libraries.
-import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Source (InputError)
-import qualified Trisagion.Parsers.Binary as Parsers (Binary, word32Le)
-import Trisagion.Serializer (Serializer)
-import qualified Trisagion.Serializers.Binary as Serializers (Binary, word32Le)
+import Optics.Core (Lens', Iso', (%), coercedTo)
 
 -- Package.
 import Eeep.Utils.Bits (bitAt)
 
 
-{- | The t'SaveFlags' type.-}
+{- | The t'SaveFlags' type. -}
 newtype SaveFlags = SaveFlags Word32
     deriving stock (Eq, Show)
 
 
-{- | Specialized version of 'coercedTo' serving as a type annotation. -}
-coerce :: Iso' SaveFlags Word32
-coerce = coercedTo
+{- | Prism for the t'SaveFlags' type. -}
+{-# INLINABLE saveFlags #-}
+saveFlags :: Iso' SaveFlags Word32
+saveFlags = coercedTo
 
 
 {- | The save vs. spells bit lens. -}
-{-# INLINE spells #-}
+{-# INLINABLE spells #-}
 spells :: Lens' SaveFlags Bool
-spells = coerce % bitAt 0
+spells = saveFlags % bitAt 0
 
 {- | The save vs. breath bit lens. -}
-{-# INLINE breath #-}
+{-# INLINABLE breath #-}
 breath :: Lens' SaveFlags Bool
-breath = coerce % bitAt 1
+breath = saveFlags % bitAt 1
 
 {- | The save vs. poison (paralyze) bit lens. -}
-{-# INLINE poison #-}
+{-# INLINABLE poison #-}
 poison :: Lens' SaveFlags Bool
-poison = coerce % bitAt 2
+poison = saveFlags % bitAt 2
 
 {- | The save vs. wands bit lens. -}
-{-# INLINE wands #-}
+{-# INLINABLE wands #-}
 wands :: Lens' SaveFlags Bool
-wands = coerce % bitAt 3
+wands = saveFlags % bitAt 3
 
 {- | The save vs. petrify bit lens. -}
-{-# INLINE petrify #-}
+{-# INLINABLE petrify #-}
 petrify :: Lens' SaveFlags Bool
-petrify = coerce % bitAt 4
+petrify = saveFlags % bitAt 4
 
 {- | The ignore primary bit lens. -}
-{-# INLINE ignorePrimary #-}
+{-# INLINABLE ignorePrimary #-}
 ignorePrimary :: Lens' SaveFlags Bool
-ignorePrimary = coerce % bitAt 10
+ignorePrimary = saveFlags % bitAt 10
 
 {- | The ignore secondary bit lens. -}
-{-# INLINE ignoreSecondary #-}
+{-# INLINABLE ignoreSecondary #-}
 ignoreSecondary :: Lens' SaveFlags Bool
-ignoreSecondary = coerce % bitAt 11
+ignoreSecondary = saveFlags % bitAt 11
 
 {- | The bypass mirror image bit lens. -}
-{-# INLINE bypassMI #-}
+{-# INLINABLE bypassMI #-}
 bypassMI :: Lens' SaveFlags Bool
-bypassMI = coerce % bitAt 24
-
-
-{- | Constructor for the t'SaveFlags' type. -}
-{-# INLINE saveFlags #-}
-saveFlags :: Word32 -> SaveFlags
-saveFlags n = SaveFlags $ n .&. mask
-    where
-        -- Mask to normalize values to have only valid bits enabled.
-        mask = 16780319
-
-
-{- | Default parser for t'SaveFlags'. -}
-{-# INLINE encodeSaveFlags #-}
-encodeSaveFlags :: Parsers.Binary b s => Parser s InputError SaveFlags
-encodeSaveFlags = fmap SaveFlags Parsers.word32Le
-
-{- | Default serializer for t'SaveFlags'. -}
-{-# INLINE decodeSaveFlags #-}
-decodeSaveFlags :: Serializers.Binary b s => Serializer s SaveFlags
-decodeSaveFlags = contramap unwrap Serializers.word32Le
-    where
-        unwrap :: SaveFlags -> Word32
-        unwrap (SaveFlags n) = n
+bypassMI = saveFlags % bitAt 24

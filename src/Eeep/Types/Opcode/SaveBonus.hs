@@ -5,42 +5,23 @@ The @SaveBonus@ type.
 -}
 
 module Eeep.Types.Opcode.SaveBonus (
-    -- * Error types.
-    SaveBonusError (..),
-
     -- * Types.
     SaveBonus,
 
-    -- ** Constructors.
+    -- ** Prisms.
     saveBonus,
-
-    -- ** Parsers and serializers.
-    encodeSaveBonus,
-    decodeSaveBonus,
 ) where
 
 -- Imports.
 -- Base.
-import Data.Functor.Contravariant (Contravariant(..))
 import Data.Int (Int32)
 import Data.Ix (Ix)
 
--- non-Hackage libraries.
-import Trisagion.Utils.Either ((:+:))
-import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Combinators (validate)
-import Trisagion.Parsers.Source (InputError)
-import qualified Trisagion.Parsers.Binary as Parsers (Binary, word32Le)
-import Trisagion.Serializer (Serializer)
-import qualified Trisagion.Serializers.Binary as Serializers (Binary, word32Le)
+-- Libraries.
+import Optics.Core (Prism')
 
 -- Package.
-import Eeep.Utils.Enum (eitherEnum)
-
-
-{- | The t'SaveBonusError' type. -}
-newtype SaveBonusError = SaveBonusError Int32
-    deriving stock (Eq, Show)
+import Eeep.Utils.Enum (enum)
 
 
 {- | The @SaveBonus@ type. 
@@ -64,20 +45,6 @@ instance Bounded SaveBonus where
 
 
 {- | Smart constructor for the @t'SaveBonus'@ type. -}
-{-# INLINE saveBonus #-}
-saveBonus :: Int32 -> SaveBonusError :+: SaveBonus
-saveBonus n = eitherEnum (SaveBonusError n) n
-
-
-{- | Default parser for t'SaveBonus'. -}
-{-# INLINE encodeSaveBonus #-}
-encodeSaveBonus :: Parsers.Binary b s => Parser s (SaveBonusError :+: InputError) SaveBonus
-encodeSaveBonus = validate saveBonus (fmap fromIntegral Parsers.word32Le)
-
-{- | Default serializer for t'SaveBonus'. -}
-{-# INLINE decodeSaveBonus #-}
-decodeSaveBonus :: Serializers.Binary b s => Serializer s SaveBonus
-decodeSaveBonus = contramap (fromIntegral . unwrap) Serializers.word32Le
-    where
-        unwrap :: SaveBonus -> Int32
-        unwrap (SaveBonus n) = n
+{-# INLINABLE saveBonus #-}
+saveBonus :: Prism' Int32 SaveBonus
+saveBonus = enum

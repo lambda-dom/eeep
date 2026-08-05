@@ -5,46 +5,27 @@ The @ResistDispel@ type.
 -}
 
 module Eeep.Types.Opcode.ResistDispel (
-    -- * Error types.
-    ResistDispelError (..),
-
     -- * Types.
     ResistDispel (..),
 
-    -- ** Constructors.
+    -- ** Prisms.
     resistDispel,
 
-    -- ** Parsers and serializers.
-    encodeResistDispel,
-    decodeResistDispel,
+    -- ** Predicates.
+    isDispellable,
+    isResistable,
 ) where
 
 -- Imports.
 -- Base.
-import Data.Functor.Contravariant (Contravariant (..))
 import Data.Ix (Ix)
 import Data.Word (Word8)
 
 -- Libraries.
-import Optics.Core (review)
-
--- non-Hackage libraries.
-import Trisagion.Utils.Either ((:+:))
-import Trisagion.Typeclasses.Source (Source)
-import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Combinators (validate)
-import Trisagion.Parsers.Source (InputError, one)
-import Trisagion.Serializer (Serializer)
-import Trisagion.Serializers.Binary (Binary, word8)
+import Optics.Core (Prism')
 
 -- Package.
-import Eeep.Utils.Enum (eitherEnum, enum)
-
-
-{- | The t'ResistDispelError' type. -}
-newtype ResistDispelError = ResistDispelError Word8
-    deriving stock (Eq, Ord, Bounded, Ix, Show)
-    deriving newtype Enum
+import Eeep.Utils.Enum (enum)
 
 
 {- | The @ResistDispel@ enumeration type. -}
@@ -57,17 +38,25 @@ data ResistDispel
 
 
 {- | Smart constructor for the @t'ResistDispel'@ values from 'Word8'. -}
-{-# INLINE resistDispel #-}
-resistDispel :: Word8 -> ResistDispelError :+: ResistDispel
-resistDispel n = eitherEnum (ResistDispelError n) n
+{-# INLINABLE resistDispel #-}
+resistDispel :: Prism' Word8 ResistDispel
+resistDispel = enum
 
 
-{- | Default parser for t'ResistDispel'. -}
-{-# INLINE encodeResistDispel #-}
-encodeResistDispel :: Source Word8 s => Parser s (ResistDispelError :+: InputError) ResistDispel
-encodeResistDispel = validate resistDispel one
+{- | Return True if t'ResistDispel' is dispellable. -}
+{-# INLINABLE isDispellable #-}
+isDispellable :: ResistDispel -> Bool
+isDispellable = \case
+    Natural                   -> False
+    DispellableResistable     -> True
+    UndispellableUnresistable -> False
+    DispellableUnresistable   -> True
 
-{- | Default serializer for t'ResistDispel'. -}
-{-# INLINE decodeResistDispel #-}
-decodeResistDispel :: Binary b s => Serializer s ResistDispel
-decodeResistDispel = contramap (review enum) word8
+{- | Return True if t'ResistDispel' is dispellable. -}
+{-# INLINABLE isResistable #-}
+isResistable :: ResistDispel -> Bool
+isResistable = \case
+    Natural                   -> False
+    DispellableResistable     -> True
+    UndispellableUnresistable -> False
+    DispellableUnresistable   -> False
