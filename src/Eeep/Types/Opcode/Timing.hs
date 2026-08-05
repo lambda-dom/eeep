@@ -25,20 +25,20 @@ import Optics.Core (Prism', prism', review, view)
 import Eeep.Types.Opcode.Duration (Seconds, Ticks, seconds, ticks)
 
 
-{- | The @Timing@ GADT type. -}
-data Timing where
-    Limited          :: !Seconds -> Timing
-    Instant          :: Timing
-    Equipped         :: Timing
-    DelayedLimited   :: !Seconds -> Timing
-    DelayedInstant   :: !Seconds -> Timing
-    DelayedEquipped  :: !Seconds -> Timing
-    DurationLimited  :: !Ticks -> Timing
-    DurationInstant  :: !Ticks -> Timing
-    DurationEquipped :: !Ticks -> Timing
-    Permanent        :: Timing
-    InstantLimited   :: !Ticks -> Timing
-    deriving stock (Eq, Ord)
+{- | The @Timing@ coproduct type. -}
+data Timing
+    = Limited          !Seconds
+    | Instant
+    | Equipped
+    | DelayedLimited   !Seconds
+    | DelayedInstant   !Seconds
+    | DelayedEquipped  !Seconds
+    | DurationLimited  !Ticks
+    | DurationInstant  !Ticks
+    | DurationEquipped !Ticks
+    | Permanent
+    | InstantLimited   !Ticks
+    deriving stock (Eq, Ord, Show)
 
 
 {- | The prism for the t'Timing' type. -}
