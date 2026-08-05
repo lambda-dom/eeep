@@ -5,18 +5,15 @@ The @Probability@ type.
 -}
 
 module Eeep.Types.Opcode.Probability (
-    -- * Error types.
-    ProbabilityError (..),
-
     -- * Types.
     Probability,
 
     -- ** Prisms.
     probability,
 
-    -- ** Parsers and serializers.
-    encodeProbability,
-    decodeProbability,
+    -- ** Getters.
+    lower,
+    upper,
 
     -- ** Functions.
     isEmpty,
@@ -26,28 +23,10 @@ module Eeep.Types.Opcode.Probability (
 
 -- Imports.
 -- Base.
-import Data.Bifunctor (Bifunctor (..))
-import Data.Functor.Contravariant (Contravariant (..))
-import Data.Tuple (swap)
 import Data.Word (Word8)
 
 -- Libraries.
-import Data.Functor.Contravariant.Divisible (divided)
-import Control.Monad.Except (MonadError (..))
-import Optics.Core (Prism', prism', preview, review)
-
--- non-Hackage libraries.
-import Trisagion.Utils.Either ((:+:))
-import Trisagion.Typeclasses.Source (Source)
-import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Source (InputError, one)
-import Trisagion.Serializer (Serializer)
-import Trisagion.Serializers.Binary (Binary, word8)
-
-
-{- | The t'ProbabilityError' type. -}
-data ProbabilityError = ProbabilityError !Word8 !Word8
-    deriving stock (Eq, Show)
+import Optics.Core (Prism', prism', review)
 
 
 {- | The @Probability@ interval type.
@@ -60,7 +39,7 @@ data Probability = Probability !Word8 !Word8
 
 
 {- | Prism for a t'Probability' interval. -}
-{-# INLINE probability #-}
+{-# INLINABLE probability #-}
 probability :: Prism' (Word8, Word8) Probability
 probability = prism' construct match
     where
@@ -73,24 +52,18 @@ probability = prism' construct match
             if l <= 100 && u <= 100 then Just $ Probability l u else Nothing
 
 
-{- | Default parser for t'Probability'. -}
-{-# INLINE encodeProbability #-}
-encodeProbability :: Source Word8 s => Parser s (ProbabilityError :+: InputError) Probability
-encodeProbability = do
-    u <- first Right one
-    l <- first Right one
-    maybe
-        (throwError . Left $ ProbabilityError l u)
-        pure
-        (preview probability (l, u))
+{- | Return the lower bound of the t'Probability' interval. -}
+{-# INLINE lower #-}
+lower :: Probability -> Word8
+lower = fst . review probability
 
-{- | Default serializer for t'Probability'. -}
-{-# INLINE decodeProbability #-}
-decodeProbability :: Binary b s => Serializer s Probability
-decodeProbability = contramap (swap . review probability) (divided word8 word8)
+{- | Return the upper bound of the t'Probability' interval. -}
+{-# INLINE upper #-}
+upper :: Probability -> Word8
+upper = snd . review probability
 
 
-{- | Return 'True' if t'Probability' interval is empty. -}
+{- | Return 'True' if the t'Probability' interval is empty. -}
 {-# INLINE isEmpty #-}
 isEmpty :: Probability -> Bool
 isEmpty (Probability l u) = l > u

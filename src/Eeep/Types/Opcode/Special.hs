@@ -6,25 +6,19 @@ The @Special@ type.
 
 module Eeep.Types.Opcode.Special (
     -- * Types.
-    Special (..),
+    Special,
 
-    -- ** Parsers and serializers.
-    encodeSpecial,
-    decodeSpecial,
+    -- ** Isomorphisms.
+    special,
 ) where
 
 -- Imports.
 -- Base.
-import Data.Functor.Contravariant (Contravariant (..))
 import Data.Ix (Ix)
 import Data.Word (Word32)
 
--- non-Hackage libraries.
-import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Source (InputError)
-import qualified Trisagion.Parsers.Binary as Parsers (Binary, word32Le)
-import Trisagion.Serializer (Serializer)
-import qualified Trisagion.Serializers.Binary as Serializers (Binary, word32Le)
+-- Libraries.
+import Optics.Core (Iso', coercedTo)
 
 
 {- | The t'Special' type. -}
@@ -33,15 +27,7 @@ newtype Special = Special Word32
     deriving newtype Enum
 
 
-{- | Default parser for t'Special'. -}
-{-# INLINE encodeSpecial #-}
-encodeSpecial :: Parsers.Binary b s => Parser s InputError Special
-encodeSpecial = fmap Special Parsers.word32Le
-
-{- | Default serializer for t'Special'. -}
-{-# INLINE decodeSpecial #-}
-decodeSpecial :: Serializers.Binary b s => Serializer s Special
-decodeSpecial = contramap unwrap Serializers.word32Le
-    where
-        unwrap :: Special -> Word32
-        unwrap (Special n) = n
+{- | Isomorphism for the t'Parameter' type. -}
+{-# INLINABLE special #-}
+special :: Iso' Special Word32
+special = coercedTo
