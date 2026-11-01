@@ -18,10 +18,10 @@ import Data.Int (Int32)
 import Data.Ix (Ix)
 
 -- Libraries.
-import Optics.Core (Prism')
+import Optics.Core (Prism', prism', review, preview)
 
--- Package.
-import Eeep.Utils.Enum (enum)
+-- non-Hackage libraries.
+import Data.Enum.Optics (enum)
 
 
 {- | The @SaveBonus@ type. 
@@ -44,7 +44,13 @@ instance Bounded SaveBonus where
     maxBound = SaveBonus 20
 
 
-{- | Smart constructor for the @t'SaveBonus'@ type. -}
+{- | Prism for the @t'SaveBonus'@ type. -}
 {-# INLINABLE saveBonus #-}
 saveBonus :: Prism' Int32 SaveBonus
-saveBonus = enum
+saveBonus = prism' construct match
+    where
+        construct :: SaveBonus -> Int32
+        construct = fromIntegral @Int @Int32 . review enum
+
+        match :: Int32 -> Maybe SaveBonus
+        match = preview enum . fromIntegral @Int32 @Int

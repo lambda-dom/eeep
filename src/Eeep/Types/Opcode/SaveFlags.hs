@@ -29,8 +29,8 @@ import Data.Word (Word32)
 -- Libraries.
 import Optics.Core (Lens', Iso', (%), coercedTo)
 
--- Package.
-import Eeep.Utils.Bits (bitAt)
+-- non-Hackage libraries.
+import Data.Bits.Optics (bitAt)
 
 
 {- | The t'SaveFlags' type. -}

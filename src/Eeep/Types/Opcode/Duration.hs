@@ -6,12 +6,10 @@ The @Duration@ type.
 
 module Eeep.Types.Opcode.Duration (
     -- * Types.
-    Seconds,
-    Ticks,
+    Duration,
 
     -- ** Isomorphisms.
-    seconds,
-    ticks,
+    duration,
 ) where
 
 -- Imports.
@@ -23,24 +21,13 @@ import Data.Word (Word32)
 import Optics.Core (Iso', coercedTo)
 
 
-{- | The t'Seconds' duration type. -}
-newtype Seconds = Seconds Word32
+{- | The t'Duration' type. -}
+newtype Duration = Duration Word32
     deriving stock (Eq, Ord, Bounded, Ix, Show)
     deriving newtype Enum
 
 
-{- | The t'Ticks' duration type. -}
-newtype Ticks = Ticks Word32
-    deriving stock (Eq, Ord, Bounded, Ix, Show)
-    deriving newtype Enum
-
-
-{- | Isomorphism for the t'Seconds' type. -}
-{-# INLINABLE seconds #-}
-seconds :: Iso' Seconds Word32
-seconds = coercedTo
-
-{- | Isomorphism for the t'Seconds' type. -}
-{-# INLINABLE ticks #-}
-ticks :: Iso' Ticks Word32
-ticks = coercedTo
+{- | Isomorphism for the t'Duration' type. -}
+{-# INLINE duration #-}
+duration :: Iso' Duration Word32
+duration = coercedTo

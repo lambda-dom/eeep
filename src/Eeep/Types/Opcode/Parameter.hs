@@ -21,12 +21,7 @@ import Data.Word (Word32)
 import Optics.Core (Iso', coercedTo)
 
 
-{- | The t'Parameter' type.
-
-note(s):
-
-    * Eventually, this type will be folded into a beefed up GADT @Opcode@ type.
--}
+{- | The t'Parameter' type. -}
 newtype Parameter = Parameter Word32
     deriving stock (Eq, Ord, Bounded, Ix, Show)
     deriving newtype Enum
