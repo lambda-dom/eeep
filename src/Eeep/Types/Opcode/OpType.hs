@@ -23,6 +23,10 @@ import Data.Vector.Strict (Vector, fromList, force, (!))
 import Optics.Core (Prism', prism')
 
 
+-- $setup
+-- >>> import Optics.Core
+
+
 {- | The @OpType@ enumeration type for all IE opcodes from BG2 EE. -}
 data OpType
     = ACDamageType
@@ -758,7 +762,19 @@ opIndices :: Vector Word16
 opIndices = force . fromList . fmap fst . filter (isJust . snd) $ optypes
 
 
-{- | Prism for @t'OpType'@. -}
+{- | Prism for @t'OpType'@.
+
+=== __Examples:__
+
+>>> preview opType 364
+Nothing
+
+>>> preview opType 367
+Just MinimumBaseStats
+
+>>> review opType $ maxBound @OpType
+367
+-}
 {-# INLINE opType #-}
 opType :: Prism' Word16 OpType
 opType = prism' construct matched
