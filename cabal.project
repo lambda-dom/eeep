@@ -8,5 +8,10 @@ source-repository-package
 
 source-repository-package
     type: git
+    location: https://github.com/lambda-dom/optics-conversions
+    tag: 3b3d4434c4691017812652ac80394db13aec836c
+
+source-repository-package
+    type: git
     location: https://github.com/lambda-dom/trisagion
     tag: e59879b34127840b7d72da92ce7cf6911b6815c7

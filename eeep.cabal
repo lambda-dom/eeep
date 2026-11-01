@@ -46,15 +46,16 @@ library
         src
     build-depends:
         -- GHC >= 9.10 && < 9.12
-        base >=4.20 && <4.21,
+        base               >=4.20   && <4.21,
         -- Libraries.
         -- contravariant >=1.5 && <1.6,
         -- mtl >=2.3 && <2.4,
-        optics-core >= 0.4.2 && <0.4.3,
+        optics-core        >= 0.4.2 && <0.4.3,
         -- bytestring >=0.12 && <0.13,
         -- Non-hackage libraries.
         -- mono >= 0.3 && <0.4,
-        trisagion >=0.1 && <0.2,
+        optics-conversions >=0.1    && <0.2,
+        trisagion          >=0.1    && <0.2,
     other-modules:
     exposed-modules:
         Eeep.Utils.Enum
