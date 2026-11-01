@@ -52,7 +52,7 @@ isDispellable = \case
     UndispellableUnresistable -> False
     DispellableUnresistable   -> True
 
-{- | Return True if t'ResistDispel' is dispellable. -}
+{- | Return True if t'ResistDispel' is resistable. -}
 {-# INLINABLE isResistable #-}
 isResistable :: ResistDispel -> Bool
 isResistable = \case

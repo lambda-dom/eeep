@@ -39,4 +39,4 @@ dice = iso from to
         from (Dice m n) = (m, n)
 
         to :: (Word32, Word32) -> Dice
-        to (m, n) = Dice m n
+        to (m, n) = Dice {number = m, sides = n}
