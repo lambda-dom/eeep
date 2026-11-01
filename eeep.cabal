@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               eeep
-version:            0.1.0.0
+version:            0.0.1.0
 synopsis:           A Haskell library for modding Infinity Engine games.
 description:        Please see the README on GitHub at <https://github.com/lambda-dom/eeep#readme>
 category:           Data
@@ -54,7 +54,7 @@ library
         -- bytestring >=0.12 && <0.13,
         -- Non-hackage libraries.
         -- mono >= 0.3 && <0.4,
-        trisagion >=0.1 && <0.2,
+        trisagion >=0.0.1 && <0.1,
     other-modules:
     exposed-modules:
         Eeep.Utils.Enum
