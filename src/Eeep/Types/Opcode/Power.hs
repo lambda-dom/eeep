@@ -18,10 +18,8 @@ import Data.Word (Word8)
 import Data.Ix (Ix)
 
 -- Libraries.
-import Optics.Core (Prism')
-
--- Package.
-import Eeep.Utils.Enum (enum)
+import Optics.Core (Prism', prism', review, preview)
+import Data.Enum.Optics (enum)
 
 
 {- | The @Power@ type.
@@ -45,6 +43,12 @@ instance Bounded Power where
 
 
 {- | Prism for the @t'Power'@ type. -}
-{-# INLINABLE power #-}
+{-# INLINE power #-}
 power :: Prism' Word8 Power
-power = enum
+power = prism' construct match
+    where
+        construct :: Power -> Word8
+        construct = fromIntegral @Int @Word8 . review enum
+
+        match :: Word8 -> Maybe Power
+        match = preview enum . fromIntegral @Word8 @Int

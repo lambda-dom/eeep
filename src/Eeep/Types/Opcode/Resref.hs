@@ -24,7 +24,6 @@ import Optics.Core (review)
 import Trisagion.Utils.Bits (unpack)
 
 -- Package.
-import Eeep.Utils.Char (char)
 
 
 {- | The t'Resref' type for resource references.

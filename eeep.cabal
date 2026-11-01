@@ -55,12 +55,9 @@ library
         -- Non-hackage libraries.
         -- mono >= 0.3 && <0.4,
         optics-conversions >=0.1    && <0.2,
-        trisagion          >=0.1    && <0.2,
+        -- trisagion          >=0.1    && <0.2,
     other-modules:
     exposed-modules:
-        Eeep.Utils.Enum
-        Eeep.Utils.Bits
-        Eeep.Utils.Char
         Eeep.Types.Opcode.OpType
         Eeep.Types.Opcode.Target
         Eeep.Types.Opcode.Parameter
@@ -69,7 +66,7 @@ library
         Eeep.Types.Opcode.Timing
         Eeep.Types.Opcode.Probability
         Eeep.Types.Opcode.ResistDispel
-        Eeep.Types.Opcode.Resref
+        -- Eeep.Types.Opcode.Resref
         Eeep.Types.Opcode.Dice
         Eeep.Types.Opcode.SaveFlags
         Eeep.Types.Opcode.SaveBonus

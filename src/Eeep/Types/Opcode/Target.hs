@@ -18,10 +18,10 @@ import Data.Ix (Ix)
 import Data.Word (Word8)
 
 -- Libraries.
-import Optics.Prism (Prism')
+import Optics.Core (Prism', review, preview, prism')
 
--- Package.
-import Eeep.Utils.Enum (enum)
+-- Non-hackage libraries.
+import Data.Enum.Optics (enum)
 
 
 {- | The @Target@ enumeration type. -}
@@ -42,4 +42,10 @@ data Target
 {- | Prism for the @t'Target'@ type. -}
 {-# INLINABLE target #-}
 target :: Prism' Word8 Target
-target = enum
+target = prism' construct match
+    where
+        construct :: Target -> Word8
+        construct = fromIntegral @Int @Word8 . review enum
+
+        match :: Word8 -> Maybe Target
+        match = preview enum . fromIntegral @Word8 @Int

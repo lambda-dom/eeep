@@ -22,10 +22,10 @@ import Data.Ix (Ix)
 import Data.Word (Word8)
 
 -- Libraries.
-import Optics.Core (Prism')
+import Optics.Core (Prism', prism', review, preview)
 
--- Package.
-import Eeep.Utils.Enum (enum)
+-- non-Hackage libraries.
+import Data.Enum.Optics (enum)
 
 
 {- | The @ResistDispel@ enumeration type. -}
@@ -38,13 +38,19 @@ data ResistDispel
 
 
 {- | Smart constructor for the @t'ResistDispel'@ values from 'Word8'. -}
-{-# INLINABLE resistDispel #-}
+{-# INLINE resistDispel #-}
 resistDispel :: Prism' Word8 ResistDispel
-resistDispel = enum
+resistDispel = prism' construct match
+    where
+        construct :: ResistDispel -> Word8
+        construct = fromIntegral @Int @Word8 . review enum
+
+        match :: Word8 -> Maybe ResistDispel
+        match = preview enum . fromIntegral @Word8 @Int
 
 
 {- | Return True if t'ResistDispel' is dispellable. -}
-{-# INLINABLE isDispellable #-}
+{-# INLINE isDispellable #-}
 isDispellable :: ResistDispel -> Bool
 isDispellable = \case
     Natural                   -> False
@@ -53,7 +59,7 @@ isDispellable = \case
     DispellableUnresistable   -> True
 
 {- | Return True if t'ResistDispel' is resistable. -}
-{-# INLINABLE isResistable #-}
+{-# INLINE isResistable #-}
 isResistable :: ResistDispel -> Bool
 isResistable = \case
     Natural                   -> False
