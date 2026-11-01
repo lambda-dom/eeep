@@ -11,6 +11,9 @@ module Eeep.Types.Opcode.Resref (
     -- ** Prisms.
     resrefChar,
     resref,
+
+    -- * Functions.
+    toString,
 ) where
 
 -- Imports.
@@ -34,20 +37,7 @@ note(s):
     to use t'Resref' values as map keys, etc.
 -}
 newtype Resref = Resref Word64
-    deriving stock (Eq, Ord, Bounded)
-
-
--- Instances.
-instance Show Resref where
-    {-# INLINEABLE show #-}
-    show :: Resref -> String
-    show (Resref n) = "Resref \"" ++ showBytes n ++ "\""
-        where
-            showBytes :: Word64 -> String
-            showBytes = fmap chr . takeWhile (/= 0) . fmap (fromIntegral @Word8 @Int) . unpack
-
-            unpack :: Word64 -> [Word8]
-            unpack = toListOf each . view word64BytesLe
+    deriving stock (Eq, Ord, Bounded, Show)
 
 
 {- | Isomorphism for @t'Resref'@. -}
@@ -77,3 +67,12 @@ resrefChar = category (p . chr . fromIntegral @Word8 @Int)
     where
         p :: Char -> Bool
         p c = isAscii c && not (isControl c) && c /= '\\' && c /= '/' && c /= '.'
+
+
+{- | Human-readable print of a @t'Resref'@. -}
+{-# INLINEABLE toString #-}
+toString :: Resref -> String
+toString (Resref n) = fmap chr . takeWhile (/= 0) . fmap (fromIntegral @Word8 @Int) . unpack $ n
+    where
+        unpack :: Word64 -> [Word8]
+        unpack = toListOf each . view word64BytesLe
