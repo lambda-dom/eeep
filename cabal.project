@@ -9,7 +9,7 @@ source-repository-package
 source-repository-package
     type: git
     location: https://github.com/lambda-dom/optics-conversions
-    tag: 3b3d4434c4691017812652ac80394db13aec836c
+    tag: 1a2fc30684d87d3c93642e4c1943892efab11aae
 
 source-repository-package
     type: git

@@ -27,7 +27,7 @@ newtype Duration = Duration Word32
     deriving newtype Enum
 
 
-{- | Isomorphism for the t'Seconds' type. -}
+{- | Isomorphism for the t'Duration' type. -}
 {-# INLINE duration #-}
 duration :: Iso' Duration Word32
 duration = coercedTo
