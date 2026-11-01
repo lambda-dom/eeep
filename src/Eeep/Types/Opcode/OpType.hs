@@ -755,7 +755,7 @@ opTypes = force . fromList . fmap snd $ optypes
 
 {- | Vector of @t'OpType'@ indices. -}
 opIndices :: Vector Word16
-opIndices = force . fromList . fmap fst . filter (\ (_ , r) -> isJust r) $ optypes
+opIndices = force . fromList . fmap fst . filter (isJust . snd) $ optypes
 
 
 {- | Prism for @t'OpType'@. -}
