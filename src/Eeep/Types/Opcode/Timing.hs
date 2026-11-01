@@ -36,7 +36,7 @@ data Timing
     | DurationEquipped
     | Permanent
     | InstantLimited
-    deriving stock (Eq, Ord, Enum, Bounded, Ix)
+    deriving stock (Eq, Ord, Enum, Bounded, Ix, Show)
 
 
 {- | The prism for the t'Timing' type. -}

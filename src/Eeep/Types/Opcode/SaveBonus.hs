@@ -44,7 +44,7 @@ instance Bounded SaveBonus where
     maxBound = SaveBonus 20
 
 
-{- | Smart constructor for the @t'SaveBonus'@ type. -}
+{- | Prism for the @t'SaveBonus'@ type. -}
 {-# INLINABLE saveBonus #-}
 saveBonus :: Prism' Int32 SaveBonus
 saveBonus = prism' construct match
