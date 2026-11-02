@@ -40,7 +40,7 @@ newtype TimingError = TimingError Word8
     deriving stock (Eq, Ord, Bounded, Show)
 
 
-{- | The @Timing@ GADT type. -}
+{- | The @Timing@ enumeration type. -}
 data Timing
     = Limited
     | Instant

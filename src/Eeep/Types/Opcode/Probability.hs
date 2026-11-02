@@ -51,7 +51,7 @@ data ProbabilityError = ProbabilityError !Word8 !Word8
 
 {- | The @Probability@ interval type.
 
-A _probability interval_ is a closed interval @[l, u]@ with @0 <= l, u <= 100@. If @l > u@ then
+A /probability interval/ is a closed interval @[l, u]@ with @0 <= l, u <= 100@. If @l > u@ then
 the interval is empty.
 -}
 data Probability = Probability !Word8 !Word8

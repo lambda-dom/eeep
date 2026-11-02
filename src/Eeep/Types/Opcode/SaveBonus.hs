@@ -37,7 +37,8 @@ import Trisagion.Parsers.Combinators (validate)
 
 {- | The @SaveBonusError@ type. -}
 newtype SaveBonusError = SaveBonusError Int32
-    deriving stock (Eq, Ord, Bounded, Show)
+    deriving stock (Eq, Ord, Bounded, Show, Ix)
+    deriving newtype Enum
 
 
 {- | The @SaveBonus@ type. 

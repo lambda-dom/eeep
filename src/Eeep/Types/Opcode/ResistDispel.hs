@@ -53,7 +53,7 @@ data ResistDispel
     deriving stock (Eq, Ord, Enum, Bounded, Ix, Show)
 
 
-{- | Smart constructor for the @t'ResistDispel'@ values from 'Word8'. -}
+{- | Prism for the @t'ResistDispel'@ type. -}
 {-# INLINE resistDispel #-}
 resistDispel :: Prism' Word8 ResistDispel
 resistDispel = prism' construct match

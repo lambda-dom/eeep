@@ -11,7 +11,7 @@ module Eeep.Types.Opcode.Special (
     -- ** Isomorphisms.
     special,
 
-    -- * Parsers.
+    -- ** Parsers.
     decode,
 ) where
 
