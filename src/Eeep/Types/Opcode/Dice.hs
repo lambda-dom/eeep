@@ -12,6 +12,9 @@ module Eeep.Types.Opcode.Dice (
 
     -- ** Isomorphisms.
     dice,
+
+    -- ** Parsers.
+    decode,
 ) where
 
 -- Imports.
@@ -20,14 +23,20 @@ import Data.Word (Word32)
 import GHC.Generics (Generic)
 
 -- Libraries.
-import Optics.Core (Iso', iso)
+import Optics.Core (Iso', iso, review)
+
+-- non-Hackage libraries.
+import Trisagion.Typeclasses.Parsers.Binary (Binary (..))
+import Trisagion.Parser (Parser)
+import Trisagion.Parsers.Combinators (zipP)
+import Trisagion.Parsers.Source (InputError)
 
 
 {- | The @Dice@ type. -}
 data Dice = Dice {
     number :: {-# UNPACK #-} !Word32,
     sides  :: {-# UNPACK #-} !Word32
-    } deriving stock (Eq, Ord, Generic, Show)
+} deriving stock (Eq, Ord, Generic, Show)
 
 
 {- | Isomorphism for the t'Dice' type. -}
@@ -40,3 +49,9 @@ dice = iso from to
 
         to :: (Word32, Word32) -> Dice
         to (m, n) = Dice {number = m, sides = n}
+
+
+{- | Decode a t'Dice'. -}
+{-# INLINE decode #-}
+decode :: Binary b s => Parser s InputError Dice
+decode = fmap (review dice) $ zipP word32Le word32Le

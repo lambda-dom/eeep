@@ -5,11 +5,17 @@ The @Target@ type.
 -}
 
 module Eeep.Types.Opcode.Target (
+    -- * Error types.
+    TargetError (..),
+
     -- * Types.
     Target (..),
 
     -- ** Prisms.
     target,
+
+    -- * Parsers.
+    decode,
 ) where
 
 -- Imports.
@@ -22,6 +28,16 @@ import Optics.Core (Prism', review, preview, prism')
 
 -- Non-hackage libraries.
 import Data.Enum.Optics (enum)
+import Trisagion.Utils.Either ((:+:), annotate)
+import Trisagion.Typeclasses.Parsers.Binary (Binary (..))
+import Trisagion.Parser (Parser)
+import Trisagion.Parsers.Combinators (validate)
+import Trisagion.Parsers.Source (InputError)
+
+
+{- | The @TargetError@ type. -}
+newtype TargetError = TargetError Word8
+    deriving stock (Eq, Ord, Bounded, Show)
 
 
 {- | The @Target@ enumeration type. -}
@@ -49,3 +65,9 @@ target = prism' construct match
 
         match :: Word8 -> Maybe Target
         match = preview enum . fromIntegral @Word8 @Int
+
+
+{- | Decode a t'Target'. -}
+{-# INLINE decode #-}
+decode :: Binary b s => Parser s (TargetError :+: InputError) Target
+decode = validate (annotate TargetError (preview target)) word8

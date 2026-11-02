@@ -5,11 +5,17 @@ The @SaveBonus@ type.
 -}
 
 module Eeep.Types.Opcode.SaveBonus (
+    -- * Error types.
+    SaveBonusError (..),
+
     -- * Types.
     SaveBonus,
 
     -- ** Prisms.
     saveBonus,
+
+    -- ** Parsers.
+    decode,
 ) where
 
 -- Imports.
@@ -22,6 +28,16 @@ import Optics.Core (Prism', prism', review, preview)
 
 -- non-Hackage libraries.
 import Data.Enum.Optics (enum)
+import Trisagion.Utils.Either ((:+:), annotate)
+import Trisagion.Parser (Parser)
+import Trisagion.Parsers.Source (InputError)
+import Trisagion.Typeclasses.Parsers.Binary (Binary (..), int32Le)
+import Trisagion.Parsers.Combinators (validate)
+
+
+{- | The @SaveBonusError@ type. -}
+newtype SaveBonusError = SaveBonusError Int32
+    deriving stock (Eq, Ord, Bounded, Show)
 
 
 {- | The @SaveBonus@ type. 
@@ -54,3 +70,9 @@ saveBonus = prism' construct match
 
         match :: Int32 -> Maybe SaveBonus
         match = preview enum . fromIntegral @Int32 @Int
+
+
+{- | Decode a t'SaveBonus'. -}
+{-# INLINE decode #-}
+decode :: Binary b s => Parser s (SaveBonusError :+: InputError) SaveBonus
+decode = validate (annotate SaveBonusError (preview saveBonus)) int32Le

@@ -5,11 +5,17 @@ The @OpType@ type.
 -}
 
 module Eeep.Types.Opcode.OpType (
+    -- * Error types.
+    OpTypeError (..),
+
     -- * Types.
     OpType (..),
 
     -- ** Prisms.
     opType,
+
+    -- ** Parsers.
+    decode,
 ) where
 
 -- Imports.
@@ -19,12 +25,22 @@ import Data.Maybe (isJust)
 import Data.Word (Word16)
 
 -- Libraries.
-import Data.Vector.Strict (Vector, fromList, force, (!))
-import Optics.Core (Prism', prism')
+import Data.Vector.Strict (Vector, (!), fromList, force)
+import Optics.Core (Prism', prism', preview)
+import Trisagion.Utils.Either ((:+:), annotate)
+import Trisagion.Parser (Parser)
+import Trisagion.Typeclasses.Parsers.Binary (Binary (..))
+import Trisagion.Parsers.Source (InputError)
+import Trisagion.Parsers.Combinators (validate)
 
 
 -- $setup
 -- >>> import Optics.Core
+
+
+{- | The @OpTypeError@ type. -}
+newtype OpTypeError = OpTypeError Word16
+    deriving stock (Eq, Ord, Bounded, Show)
 
 
 {- | The @OpType@ enumeration type for all IE opcodes from BG2 EE. -}
@@ -786,3 +802,9 @@ opType = prism' construct matched
         matched m = if n <= length opTypes then opTypes ! n else Nothing
             where
                 n = fromIntegral m
+
+
+{- | Decode an t'OpType'. -}
+{-# INLINE decode #-}
+decode :: Binary b s => Parser s (OpTypeError :+: InputError) OpType
+decode = validate (annotate OpTypeError (preview opType)) word16Le

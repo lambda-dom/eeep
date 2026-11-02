@@ -5,6 +5,9 @@ The @ResistDispel@ type.
 -}
 
 module Eeep.Types.Opcode.ResistDispel (
+    -- * Error types.
+    ResistDispelError (..),
+
     -- * Types.
     ResistDispel (..),
 
@@ -14,6 +17,9 @@ module Eeep.Types.Opcode.ResistDispel (
     -- ** Predicates.
     isDispellable,
     isResistable,
+
+    -- ** Parsers.
+    decode,
 ) where
 
 -- Imports.
@@ -26,6 +32,16 @@ import Optics.Core (Prism', prism', review, preview)
 
 -- non-Hackage libraries.
 import Data.Enum.Optics (enum)
+import Trisagion.Utils.Either ((:+:), annotate)
+import Trisagion.Typeclasses.Parsers.Binary (Binary (..))
+import Trisagion.Parser (Parser)
+import Trisagion.Parsers.Combinators (validate)
+import Trisagion.Parsers.Source (InputError)
+
+
+{- | The @ResistDispelError@ type. -}
+newtype ResistDispelError = ResistDispelError Word8
+    deriving stock (Eq, Ord, Bounded, Show)
 
 
 {- | The @ResistDispel@ enumeration type. -}
@@ -66,3 +82,9 @@ isResistable = \case
     DispellableResistable     -> True
     UndispellableUnresistable -> False
     DispellableUnresistable   -> False
+
+
+{- | Decode a t'ResistDispel'. -}
+{-# INLINE decode #-}
+decode :: Binary b s => Parser s (ResistDispelError :+: InputError) ResistDispel
+decode = validate (annotate ResistDispelError (preview resistDispel)) word8

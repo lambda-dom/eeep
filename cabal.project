@@ -4,7 +4,7 @@ packages:
 source-repository-package
     type: git
     location: https://github.com/lambda-dom/mono
-    tag: v0.3.1
+    tag: 3b1821c6e1019a2ff1c5ec2c5ff4300e565cc291
 
 source-repository-package
     type: git
@@ -14,4 +14,4 @@ source-repository-package
 source-repository-package
     type: git
     location: https://github.com/lambda-dom/trisagion
-    tag: e59879b34127840b7d72da92ce7cf6911b6815c7
+    tag: 2d8d06ea8897fe08ed1d8d9894115b4e9c2821c9
