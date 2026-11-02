@@ -12,7 +12,7 @@ module Eeep.Types.Opcode.Resref (
     isResrefChar,
 
     -- ** Prisms.
-    resrefChar,
+    resref,
 ) where
 
 -- Imports.
@@ -22,10 +22,8 @@ import Data.Word (Word8)
 
 -- Libraries.
 import Data.ByteString.Short (ShortByteString)
-import Optics.Core (Prism')
-
--- non-Hackage Libraries.
-import Data.Char.Optics (category)
+import qualified Data.ByteString.Short as Bytes (length, all, takeWhile)
+import Optics.Core (Prism', prism')
 
 
 {- | The t'Resref' type for resource references.
@@ -37,6 +35,20 @@ note(s):
 -}
 newtype Resref = Resref ShortByteString
     deriving stock (Eq, Ord, Show)
+
+
+{- | Prism for t'Resref'. -}
+resref :: Prism' ShortByteString Resref
+resref = prism' construct matched
+    where
+        construct :: Resref -> ShortByteString
+        construct (Resref xs) = xs 
+
+        matched :: ShortByteString -> Maybe Resref
+        matched xs =
+            if 8 < Bytes.length xs && Bytes.all (isResrefChar . chr . fromIntegral @Word8 @Int) xs
+            then Nothing
+            else Just . Resref $ Bytes.takeWhile (/= 0) xs
 
 
 {- | Validate a 'Char' as a valid t'Resref' char.
@@ -56,9 +68,3 @@ False
 -}
 isResrefChar :: Char -> Bool
 isResrefChar c = isAscii c && not (isControl c) && c /= '\\' && c /= '/' && c /= '.' && c /= ':'
-
-
-{- | Prism for @t'Resref'@ characters. -}
-{-# INLINE resrefChar #-}
-resrefChar :: Prism' Word8 Char
-resrefChar = category (isResrefChar . chr . fromIntegral @Word8 @Int)
