@@ -14,7 +14,7 @@ module Eeep.Types.Opcode.Power (
     -- ** Prisms.
     power,
 
-    -- * Parsers.
+    -- ** Parsers.
     decode,
 ) where
 
@@ -37,7 +37,7 @@ import Trisagion.Parsers.Source (InputError)
 
 {- | The @PowerError@ type. -}
 newtype PowerError = PowerError Word8
-    deriving stock (Eq, Ord, Bounded, Show)
+    deriving stock (Eq, Ord, Bounded, Ix, Show)
     deriving newtype Enum
 
 

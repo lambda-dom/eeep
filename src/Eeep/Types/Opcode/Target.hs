@@ -14,7 +14,7 @@ module Eeep.Types.Opcode.Target (
     -- ** Prisms.
     target,
 
-    -- * Parsers.
+    -- ** Parsers.
     decode,
 ) where
 

@@ -11,7 +11,7 @@ module Eeep.Types.Opcode.Duration (
     -- ** Isomorphisms.
     duration,
 
-    -- * Parsers.
+    -- ** Parsers.
     decode,
 ) where
 

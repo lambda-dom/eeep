@@ -1,4 +1,5 @@
 {-# LANGUAGE NoFieldSelectors #-}
+{-# LANGUAGE RecordWildCards #-}
 
 {- |
 Module: Eeep.Types.Opcode.Dice
@@ -36,11 +37,11 @@ import Trisagion.Parsers.Source (InputError)
 data Dice = Dice {
     number :: {-# UNPACK #-} !Word32,
     sides  :: {-# UNPACK #-} !Word32
-} deriving stock (Eq, Ord, Generic, Show)
+} deriving stock (Eq, Ord, Bounded, Show, Generic)
 
 
 {- | Isomorphism for the t'Dice' type. -}
-{-# INLINABLE dice #-}
+{-# INLINE dice #-}
 dice :: Iso' Dice (Word32, Word32)
 dice = iso from to
     where
@@ -48,7 +49,7 @@ dice = iso from to
         from (Dice m n) = (m, n)
 
         to :: (Word32, Word32) -> Dice
-        to (m, n) = Dice {number = m, sides = n}
+        to (number, sides) = Dice {..}
 
 
 {- | Decode a t'Dice'. -}
