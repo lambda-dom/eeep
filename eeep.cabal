@@ -54,7 +54,7 @@ library
         optics-core        >=0.4.2  && <0.4.3,
         vector             >=0.13   && <0.14,
         -- Non-hackage libraries.
-        -- mono >= 0.3 && <0.4,
+        mono               >=0.1    && <0.2,
         optics-conversions >=0.1    && <0.2,
         trisagion          >=0.0.1  && <0.1,
     other-modules:
