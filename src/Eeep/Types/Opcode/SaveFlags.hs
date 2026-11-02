@@ -21,6 +21,9 @@ module Eeep.Types.Opcode.SaveFlags (
     ignorePrimary,
     ignoreSecondary,
     bypassMI,
+
+    -- ** Parsers.
+    decode,
 ) where
 
 -- Imports.
@@ -33,6 +36,9 @@ import Optics.Core (Lens', Iso', (%), coercedTo, view)
 
 -- non-Hackage libraries.
 import Data.Bits.Optics (bitAt)
+import Trisagion.Parser (Parser)
+import Trisagion.Parsers.Source (InputError)
+import Trisagion.Typeclasses.Parsers.Binary (Binary (..))
 
 
 {- | The t'SaveFlags' type. -}
@@ -110,3 +116,9 @@ ignoreSecondary = saveFlags % bitAt 11
 {-# INLINE bypassMI #-}
 bypassMI :: Lens' SaveFlags Bool
 bypassMI = saveFlags % bitAt 24
+
+
+{- | Decode a t'SaveFlags'. -}
+{-# INLINE decode #-}
+decode :: Binary b s => Parser s InputError SaveFlags
+decode = fmap toSaveFlags word32Le
