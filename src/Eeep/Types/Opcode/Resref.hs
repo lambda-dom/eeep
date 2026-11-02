@@ -8,71 +8,57 @@ module Eeep.Types.Opcode.Resref (
     -- * Types.
     Resref,
 
+    -- ** Predicates.
+    isResrefChar,
+
     -- ** Prisms.
     resrefChar,
-    resref,
-
-    -- * Functions.
-    toString,
 ) where
 
 -- Imports.
 -- Base.
 import Data.Char (isControl, isAscii, chr)
-import Data.Word (Word64, Word8)
+import Data.Word (Word8)
 
 -- Libraries.
-import Optics.Core (Prism', Iso', coercedTo, view, toListOf, each)
+import Data.ByteString.Short (ShortByteString)
+import Optics.Core (Prism')
 
 -- non-Hackage Libraries.
 import Data.Char.Optics (category)
-import Data.Bits.Optics (word64BytesLe)
 
 
 {- | The t'Resref' type for resource references.
 
 note(s):
 
-    * The 'Ord' and 'Bounded' instances have no semantic significance and are here merely to be able
-    to use t'Resref' values as map keys, etc.
+    * The 'Ord' instance has no semantic significance and is here merely to be able to use
+    t'Resref' values as map keys, etc.
 -}
-newtype Resref = Resref Word64
-    deriving stock (Eq, Ord, Bounded, Show)
+newtype Resref = Resref ShortByteString
+    deriving stock (Eq, Ord, Show)
 
 
-{- | Isomorphism for @t'Resref'@. -}
-{-# INLINE resref #-}
-resref :: Iso' Resref Word64
-resref = coercedTo
-
-{- | Prism for @t'Resref'@ characters.
-
+{- | Validate a 'Char' as a valid t'Resref' char.
 
 === __Examples:__
->>> preview resrefChar (fromIntegral . ord $ ' ')
-Just 32
+>>> isResrefChar ' '
+True
 
->>> preview resrefChar 255
-Nothing
+>>> isResrefChar (chr 255)
+False
 
->>> preview resrefChar (fromIntegral . ord $ '\n')
-Nothing
+>>>  isResrefChar '\n'
+False
 
->>> preview resrefChar (fromIntegral . ord $ '.')
-Nothing
+>>> isResrefChar '.'
+False
 -}
+isResrefChar :: Char -> Bool
+isResrefChar c = isAscii c && not (isControl c) && c /= '\\' && c /= '/' && c /= '.' && c /= ':'
+
+
+{- | Prism for @t'Resref'@ characters. -}
 {-# INLINE resrefChar #-}
 resrefChar :: Prism' Word8 Char
-resrefChar = category (p . chr . fromIntegral @Word8 @Int)
-    where
-        p :: Char -> Bool
-        p c = isAscii c && not (isControl c) && c /= '\\' && c /= '/' && c /= '.'
-
-
-{- | Human-readable print of a @t'Resref'@. -}
-{-# INLINEABLE toString #-}
-toString :: Resref -> String
-toString (Resref n) = fmap chr . takeWhile (/= 0) . fmap (fromIntegral @Word8 @Int) . unpack $ n
-    where
-        unpack :: Word64 -> [Word8]
-        unpack = toListOf each . view word64BytesLe
+resrefChar = category (isResrefChar . chr . fromIntegral @Word8 @Int)
