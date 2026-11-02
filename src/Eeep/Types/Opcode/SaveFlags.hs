@@ -8,8 +8,9 @@ module Eeep.Types.Opcode.SaveFlags (
     -- * Types.
     SaveFlags,
 
-    -- ** Isomorphisms.
-    saveFlags,
+    -- ** Constructors and eliminators.
+    toSaveFlags,
+    fromSaveFlags,
 
     -- ** Lenses.
     spells,
@@ -24,10 +25,11 @@ module Eeep.Types.Opcode.SaveFlags (
 
 -- Imports.
 -- Base.
+import Data.Bits ((.&.))
 import Data.Word (Word32)
 
 -- Libraries.
-import Optics.Core (Lens', Iso', (%), coercedTo)
+import Optics.Core (Lens', Iso', (%), coercedTo, view)
 
 -- non-Hackage libraries.
 import Data.Bits.Optics (bitAt)
@@ -38,48 +40,73 @@ newtype SaveFlags = SaveFlags Word32
     deriving stock (Eq, Show)
 
 
-{- | Prism for the t'SaveFlags' type. -}
-{-# INLINABLE saveFlags #-}
+{- | Smart constructor for the t'SaveFlags' type.
+
+note(s)
+
+    * The function performs normalization so it is *not* an inverse of 'fromSaveFlags', only a
+    right-inverse.
+-}
+{-# INLINE toSaveFlags #-}
+toSaveFlags :: Word32 -> SaveFlags
+toSaveFlags n = SaveFlags $ n .&. mask
+    where
+        mask :: Word32
+        mask = 16780319
+
+{- | Eliminator for the t'SaveFlags' type. -}
+{-# INLINE fromSaveFlags #-}
+fromSaveFlags :: SaveFlags -> Word32
+fromSaveFlags = view saveFlags
+
+
+{- | Prism for the t'SaveFlags' type.
+
+note(s):
+
+    * Not exported as the constructor does not perform normalization.
+-}
+{-# INLINE saveFlags #-}
 saveFlags :: Iso' SaveFlags Word32
 saveFlags = coercedTo
 
 
 {- | The save vs. spells bit lens. -}
-{-# INLINABLE spells #-}
+{-# INLINE spells #-}
 spells :: Lens' SaveFlags Bool
 spells = saveFlags % bitAt 0
 
 {- | The save vs. breath bit lens. -}
-{-# INLINABLE breath #-}
+{-# INLINE breath #-}
 breath :: Lens' SaveFlags Bool
 breath = saveFlags % bitAt 1
 
 {- | The save vs. poison (paralyze) bit lens. -}
-{-# INLINABLE poison #-}
+{-# INLINE poison #-}
 poison :: Lens' SaveFlags Bool
 poison = saveFlags % bitAt 2
 
 {- | The save vs. wands bit lens. -}
-{-# INLINABLE wands #-}
+{-# INLINE wands #-}
 wands :: Lens' SaveFlags Bool
 wands = saveFlags % bitAt 3
 
 {- | The save vs. petrify bit lens. -}
-{-# INLINABLE petrify #-}
+{-# INLINE petrify #-}
 petrify :: Lens' SaveFlags Bool
 petrify = saveFlags % bitAt 4
 
 {- | The ignore primary bit lens. -}
-{-# INLINABLE ignorePrimary #-}
+{-# INLINE ignorePrimary #-}
 ignorePrimary :: Lens' SaveFlags Bool
 ignorePrimary = saveFlags % bitAt 10
 
 {- | The ignore secondary bit lens. -}
-{-# INLINABLE ignoreSecondary #-}
+{-# INLINE ignoreSecondary #-}
 ignoreSecondary :: Lens' SaveFlags Bool
 ignoreSecondary = saveFlags % bitAt 11
 
 {- | The bypass mirror image bit lens. -}
-{-# INLINABLE bypassMI #-}
+{-# INLINE bypassMI #-}
 bypassMI :: Lens' SaveFlags Bool
 bypassMI = saveFlags % bitAt 24
