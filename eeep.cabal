@@ -48,15 +48,15 @@ library
         -- GHC >= 9.10 && < 9.12
         base               >=4.20   && <4.21,
         -- Libraries.
+        -- bytestring >=0.12 && <0.13,
         -- contravariant >=1.5 && <1.6,
         -- mtl >=2.3 && <2.4,
         optics-core        >= 0.4.2 && <0.4.3,
-        -- bytestring >=0.12 && <0.13,
         vector             >=0.13   && <0.14,
         -- Non-hackage libraries.
         -- mono >= 0.3 && <0.4,
         optics-conversions >=0.1    && <0.2,
-        -- trisagion          >=0.1    && <0.2,
+        trisagion          >=0.0.1  && <0.1,
     other-modules:
     exposed-modules:
         Eeep.Types.Opcode.OpType

@@ -5,11 +5,17 @@ The @Power@ type.
 -}
 
 module Eeep.Types.Opcode.Power (
+    -- * Error types.
+    PowerError,
+
     -- * Types.
     Power,
 
     -- ** Prisms.
     power,
+
+    -- * Parsers.
+    decode,
 ) where
 
 -- Imports.
@@ -20,6 +26,19 @@ import Data.Ix (Ix)
 -- Libraries.
 import Optics.Core (Prism', prism', review, preview)
 import Data.Enum.Optics (enum)
+
+-- non-Hackage libraries.
+import Trisagion.Utils.Either ((:+:), annotate)
+import Trisagion.Typeclasses.Parsers.Binary (Binary (..))
+import Trisagion.Parser (Parser)
+import Trisagion.Parsers.Combinators (validate)
+import Trisagion.Parsers.Source (InputError)
+
+
+{- | The @PowerError@ type. -}
+newtype PowerError = PowerError Word8
+    deriving stock (Eq, Ord, Bounded, Show)
+    deriving newtype Enum
 
 
 {- | The @Power@ type.
@@ -52,3 +71,9 @@ power = prism' construct match
 
         match :: Word8 -> Maybe Power
         match = preview enum . fromIntegral @Word8 @Int
+
+
+{- | Decode a t'Power'. -}
+{-# INLINE decode #-}
+decode :: Binary b s => Parser s (PowerError :+: InputError) Power
+decode = validate (annotate PowerError (preview power)) word8
