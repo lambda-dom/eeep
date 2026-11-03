@@ -55,7 +55,7 @@ library
         vector             >=0.13   && <0.14,
         -- Non-hackage libraries.
         mono               >=0.1    && <0.2,
-        optics-conversions >=0.1    && <0.2,
+        optics-conversions >=0.0.1  && <0.1,
         trisagion          >=0.0.1  && <0.1,
     other-modules:
     exposed-modules:
