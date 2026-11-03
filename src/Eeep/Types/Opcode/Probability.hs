@@ -29,8 +29,9 @@ module Eeep.Types.Opcode.Probability (
     isContained,
     toList,
 
-    -- ** Parsers.
+    -- ** Parsers and serializers.
     decode,
+    encode,
 ) where
 
 -- Imports.
@@ -39,6 +40,7 @@ import Prelude hiding (error)
 
 -- Base.
 import GHC.Generics (Generic)
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Tuple (swap)
 import Data.Word (Word8)
 
@@ -47,10 +49,13 @@ import Optics.Core (Prism', Iso', prism', review, preview, iso)
 
 -- non-Hackage libraries.
 import Trisagion.Utils.Either ((:+:), annotate)
-import Trisagion.Typeclasses.Parsers.Binary (Binary (..))
+import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Source (InputError)
 import Trisagion.Parsers.Combinators (zipP, validate)
+import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Serializer (Serializer)
+import Data.Functor.Contravariant.Divisible (divided)
 
 
 {- | The t'Probability' @Error@ type.
@@ -138,8 +143,13 @@ toList (Probability l u) = enumFromTo l u
 
 {- | Decode a t'Probability' interval. -}
 {-# INLINE decode #-}
-decode :: Binary b s => Parser s (Error :+: InputError) Probability
+decode :: Parsers.Binary b s => Parser s (Error :+: InputError) Probability
 decode =
     validate
         (annotate (uncurry Error) (preview probability))
-        (fmap swap $ zipP word8 word8)
+        (fmap swap $ zipP Parsers.word8 Parsers.word8)
+
+{- | Encode a t'Probability' interval. -}
+{-# INLINE encode #-}
+encode :: Serializers.Binary b s => Serializer s Probability
+encode = contramap (review probability) (divided Serializers.word8 Serializers.word8)

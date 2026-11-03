@@ -14,24 +14,28 @@ module Eeep.Types.Opcode.OpType (
     -- ** Prisms.
     opType,
 
-    -- ** Parsers.
+    -- ** Parsers and serializers.
     decode,
+    encode,
 ) where
 
 -- Imports.
 -- Base.
 import Data.Ix (Ix)
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Maybe (isJust)
 import Data.Word (Word16)
 
 -- Libraries.
 import Data.Vector.Strict (Vector, (!), fromList, force)
-import Optics.Core (Prism', prism', preview)
+import Optics.Core (Prism', prism', preview, review)
 import Trisagion.Utils.Either ((:+:), annotate)
 import Trisagion.Parser (Parser)
-import Trisagion.Typeclasses.Parsers.Binary (Binary (..))
+import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parsers.Source (InputError)
 import Trisagion.Parsers.Combinators (validate)
+import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
 
 
 -- $setup
@@ -811,5 +815,10 @@ opType = prism' construct matched
 
 {- | Decode an t'OpType'. -}
 {-# INLINE decode #-}
-decode :: Binary b s => Parser s (Error :+: InputError) OpType
-decode = validate (annotate Error (preview opType)) word16Le
+decode :: Parsers.Binary b s => Parser s (Error :+: InputError) OpType
+decode = validate (annotate Error (preview opType)) Parsers.word16Le
+
+{- | Encode an t'OpType'. -}
+{-# INLINE encode #-}
+encode :: Serializers.Binary b s => Serializer s OpType
+encode = contramap (review opType) Serializers.word16Le
