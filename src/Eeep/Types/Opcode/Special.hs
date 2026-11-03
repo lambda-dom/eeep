@@ -11,22 +11,26 @@ module Eeep.Types.Opcode.Special (
     -- ** Isomorphisms.
     special,
 
-    -- ** Parsers.
+    -- ** Parsers and serializers.
     decode,
+    encode,
 ) where
 
 -- Imports.
 -- Base.
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Ix (Ix)
 import Data.Word (Word32)
 
 -- Libraries.
-import Optics.Core (Iso', coercedTo, review)
+import Optics.Core (Iso', coercedTo, review, view)
 
 -- non-Hackage libraries.
-import Trisagion.Typeclasses.Parsers.Binary (Binary (..))
+import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Source (InputError)
+import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Serializer (Serializer)
 
 
 {- | The t'Special' type. -}
@@ -43,5 +47,10 @@ special = coercedTo
 
 {- | Decode a t'Special'. -}
 {-# INLINE decode #-}
-decode :: Binary b s => Parser s InputError Special
-decode = fmap (review special) word32Le
+decode :: Parsers.Binary b s => Parser s InputError Special
+decode = fmap (review special) Parsers.word32Le
+
+{- | Encode a t'Special'. -}
+{-# INLINE encode #-}
+encode :: Serializers.Binary b s => Serializer s Special
+encode = contramap (view special) Serializers.word32Le

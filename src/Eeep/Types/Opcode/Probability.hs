@@ -45,6 +45,7 @@ import Data.Tuple (swap)
 import Data.Word (Word8)
 
 -- Libraries.
+import Data.Functor.Contravariant.Divisible (divided)
 import Optics.Core (Prism', Iso', prism', review, preview, iso)
 
 -- non-Hackage libraries.
@@ -55,7 +56,6 @@ import Trisagion.Parsers.Source (InputError)
 import Trisagion.Parsers.Combinators (zipP, validate)
 import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
 import Trisagion.Serializer (Serializer)
-import Data.Functor.Contravariant.Divisible (divided)
 
 
 {- | The t'Probability' @Error@ type.
