@@ -6,7 +6,7 @@ The @Target@ type.
 
 module Eeep.Types.Opcode.Target (
     -- * Error types.
-    TargetError (..),
+    Error (..),
 
     -- * Types.
     Target (..),
@@ -35,8 +35,8 @@ import Trisagion.Parsers.Combinators (validate)
 import Trisagion.Parsers.Source (InputError)
 
 
-{- | The @TargetError@ type. -}
-newtype TargetError = TargetError Word8
+{- | The t'Target' @Error@ type. -}
+newtype Error = Error Word8
     deriving stock (Eq, Ord, Bounded, Show)
 
 
@@ -69,5 +69,5 @@ target = prism' construct match
 
 {- | Decode a t'Target'. -}
 {-# INLINE decode #-}
-decode :: Binary b s => Parser s (TargetError :+: InputError) Target
-decode = validate (annotate TargetError (preview target)) word8
+decode :: Binary b s => Parser s (Error :+: InputError) Target
+decode = validate (annotate Error (preview target)) word8

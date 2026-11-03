@@ -6,7 +6,7 @@ The @Timing@ type.
 
 module Eeep.Types.Opcode.Timing (
     -- * Error types.
-    TimingError (..),
+    Error (..),
 
     -- * Types.
     Timing (..),
@@ -35,8 +35,8 @@ import Trisagion.Typeclasses.Parsers.Binary (Binary (..))
 import Trisagion.Parsers.Combinators (validate)
 
 
-{- | The @TimingError@ type. -}
-newtype TimingError = TimingError Word8
+{- | The t'Timing' @Error@ type. -}
+newtype Error = Error Word8
     deriving stock (Eq, Ord, Bounded, Show)
 
 
@@ -70,5 +70,5 @@ timing = prism' construct match
 
 {- | Decode a t'Timing'. -}
 {-# INLINE decode #-}
-decode :: Binary b s => Parser s (TimingError :+: InputError) Timing
-decode = validate (annotate TimingError (preview timing)) word8
+decode :: Binary b s => Parser s (Error :+: InputError) Timing
+decode = validate (annotate Error (preview timing)) word8

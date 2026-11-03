@@ -6,7 +6,7 @@ The @Power@ type.
 
 module Eeep.Types.Opcode.Power (
     -- * Error types.
-    PowerError,
+    Error (..),
 
     -- * Types.
     Power,
@@ -35,8 +35,8 @@ import Trisagion.Parsers.Combinators (validate)
 import Trisagion.Parsers.Source (InputError)
 
 
-{- | The @PowerError@ type. -}
-newtype PowerError = PowerError Word8
+{- | The t'Power' @Error@ type. -}
+newtype Error = Error Word8
     deriving stock (Eq, Ord, Bounded, Ix, Show)
     deriving newtype Enum
 
@@ -75,5 +75,5 @@ power = prism' construct match
 
 {- | Decode a t'Power'. -}
 {-# INLINE decode #-}
-decode :: Binary b s => Parser s (PowerError :+: InputError) Power
-decode = validate (annotate PowerError (preview power)) word8
+decode :: Binary b s => Parser s (Error :+: InputError) Power
+decode = validate (annotate Error (preview power)) word8

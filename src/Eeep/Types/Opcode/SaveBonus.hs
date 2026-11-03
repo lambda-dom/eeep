@@ -6,7 +6,7 @@ The @SaveBonus@ type.
 
 module Eeep.Types.Opcode.SaveBonus (
     -- * Error types.
-    SaveBonusError (..),
+    Error (..),
 
     -- * Types.
     SaveBonus,
@@ -35,8 +35,8 @@ import Trisagion.Typeclasses.Parsers.Binary (Binary (..), int32Le)
 import Trisagion.Parsers.Combinators (validate)
 
 
-{- | The @SaveBonusError@ type. -}
-newtype SaveBonusError = SaveBonusError Int32
+{- | The t'SaveBonus' @Error@ type. -}
+newtype Error = Error Int32
     deriving stock (Eq, Ord, Bounded, Show, Ix)
     deriving newtype Enum
 
@@ -75,5 +75,5 @@ saveBonus = prism' construct match
 
 {- | Decode a t'SaveBonus'. -}
 {-# INLINE decode #-}
-decode :: Binary b s => Parser s (SaveBonusError :+: InputError) SaveBonus
-decode = validate (annotate SaveBonusError (preview saveBonus)) int32Le
+decode :: Binary b s => Parser s (Error :+: InputError) SaveBonus
+decode = validate (annotate Error (preview saveBonus)) int32Le

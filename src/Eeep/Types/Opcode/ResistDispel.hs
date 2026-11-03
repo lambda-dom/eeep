@@ -6,7 +6,7 @@ The @ResistDispel@ type.
 
 module Eeep.Types.Opcode.ResistDispel (
     -- * Error types.
-    ResistDispelError (..),
+    Error (..),
 
     -- * Types.
     ResistDispel (..),
@@ -39,8 +39,8 @@ import Trisagion.Parsers.Combinators (validate)
 import Trisagion.Parsers.Source (InputError)
 
 
-{- | The @ResistDispelError@ type. -}
-newtype ResistDispelError = ResistDispelError Word8
+{- | The t'ResistDispel' @Error@ type. -}
+newtype Error = Error Word8
     deriving stock (Eq, Ord, Bounded, Show)
 
 
@@ -86,5 +86,5 @@ isResistable = \case
 
 {- | Decode a t'ResistDispel'. -}
 {-# INLINE decode #-}
-decode :: Binary b s => Parser s (ResistDispelError :+: InputError) ResistDispel
-decode = validate (annotate ResistDispelError (preview resistDispel)) word8
+decode :: Binary b s => Parser s (Error :+: InputError) ResistDispel
+decode = validate (annotate Error (preview resistDispel)) word8

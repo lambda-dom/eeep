@@ -1,3 +1,5 @@
+{-# LANGUAGE NoFieldSelectors #-}
+
 {- |
 Module: Eeep.Types.Opcode.Probability
 
@@ -6,7 +8,10 @@ The @Probability@ type.
 
 module Eeep.Types.Opcode.Probability (
     -- * Error types.
-    ProbabilityError (..),
+    Error (..),
+
+    -- ** Isomorphisms.
+    error,
 
     -- * Types.
     Probability,
@@ -29,11 +34,16 @@ module Eeep.Types.Opcode.Probability (
 ) where
 
 -- Imports.
+-- Hiding.
+import Prelude hiding (error)
+
 -- Base.
+import GHC.Generics (Generic)
+import Data.Tuple (swap)
 import Data.Word (Word8)
 
 -- Libraries.
-import Optics.Core (Prism', prism', review, preview)
+import Optics.Core (Prism', Iso', prism', review, preview, iso)
 
 -- non-Hackage libraries.
 import Trisagion.Utils.Either ((:+:), annotate)
@@ -41,12 +51,34 @@ import Trisagion.Typeclasses.Parsers.Binary (Binary (..))
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Source (InputError)
 import Trisagion.Parsers.Combinators (zipP, validate)
-import Data.Tuple (swap)
 
 
-{- | The @ProbabilityError@ type. -}
-data ProbabilityError = ProbabilityError !Word8 !Word8
-    deriving stock (Eq, Ord, Bounded, Show)
+{- | The t'Probability' @Error@ type.
+
+note(s):
+
+    * To be imported qualified.
+-}
+data Error = Error {
+    lower :: {-# UNPACK #-} !Word8,
+    upper :: {-# UNPACK #-} !Word8
+} deriving stock (Eq, Ord, Bounded, Generic, Show)
+
+
+{- | Isomorphism for the t'Probability' @Error@ type.
+
+note(s):
+
+    * To be imported qualified.
+-}
+error :: Iso' Error (Word8, Word8)
+error = iso from to
+    where
+        from :: Error -> (Word8, Word8)
+        from (Error m n) = (m, n)
+
+        to :: (Word8, Word8) -> Error
+        to = uncurry Error
 
 
 {- | The @Probability@ interval type.
@@ -106,8 +138,8 @@ toList (Probability l u) = enumFromTo l u
 
 {- | Decode a t'Probability' interval. -}
 {-# INLINE decode #-}
-decode :: Binary b s => Parser s (ProbabilityError :+: InputError) Probability
+decode :: Binary b s => Parser s (Error :+: InputError) Probability
 decode =
     validate
-        (annotate (uncurry ProbabilityError) (preview probability))
-        (swap <$> zipP word8 word8)
+        (annotate (uncurry Error) (preview probability))
+        (fmap swap $ zipP word8 word8)
