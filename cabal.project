@@ -1,6 +1,8 @@
 packages:
     ./eeep.cabal
 
+haddock-hyperlink-source: True
+
 source-repository-package
     type: git
     location: https://github.com/lambda-dom/mono
@@ -14,4 +16,4 @@ source-repository-package
 source-repository-package
     type: git
     location: https://github.com/lambda-dom/trisagion
-    tag: 4044a6f7eb72182a48df78f31e948c96fa3fad13
+    tag: ecbc27cfd56ffae4bf066963481d360ed0e21080

@@ -14,12 +14,14 @@ module Eeep.Types.Opcode.Timing (
     -- ** Prisms.
     timing,
 
-    -- ** Parsers.
+    -- ** Parsers and serializers.
     decode,
+    encode,
 ) where
 
 -- Imports.
 -- Base.
+import Data.Functor.Contravariant (Contravariant(..))
 import Data.Ix (Ix)
 import Data.Word (Word8)
 
@@ -31,8 +33,10 @@ import Data.Enum.Optics (enum)
 import Trisagion.Utils.Either ((:+:), annotate)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Source (InputError)
-import Trisagion.Typeclasses.Parsers.Binary (Binary (..))
+import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parsers.Combinators (validate)
+import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Serializer (Serializer)
 
 
 {- | The t'Timing' @Error@ type. -}
@@ -70,5 +74,10 @@ timing = prism' construct match
 
 {- | Decode a t'Timing'. -}
 {-# INLINE decode #-}
-decode :: Binary b s => Parser s (Error :+: InputError) Timing
-decode = validate (annotate Error (preview timing)) word8
+decode :: Parsers.Binary b s => Parser s (Error :+: InputError) Timing
+decode = validate (annotate Error (preview timing)) Parsers.word8
+
+{- | Encode a t'Timing'. -}
+{-# INLINE encode #-}
+encode :: Serializers.Binary b s => Serializer s Timing
+encode = contramap (review timing) Serializers.word8

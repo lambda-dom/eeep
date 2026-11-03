@@ -22,13 +22,15 @@ module Eeep.Types.Opcode.SaveFlags (
     ignoreSecondary,
     bypassMI,
 
-    -- ** Parsers.
+    -- ** Parsers and serializers.
     decode,
+    encode,
 ) where
 
 -- Imports.
 -- Base.
 import Data.Bits ((.&.))
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Word (Word32)
 
 -- Libraries.
@@ -36,9 +38,11 @@ import Optics.Core (Lens', Iso', (%), coercedTo, view)
 
 -- non-Hackage libraries.
 import Data.Bits.Optics (bitAt)
+import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Source (InputError)
-import Trisagion.Typeclasses.Parsers.Binary (Binary (..))
+import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Serializer (Serializer)
 
 
 {- | The t'SaveFlags' type. -}
@@ -120,5 +124,10 @@ bypassMI = saveFlags % bitAt 24
 
 {- | Decode a t'SaveFlags'. -}
 {-# INLINE decode #-}
-decode :: Binary b s => Parser s InputError SaveFlags
-decode = fmap toSaveFlags word32Le
+decode :: Parsers.Binary b s => Parser s InputError SaveFlags
+decode = fmap toSaveFlags Parsers.word32Le
+
+{- | Encode a t'SaveFlags'. -}
+{-# INLINE encode #-}
+encode :: Serializers.Binary b s => Serializer s SaveFlags
+encode = contramap fromSaveFlags Serializers.word32Le

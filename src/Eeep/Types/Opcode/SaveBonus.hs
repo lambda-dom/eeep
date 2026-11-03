@@ -14,12 +14,14 @@ module Eeep.Types.Opcode.SaveBonus (
     -- ** Prisms.
     saveBonus,
 
-    -- ** Parsers.
+    -- ** Parsers and serializers.
     decode,
+    encode,
 ) where
 
 -- Imports.
 -- Base.
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Int (Int32)
 import Data.Ix (Ix)
 
@@ -29,10 +31,12 @@ import Optics.Core (Prism', prism', review, preview)
 -- non-Hackage libraries.
 import Data.Enum.Optics (enum)
 import Trisagion.Utils.Either ((:+:), annotate)
+import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..), int32Le)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Source (InputError)
-import Trisagion.Typeclasses.Parsers.Binary (Binary (..), int32Le)
 import Trisagion.Parsers.Combinators (validate)
+import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..), int32Le)
+import Trisagion.Serializer (Serializer)
 
 
 {- | The t'SaveBonus' @Error@ type. -}
@@ -75,5 +79,10 @@ saveBonus = prism' construct match
 
 {- | Decode a t'SaveBonus'. -}
 {-# INLINE decode #-}
-decode :: Binary b s => Parser s (Error :+: InputError) SaveBonus
-decode = validate (annotate Error (preview saveBonus)) int32Le
+decode :: Parsers.Binary b s => Parser s (Error :+: InputError) SaveBonus
+decode = validate (annotate Error (preview saveBonus)) Parsers.int32Le
+
+{- | Encode a t'SaveBonus'. -}
+{-# INLINE encode #-}
+encode :: Serializers.Binary b s => Serializer s SaveBonus
+encode = contramap (review saveBonus) Serializers.int32Le

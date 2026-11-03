@@ -16,53 +16,59 @@ module Eeep.Types.Opcode (
 
     -- ** Parsers.
     decode,
+
+    -- * Types.
+    encode,
 ) where
 
 -- Imports.
 -- Base.
 import GHC.Generics (Generic)
 import Data.Bifunctor (Bifunctor (..))
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Int (Int32)
 import Data.Word (Word8, Word16)
 
 -- Libraries.
 import Data.ByteString.Short (ShortByteString)
-import Optics.Core ((%), coercedTo, review, re)
+import Optics.Core ((%), (^.), coercedTo, review, re)
 
 -- non-Hackage libraries.
 import Mono.Typeclasses.MonoFoldable (MonoFoldable)
 import Trisagion.Utils.Either ((:+:))
+import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary)
 import Trisagion.Parsers.Source (InputError)
 import Trisagion.Parser (Parser)
-import Trisagion.Typeclasses.Parsers.Binary (Binary)
+import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Serializer (Serializer)
 
 -- Package.
 import Eeep.Types.Opcode.OpType (OpType)
-import Eeep.Types.Opcode.OpType qualified as OpType (Error (..), decode)
+import Eeep.Types.Opcode.OpType qualified as OpType (Error (..), decode, encode)
 import Eeep.Types.Opcode.Target (Target)
-import qualified Eeep.Types.Opcode.Target as Target (Error (..), decode)
+import qualified Eeep.Types.Opcode.Target as Target (Error (..), decode, encode)
 import Eeep.Types.Opcode.Parameter (Parameter)
-import qualified Eeep.Types.Opcode.Parameter as Parameter (decode)
+import qualified Eeep.Types.Opcode.Parameter as Parameter (decode, encode)
 import Eeep.Types.Opcode.Power (Power)
-import qualified Eeep.Types.Opcode.Power as Power (Error (..), decode)
+import qualified Eeep.Types.Opcode.Power as Power (Error (..), decode, encode)
 import Eeep.Types.Opcode.Timing (Timing)
-import qualified Eeep.Types.Opcode.Timing as Timing (Error (..), decode)
+import qualified Eeep.Types.Opcode.Timing as Timing (Error (..), decode, encode)
 import Eeep.Types.Opcode.Duration (Duration)
-import qualified Eeep.Types.Opcode.Duration as Duration (decode)
+import qualified Eeep.Types.Opcode.Duration as Duration (decode, encode)
 import Eeep.Types.Opcode.ResistDispel (ResistDispel)
-import qualified Eeep.Types.Opcode.ResistDispel as ResistDispel (Error (..), decode)
+import qualified Eeep.Types.Opcode.ResistDispel as ResistDispel (Error (..), decode, encode)
 import Eeep.Types.Opcode.Probability (Probability)
 import qualified Eeep.Types.Opcode.Probability as Probability (decode, error)
 import Eeep.Types.Opcode.Resref (Resref)
-import qualified Eeep.Types.Opcode.Resref as Resref (Error (..), decode)
+import qualified Eeep.Types.Opcode.Resref as Resref (Error (..), decode, encode)
 import Eeep.Types.Opcode.Dice (Dice)
-import qualified Eeep.Types.Opcode.Dice as Dice (decode)
+import qualified Eeep.Types.Opcode.Dice as Dice (decode, encode)
 import Eeep.Types.Opcode.SaveFlags (SaveFlags)
-import qualified Eeep.Types.Opcode.SaveFlags as SaveFlags (decode)
+import qualified Eeep.Types.Opcode.SaveFlags as SaveFlags (decode, encode)
 import Eeep.Types.Opcode.SaveBonus (SaveBonus)
-import qualified Eeep.Types.Opcode.SaveBonus as SaveBonus (Error (..), decode)
+import qualified Eeep.Types.Opcode.SaveBonus as SaveBonus (Error (..), decode, encode)
 import Eeep.Types.Opcode.Special (Special)
-import qualified Eeep.Types.Opcode.Special as Special (decode)
+import qualified Eeep.Types.Opcode.Special as Special (decode, encode)
 
 
 {- | The t'Opcode' @Error@ type.
@@ -104,7 +110,7 @@ data Opcode = Opcode {
 
 {- | Parser for the @t'Opcode'@ type. -}
 {-# INLINEABLE decode #-}
-decode :: (Binary b s, MonoFoldable Word8 b) => Parser s (Error :+: InputError) Opcode
+decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error :+: InputError) Opcode
 decode = do
     optype       <- first (first (review $ #_OpTypeError % coercedTo)) OpType.decode
     target       <- first (first (review $ #_TargetError % coercedTo)) Target.decode
@@ -121,3 +127,21 @@ decode = do
     savebonus    <- first (first (review $ #_SaveBonusError % coercedTo)) SaveBonus.decode
     special      <- first Right Special.decode
     pure Opcode {..}
+
+{- | Serializer for the t'Opcode' type. -}
+{-# INLINE encode #-}
+encode :: Serializers.Binary b s => Serializer s Opcode
+encode
+    =  contramap (^. #optype) OpType.encode
+    <> contramap (^. #target) Target.encode
+    <> contramap (^. #power) Power.encode
+    <> contramap (^. #parameter1) Parameter.encode
+    <> contramap (^. #parameter2) Parameter.encode
+    <> contramap (^. #timing) Timing.encode
+    <> contramap (^. #resistdispel) ResistDispel.encode
+    <> contramap (^. #duration) Duration.encode
+    <> contramap (^. #resref) Resref.encode
+    <> contramap (^. #dice) Dice.encode
+    <> contramap (^. #saveflags) SaveFlags.encode
+    <> contramap (^. #savebonus) SaveBonus.encode
+    <> contramap (^. #special) Special.encode

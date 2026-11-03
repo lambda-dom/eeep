@@ -17,28 +17,32 @@ module Eeep.Types.Opcode.Resref (
     -- ** Prisms.
     resref,
 
-    -- ** Parsers.
+    -- ** Parsers and serializers.
     decode,
+    encode,
 ) where
 
 -- Imports.
 -- Base.
 import Data.Char (isControl, isAscii, chr)
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Word (Word8)
 
 -- Libraries.
 import Data.ByteString.Short (ShortByteString)
-import qualified Data.ByteString.Short as Bytes (length, all, takeWhile)
-import Optics.Core (Prism', prism', preview)
+import qualified Data.ByteString.Short as Short (length, all, takeWhile, replicate)
+import Optics.Core (Prism', prism', preview, review)
 
 -- non-Hackage libraries.
 import Mono.Typeclasses.MonoFoldable (MonoFoldable)
 import Trisagion.Utils.Either ((:+:), annotate)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Source (InputError)
-import Trisagion.Typeclasses.Parsers.Binary (Binary (..))
+import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parsers.Combinators (validate)
 import Trisagion.Parsers.Split (takeExact)
+import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Serializer (Serializer)
 
 
 {- | The t'Resref' @Error@ type. -}
@@ -57,7 +61,12 @@ newtype Resref = Resref ShortByteString
     deriving stock (Eq, Ord, Show)
 
 
-{- | Prism for t'Resref'. -}
+{- | Prism for t'Resref'.
+
+note(s):
+
+    * The (smart) constructor performs normalization.
+-}
 resref :: Prism' ShortByteString Resref
 resref = prism' construct matched
     where
@@ -66,9 +75,9 @@ resref = prism' construct matched
 
         matched :: ShortByteString -> Maybe Resref
         matched xs =
-            if 8 < Bytes.length xs && Bytes.all (isResrefChar . chr . fromIntegral @Word8 @Int) xs
+            if 8 < Short.length xs && Short.all (isResrefChar . chr . fromIntegral @Word8 @Int) xs
             then Nothing
-            else Just . Resref $ Bytes.takeWhile (/= 0) xs
+            else Just . Resref $ Short.takeWhile (/= 0) xs
 
 
 {- | Validate a 'Char' as a valid t'Resref' char.
@@ -92,5 +101,16 @@ isResrefChar c = isAscii c && not (isControl c) && c /= '\\' && c /= '/' && c /=
 
 {- | Decode a t'Resref'. -}
 {-# INLINE decode #-}
-decode :: (MonoFoldable Word8 b, Binary b s) => Parser s (Error :+: InputError) Resref
-decode = validate (annotate Error (preview resref)) (shortBytes $ takeExact 8)
+decode :: (MonoFoldable Word8 b, Parsers.Binary b s) => Parser s (Error :+: InputError) Resref
+decode = validate (annotate Error (preview resref)) (Parsers.shortBytes $ takeExact 8)
+
+{- | Encode a t'Resref'. -}
+{-# INLINE encode #-}
+encode :: Serializers.Binary b s => Serializer s Resref
+encode = contramap (pad8 . review resref) Serializers.shortBytes
+    where
+        pad8 :: ShortByteString -> ShortByteString
+        pad8 xs = if n >= 8 then xs else xs <> Short.replicate (8 - n) 0
+            where
+                n :: Int
+                n = Short.length xs

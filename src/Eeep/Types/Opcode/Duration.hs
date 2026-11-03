@@ -11,22 +11,26 @@ module Eeep.Types.Opcode.Duration (
     -- ** Isomorphisms.
     duration,
 
-    -- ** Parsers.
+    -- ** Parsers and serializers.
     decode,
+    encode,
 ) where
 
 -- Imports.
 -- Base.
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Ix (Ix)
 import Data.Word (Word32)
 
 -- Libraries.
-import Optics.Core (Iso', coercedTo, review)
+import Optics.Core (Iso', coercedTo, review, view)
 
 -- non-Hackage libraries.
-import Trisagion.Typeclasses.Parsers.Binary (Binary (..))
+import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Source (InputError)
+import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Serializer (Serializer)
 
 
 {- | The t'Duration' type. -}
@@ -43,5 +47,10 @@ duration = coercedTo
 
 {- | Decode a t'Duration'. -}
 {-# INLINE decode #-}
-decode :: Binary b s => Parser s InputError Duration
-decode = fmap (review duration) word32Le
+decode :: Parsers.Binary b s => Parser s InputError Duration
+decode = fmap (review duration) Parsers.word32Le
+
+{- | Encode a t'Duration'. -}
+{-# INLINE encode #-}
+encode :: Serializers.Binary b s => Serializer s Duration
+encode = contramap (view duration) Serializers.word32Le
