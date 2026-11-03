@@ -6,7 +6,7 @@ The @OpType@ type.
 
 module Eeep.Types.Opcode.OpType (
     -- * Error types.
-    OpTypeError (..),
+    Error (..),
 
     -- * Types.
     OpType (..),
@@ -38,8 +38,13 @@ import Trisagion.Parsers.Combinators (validate)
 -- >>> import Optics.Core
 
 
-{- | The @OpTypeError@ type. -}
-newtype OpTypeError = OpTypeError Word16
+{- | The t'OpType' @Error@ type.
+
+note(s):
+
+    * To be imported qualified.
+-}
+newtype Error = Error Word16
     deriving stock (Eq, Ord, Bounded, Show)
 
 
@@ -806,5 +811,5 @@ opType = prism' construct matched
 
 {- | Decode an t'OpType'. -}
 {-# INLINE decode #-}
-decode :: Binary b s => Parser s (OpTypeError :+: InputError) OpType
-decode = validate (annotate OpTypeError (preview opType)) word16Le
+decode :: Binary b s => Parser s (Error :+: InputError) OpType
+decode = validate (annotate Error (preview opType)) word16Le

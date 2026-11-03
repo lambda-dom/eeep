@@ -72,3 +72,4 @@ library
         Eeep.Types.Opcode.SaveFlags
         Eeep.Types.Opcode.SaveBonus
         Eeep.Types.Opcode.Special
+        Eeep.Types.Opcode
