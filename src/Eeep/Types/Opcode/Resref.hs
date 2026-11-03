@@ -19,7 +19,7 @@ module Eeep.Types.Opcode.Resref (
 
     -- ** Parsers and serializers.
     decode,
-    -- encode,
+    encode,
 ) where
 
 -- Imports.
@@ -30,7 +30,7 @@ import Data.Word (Word8)
 
 -- Libraries.
 import Data.ByteString.Short (ShortByteString)
-import qualified Data.ByteString.Short as Bytes (length, all, takeWhile)
+import qualified Data.ByteString.Short as Short (length, all, takeWhile, replicate)
 import Optics.Core (Prism', prism', preview, review)
 
 -- non-Hackage libraries.
@@ -61,7 +61,12 @@ newtype Resref = Resref ShortByteString
     deriving stock (Eq, Ord, Show)
 
 
-{- | Prism for t'Resref'. -}
+{- | Prism for t'Resref'.
+
+note(s):
+
+    * The (smart) constructor performs normalization.
+-}
 resref :: Prism' ShortByteString Resref
 resref = prism' construct matched
     where
@@ -70,9 +75,9 @@ resref = prism' construct matched
 
         matched :: ShortByteString -> Maybe Resref
         matched xs =
-            if 8 < Bytes.length xs && Bytes.all (isResrefChar . chr . fromIntegral @Word8 @Int) xs
+            if 8 < Short.length xs && Short.all (isResrefChar . chr . fromIntegral @Word8 @Int) xs
             then Nothing
-            else Just . Resref $ Bytes.takeWhile (/= 0) xs
+            else Just . Resref $ Short.takeWhile (/= 0) xs
 
 
 {- | Validate a 'Char' as a valid t'Resref' char.
@@ -100,6 +105,12 @@ decode :: (MonoFoldable Word8 b, Parsers.Binary b s) => Parser s (Error :+: Inpu
 decode = validate (annotate Error (preview resref)) (Parsers.shortBytes $ takeExact 8)
 
 {- | Encode a t'Resref'. -}
--- {-# INLINE encode #-}
--- encode :: Serializers.Binary b s => Serializer s Resref
--- encode = contramap (review resref) Serializers.shortBytes
+{-# INLINE encode #-}
+encode :: Serializers.Binary b s => Serializer s Resref
+encode = contramap (pad8 . review resref) Serializers.shortBytes
+    where
+        pad8 :: ShortByteString -> ShortByteString
+        pad8 xs = if n >= 8 then xs else xs <> Short.replicate (8 - n) 0
+            where
+                n :: Int
+                n = Short.length xs
