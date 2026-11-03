@@ -14,10 +14,8 @@ module Eeep.Types.Opcode (
     -- * Types.
     Opcode,
 
-    -- ** Parsers.
+    -- ** Parsers and serializers.
     decode,
-
-    -- * Types.
     encode,
 ) where
 
