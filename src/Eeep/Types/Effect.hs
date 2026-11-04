@@ -38,7 +38,7 @@ import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Combinators (skip, validate)
 import Trisagion.Parsers.Source (InputError)
-import Trisagion.Parsers.Split (takeExact)
+import Trisagion.Parsers.Split (takeExact, skipExact)
 
 -- Package.
 import Eeep.Types.Opcode.OpType (OpType)
@@ -139,9 +139,9 @@ signature = skip $ validate v (takeExact 8)
 probParser :: Parsers.Binary b s => Parser s (Error :+: InputError) Probability
 probParser = do
     upper <- first Right Parsers.word8
-    _     <- skip (first Right $ takeExact 1)
+    _     <- first Right $ skipExact 1
     lower <- first Right Parsers.word8
-    _     <- skip (first Right $ takeExact 1)
+    _     <- first Right $ skipExact 1
     case preview Probability.probability (lower, upper) of
         Just x  -> pure x
         Nothing -> throwError . Left $ ProbabilityError lower upper
@@ -152,17 +152,17 @@ probParser = do
 decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error :+: InputError) Effect
 decode = do
     _            <- signature
-    _            <- skip (first Right $ takeExact 8)
+    _            <- first Right $ skipExact 8
     optype       <- first (first (review $ #_OpTypeError % coercedTo)) OpType.decode
-    _            <- skip (first Right $ takeExact 2)
+    _            <- first Right $ skipExact 2
     target       <- first (first (review $ #_TargetError % coercedTo)) Target.decode
-    _            <- skip (first Right $ takeExact 3)
+    _            <- first Right $ skipExact 3
     power        <- first (first (review $ #_PowerError % coercedTo)) Power.decode
-    _            <- skip (first Right $ takeExact 3)
+    _            <- first Right $ skipExact 3
     parameter1   <- first Right Parameter.decode
     parameter2   <- first Right Parameter.decode
     timing       <- first (first (review $ #_TimingError % coercedTo)) Timing.decode
-    _            <- skip (first Right $ takeExact 3)
+    _            <- first Right $ skipExact 3
     duration     <- first Right Duration.decode
     probability  <- probParser
     resref1      <- first (first (review $ #_ResrefError % coercedTo)) Resref.decode
@@ -171,17 +171,17 @@ decode = do
     savebonus    <- first (first (review $ #_SaveBonusError % coercedTo)) SaveBonus.decode
     special      <- first Right Special.decode
     school       <- first Right School.decode
-    _            <- skip (first Right $ takeExact 12)
+    _            <- first Right $ skipExact 12
     resistdispel <- first (first (review $ #_ResistDispelError % coercedTo)) ResistDispel.decode
-    _            <- skip (first Right $ takeExact 3)
+    _            <- first Right $ skipExact 3
     parameter3   <- first Right Parameter.decode
     parameter4   <- first Right Parameter.decode
-    _            <- skip (first Right $ takeExact 8)
+    _            <- first Right $ skipExact 8
     resref2      <- first (first (review $ #_ResrefError % coercedTo)) Resref.decode
     resref3      <- first (first (review $ #_ResrefError % coercedTo)) Resref.decode
-    _            <- skip (first Right $ takeExact 32)
+    _            <- first Right $ skipExact 32
     projectile   <- first Right Projectile.decode
-    _            <- skip (first Right $ takeExact 44)
+    _            <- first Right $ skipExact 44
     sectype      <- first Right Sectype.decode
-    _            <- skip (first Right $ takeExact 60)
+    _            <- first Right $ skipExact 60
     pure Effect {..}
