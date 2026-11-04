@@ -11,11 +11,12 @@ module Eeep.Types.Opcode.Resref (
     -- * Types.
     Resref,
 
+    -- ** Smart constructors and eliminators.
+    fromShort,
+    toShort,
+
     -- ** Predicates.
     isResrefChar,
-
-    -- ** Prisms.
-    resref,
 
     -- ** Parsers and serializers.
     decode,
@@ -31,7 +32,6 @@ import Data.Word (Word8)
 -- Libraries.
 import Data.ByteString.Short (ShortByteString)
 import qualified Data.ByteString.Short as Short (length, all, takeWhile, replicate)
-import Optics.Core (Prism', prism', preview, review)
 
 -- non-Hackage libraries.
 import Mono.Typeclasses.MonoFoldable (MonoFoldable)
@@ -61,23 +61,21 @@ newtype Resref = Resref ShortByteString
     deriving stock (Eq, Ord, Show)
 
 
-{- | Prism for t'Resref'.
+{- | Smart constructor for t'Resref'.
 
 note(s):
 
-    * The (smart) constructor performs normalization.
+    * The constructor performs normalization so it is not part of a 'Optics.Core.Prism'.
 -}
-resref :: Prism' ShortByteString Resref
-resref = prism' construct matched
-    where
-        construct :: Resref -> ShortByteString
-        construct (Resref xs) = xs 
+fromShort :: ShortByteString -> Maybe Resref
+fromShort xs =
+    if 8 < Short.length xs && Short.all (isResrefChar . chr . fromIntegral @Word8 @Int) xs
+    then Nothing
+    else Just . Resref $ Short.takeWhile (/= 0) xs
 
-        matched :: ShortByteString -> Maybe Resref
-        matched xs =
-            if 8 < Short.length xs && Short.all (isResrefChar . chr . fromIntegral @Word8 @Int) xs
-            then Nothing
-            else Just . Resref $ Short.takeWhile (/= 0) xs
+{- | Eliminator for t'Resref'. -}
+toShort :: Resref -> ShortByteString
+toShort (Resref xs) = xs
 
 
 {- | Validate a 'Char' as a valid t'Resref' char.
@@ -102,12 +100,12 @@ isResrefChar c = isAscii c && not (isControl c) && c /= '\\' && c /= '/' && c /=
 {- | Decode a t'Resref'. -}
 {-# INLINE decode #-}
 decode :: (MonoFoldable Word8 b, Parsers.Binary b s) => Parser s (Error :+: InputError) Resref
-decode = validate (annotate Error (preview resref)) (Parsers.shortBytes $ takeExact 8)
+decode = validate (annotate Error fromShort) (Parsers.shortBytes $ takeExact 8)
 
 {- | Encode a t'Resref'. -}
 {-# INLINE encode #-}
 encode :: Serializers.Binary b s => Serializer s Resref
-encode = contramap (pad8 . review resref) Serializers.shortBytes
+encode = contramap (pad8 . toShort) Serializers.shortBytes
     where
         pad8 :: ShortByteString -> ShortByteString
         pad8 xs = if n >= 8 then xs else xs <> Short.replicate (8 - n) 0
