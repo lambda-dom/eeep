@@ -54,8 +54,8 @@ newtype SaveFlags = SaveFlags Word32
 
 note(s)
 
-    * The function performs normalization so it is *not* an inverse of 'fromSaveFlags', only a
-    right-inverse.
+    * The constructor performs normalization so it is *not* an inverse of 'fromSaveFlags', only a
+    right-inverse. By the same token, it is not part of a 'Optics.Core.Prism'.
 -}
 {-# INLINE toSaveFlags #-}
 toSaveFlags :: Word32 -> SaveFlags
@@ -70,12 +70,7 @@ fromSaveFlags :: SaveFlags -> Word32
 fromSaveFlags = view saveFlags
 
 
-{- | Prism for the t'SaveFlags' type.
-
-note(s):
-
-    * Not exported as the constructor does not perform normalization.
--}
+-- | Prism for the t'SaveFlags' type. Not exported.
 {-# INLINE saveFlags #-}
 saveFlags :: Iso' SaveFlags Word32
 saveFlags = coercedTo

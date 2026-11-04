@@ -42,6 +42,7 @@ import Trisagion.Serializer (Serializer)
 {- | The t'Target' @Error@ type. -}
 newtype Error = Error Word8
     deriving stock (Eq, Ord, Bounded, Show)
+    deriving newtype Enum
 
 
 {- | The @Target@ enumeration type. -}
