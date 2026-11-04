@@ -14,10 +14,8 @@ module Eeep.Types.Opcode (
     -- * Types.
     Opcode,
 
-    -- ** Parsers.
+    -- ** Parsers and serializers.
     decode,
-
-    -- * Types.
     encode,
 ) where
 
@@ -91,20 +89,20 @@ data Error
 
 {- | The @Opcode@ type. -}
 data Opcode = Opcode {
-    optype       :: !OpType,
-    target       :: !Target,
-    parameter1   :: !Parameter,
-    parameter2   :: !Parameter,
-    power        :: !Power,
-    timing       :: !Timing,
-    duration     :: !Duration,
-    resistdispel :: !ResistDispel,
-    probability  :: !Probability,
-    resref       :: !Resref,
-    dice         :: !Dice,
-    saveflags    :: !SaveFlags,
-    savebonus    :: !SaveBonus,
-    special      :: !Special
+    optype       :: {-# UNPACK #-} !OpType,
+    target       :: {-# UNPACK #-} !Target,
+    parameter1   :: {-# UNPACK #-} !Parameter,
+    parameter2   :: {-# UNPACK #-} !Parameter,
+    power        :: {-# UNPACK #-} !Power,
+    timing       :: {-# UNPACK #-} !Timing,
+    duration     :: {-# UNPACK #-} !Duration,
+    resistdispel :: {-# UNPACK #-} !ResistDispel,
+    probability  :: {-# UNPACK #-} !Probability,
+    resref       :: {-# UNPACK #-} !Resref,
+    dice         :: {-# UNPACK #-} !Dice,
+    saveflags    :: {-# UNPACK #-} !SaveFlags,
+    savebonus    :: {-# UNPACK #-} !SaveBonus,
+    special      :: {-# UNPACK #-} !Special
 } deriving stock (Eq, Generic, Show)
 
 
