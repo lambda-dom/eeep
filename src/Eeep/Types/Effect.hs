@@ -135,7 +135,7 @@ signature = skip $ validate v (takeExact 8)
     where
         v :: b -> Error b :+: b
         v xs =
-            if fmap (fromIntegral @Int @Word8 . ord) "EFF V2.0" == monotoList xs
+            if fmap (fromIntegral @Int @Word8 . ord) "EFF V2.0" /= monotoList xs
             then Left $ SignatureError xs
             else Right xs
 
