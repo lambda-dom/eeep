@@ -103,7 +103,7 @@ data Opcode = Opcode {
     saveflags    :: {-# UNPACK #-} !SaveFlags,
     savebonus    :: {-# UNPACK #-} !SaveBonus,
     special      :: {-# UNPACK #-} !Special
-} deriving stock (Eq, Generic, Show)
+} deriving stock (Eq, Show, Generic)
 
 
 {- | Parser for the @t'Opcode'@ type. -}
@@ -127,7 +127,7 @@ decode = do
     pure Opcode {..}
 
 {- | Serializer for the t'Opcode' type. -}
-{-# INLINE encode #-}
+{-# INLINEABLE encode #-}
 encode :: Serializers.Binary b s => Serializer s Opcode
 encode
     =  contramap (^. #optype) OpType.encode

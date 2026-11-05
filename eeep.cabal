@@ -50,6 +50,7 @@ library
         -- Libraries.
         bytestring         >=0.12   && <0.13,
         contravariant      >=1.5    && <1.6,
+        mtl                >=2.3    && <2.4,
         optics-core        >=0.4.2  && <0.4.3,
         vector             >=0.13   && <0.14,
         -- Non-hackage libraries.
@@ -72,3 +73,7 @@ library
         Eeep.Types.Opcode.SaveBonus
         Eeep.Types.Opcode.Special
         Eeep.Types.Opcode
+        Eeep.Types.Effect.Projectile
+        Eeep.Types.Effect.School
+        Eeep.Types.Effect.Sectype
+        Eeep.Types.Effect
