@@ -50,8 +50,8 @@ newtype Error = Error Int32
 Refinement type to constrain the values of save bonuses to the interval @[-20 .. 20]@.
 -}
 newtype SaveBonus = SaveBonus Int32
-    deriving stock (Eq, Ord, Ix, Show)
-    deriving newtype Enum
+    deriving stock (Eq, Ord, Ix)
+    deriving newtype (Enum, Show)
 
 
 -- Instances.

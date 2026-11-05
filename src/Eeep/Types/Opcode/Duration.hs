@@ -35,8 +35,8 @@ import Trisagion.Serializer (Serializer)
 
 {- | The t'Duration' type. -}
 newtype Duration = Duration Word32
-    deriving stock (Eq, Ord, Bounded, Ix, Show)
-    deriving newtype Enum
+    deriving stock (Eq, Ord, Bounded, Ix)
+    deriving newtype (Enum, Show)
 
 
 {- | Isomorphism for the t'Duration' type. -}

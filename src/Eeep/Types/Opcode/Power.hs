@@ -50,8 +50,8 @@ newtype Error = Error Word8
 A refinement type containing the values in the interval @[0 .. 10]@.
 -}
 newtype Power = Power Word8
-    deriving stock (Eq, Ord, Ix, Show)
-    deriving newtype Enum
+    deriving stock (Eq, Ord, Ix)
+    deriving newtype (Enum, Show)
 
 
 -- Instances.

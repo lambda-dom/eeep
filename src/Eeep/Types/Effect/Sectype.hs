@@ -40,8 +40,8 @@ note(s):
     * t'Sectype' values can only be validated in the 'IO' monad.
 -}
 newtype Sectype = Sectype Word32
-    deriving stock (Eq, Ord, Bounded, Ix, Show)
-    deriving newtype Enum
+    deriving stock (Eq, Ord, Bounded, Ix)
+    deriving newtype (Enum, Show)
 
 
 {- | Isomorphism for the t'Sectype' type. -}

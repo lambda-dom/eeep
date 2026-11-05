@@ -61,7 +61,8 @@ note(s):
     t'Resref' values as map keys, etc.
 -}
 newtype Resref = Resref ShortByteString
-    deriving stock (Eq, Ord, Show)
+    deriving stock (Eq, Ord)
+    deriving newtype Show
 
 
 {- | Smart constructor for t'Resref'.
