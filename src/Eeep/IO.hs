@@ -29,9 +29,10 @@ import System.OsPath (OsPath, encodeUtf, decodeUtf)
 import System.File.OsPath (readFile')
 
 -- non-Hackage libraries.
+import Trisagion.Utils.Either ((:+:))
+import Trisagion.Streams.Counter (Counter, initialize)
 import Trisagion.Parser (Parser, eval)
 import Trisagion.Serializer (Serializer, run)
-import Trisagion.Streams.Counter (Counter, initialize)
 
 
 {- | Encode a 'String' as an 'OsPath'. -}
@@ -54,7 +55,7 @@ writeBinary path builder = do
 fromFile
     :: Parser (Counter ByteString) e a      -- ^ Parser.
     -> OsPath                               -- ^ File path.
-    -> IO (Either e a)
+    -> IO (e :+: a)
 fromFile parser path = do
     xs <- fmap initialize $ readBinary path
     pure $ eval parser xs
@@ -73,7 +74,7 @@ patch
     -> Serializer Builder a                 -- ^ Serializer.
     -> (a -> a)                             -- ^ Patcher.
     -> OsPath                               -- ^ File path.
-    -> IO (Either e ())
+    -> IO (e :+: ())
 patch parser s patcher path = do
     x <- fromFile parser path
     case x of
