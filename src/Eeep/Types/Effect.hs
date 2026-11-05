@@ -87,15 +87,15 @@ note(s):
 
     * To be imported qualified.
 -}
-data Error
-    = SignatureError
+data Error b
+    = SignatureError                   !b
     | OpTypeError       {-# UNPACK #-} !Word16
     | TargetError       {-# UNPACK #-} !Word8
     | PowerError        {-# UNPACK #-} !Word8
     | TimingError       {-# UNPACK #-} !Word8
     | ResistDispelError {-# UNPACK #-} !Word8
     | ProbabilityError  {-# UNPACK #-} !Word8 {-# UNPACK #-} !Word8
-    | ResrefError       {-# UNPACK #-} !ShortByteString
+    | ResrefError                      !ShortByteString
     | SaveBonusError    {-# UNPACK #-} !Int32
     deriving stock (Eq, Ord, Generic, Show)
 
@@ -130,19 +130,19 @@ data Effect = Effect {
 {-# INLINE signature #-}
 signature
     :: forall b s . (Parsers.Binary b s, MonoFoldable Word8 b)
-    => Parser s (Error :+: InputError) ()
+    => Parser s (Error b :+: InputError) ()
 signature = skip $ validate v (takeExact 8)
     where
-        v :: b -> Error :+: b
+        v :: b -> Error b :+: b
         v xs =
             if fmap (fromIntegral @Int @Word8 . ord) "EFF V2.0" == monotoList xs
-            then Left $ SignatureError
+            then Left $ SignatureError xs
             else Right xs
 
 
 -- | Parser for t'Probability'. Not exported.
 {-# INLINE probParser #-}
-probParser :: Parsers.Binary b s => Parser s (Error :+: InputError) Probability
+probParser :: Parsers.Binary b s => Parser s (Error b :+: InputError) Probability
 probParser = do
     upper <- first Right Parsers.word8
     _     <- first Right $ skipExact 1
@@ -155,7 +155,7 @@ probParser = do
 
 {- | Parser for the @t'Effect'@ type. -}
 {-# INLINEABLE decode #-}
-decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error :+: InputError) Effect
+decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error b :+: InputError) Effect
 decode = do
     _            <- signature
     _            <- first Right $ skipExact 8
