@@ -35,8 +35,8 @@ import Trisagion.Serializer (Serializer)
 
 {- | The t'Parameter' type. -}
 newtype Parameter = Parameter Word32
-    deriving stock (Eq, Ord, Bounded, Ix, Show)
-    deriving newtype Enum
+    deriving stock (Eq, Ord, Bounded, Ix)
+    deriving newtype (Enum, Show)
 
 
 {- | Isomorphism for the t'Parameter' type. -}

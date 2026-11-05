@@ -40,8 +40,8 @@ note(s):
     * t'School' values can only be validated in the 'IO' monad.
 -}
 newtype School = School Word32
-    deriving stock (Eq, Ord, Bounded, Ix, Show)
-    deriving newtype Enum
+    deriving stock (Eq, Ord, Bounded, Ix)
+    deriving newtype (Enum, Show)
 
 
 {- | Isomorphism for the t'School' type. -}

@@ -35,8 +35,8 @@ import Trisagion.Serializer (Serializer)
 
 {- | The t'Special' type. -}
 newtype Special = Special Word32
-    deriving stock (Eq, Ord, Bounded, Ix, Show)
-    deriving newtype Enum
+    deriving stock (Eq, Ord, Bounded, Ix)
+    deriving newtype (Enum, Show)
 
 
 {- | Isomorphism for the t'Special' type. -}
