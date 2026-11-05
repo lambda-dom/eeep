@@ -21,6 +21,9 @@ module Eeep.Types.Opcode.Resref (
     -- ** Parsers and serializers.
     decode,
     encode,
+
+    -- * Utilities.
+    padN,
 ) where
 
 -- Imports.
@@ -105,10 +108,13 @@ decode = validate (annotate Error fromShort) (Parsers.shortBytes $ takeExact 8)
 {- | Encode a t'Resref'. -}
 {-# INLINE encode #-}
 encode :: Serializers.Binary b s => Serializer s Resref
-encode = contramap (pad8 . toShort) Serializers.shortBytes
-    where
-        pad8 :: ShortByteString -> ShortByteString
-        pad8 xs = if n >= 8 then xs else xs <> Short.replicate (8 - n) 0
-            where
-                n :: Int
-                n = Short.length xs
+encode = contramap (padN 8 . toShort) Serializers.shortBytes
+
+
+{- | Pad a 'ShortByteString' on the right with @n@ zeros. -}
+padN :: Int -> ShortByteString -> ShortByteString
+padN m xs =
+    let l = m - Short.length xs in
+        if l <= 0
+        then xs
+        else xs <> Short.replicate l 0

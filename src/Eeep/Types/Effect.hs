@@ -16,6 +16,7 @@ module Eeep.Types.Effect (
 
     -- ** Parsers and serializers.
     decode,
+    encode,
 ) where
 
 -- Imports.
@@ -23,13 +24,14 @@ module Eeep.Types.Effect (
 import GHC.Generics (Generic)
 import Data.Bifunctor (Bifunctor (..))
 import Data.Char (ord)
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Int (Int32)
 import Data.Word (Word8, Word16)
 
 -- Libraries.
 import Control.Monad.Except (MonadError (..))
 import Data.ByteString.Short (ShortByteString)
-import Optics.Core ((%), review, coercedTo, preview)
+import Optics.Core ((%), review, coercedTo, preview, (^.), view)
 
 -- non-Hackage libraries.
 import Mono.Typeclasses.MonoFoldable (MonoFoldable (..))
@@ -39,40 +41,44 @@ import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Combinators (skip, validate)
 import Trisagion.Parsers.Source (InputError)
 import Trisagion.Parsers.Split (takeExact, skipExact)
+import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Typeclasses.Serializers.Binary (char8s, nulls)
+import Trisagion.Serializer (Serializer)
+import Trisagion.Serializers.Combinators (applied)
 
 -- Package.
 import Eeep.Types.Opcode.OpType (OpType)
-import qualified Eeep.Types.Opcode.OpType as OpType (Error (..), decode)
+import qualified Eeep.Types.Opcode.OpType as OpType (Error (..), decode, encode)
 import Eeep.Types.Opcode.Parameter (Parameter)
-import qualified Eeep.Types.Opcode.Parameter as Parameter (decode)
+import qualified Eeep.Types.Opcode.Parameter as Parameter (decode, encode)
 import Eeep.Types.Opcode.Power (Power)
-import qualified Eeep.Types.Opcode.Power as Power (Error (..), decode)
+import qualified Eeep.Types.Opcode.Power as Power (Error (..), decode, encode)
 import Eeep.Types.Opcode.Target (Target)
-import qualified Eeep.Types.Opcode.Target as Target (Error (..), decode)
+import qualified Eeep.Types.Opcode.Target as Target (Error (..), decode, encode)
 import Eeep.Types.Opcode.Timing (Timing)
-import qualified Eeep.Types.Opcode.Timing as Timing (Error (..), decode)
+import qualified Eeep.Types.Opcode.Timing as Timing (Error (..), decode, encode)
 import Eeep.Types.Opcode.Duration (Duration)
-import qualified Eeep.Types.Opcode.Duration as Duration (decode)
+import qualified Eeep.Types.Opcode.Duration as Duration (decode, encode)
 import Eeep.Types.Opcode.Probability (Probability)
-import qualified Eeep.Types.Opcode.Probability as Probability (probability)
+import qualified Eeep.Types.Opcode.Probability as Probability (probability, upper, lower)
 import Eeep.Types.Opcode.ResistDispel (ResistDispel)
-import qualified Eeep.Types.Opcode.ResistDispel as ResistDispel (Error (..), decode)
+import qualified Eeep.Types.Opcode.ResistDispel as ResistDispel (Error (..), decode, encode)
 import Eeep.Types.Opcode.Resref (Resref)
-import qualified Eeep.Types.Opcode.Resref as Resref (Error (..), decode)
+import qualified Eeep.Types.Opcode.Resref as Resref (Error (..), decode, encode)
 import Eeep.Types.Opcode.Dice (Dice)
-import qualified Eeep.Types.Opcode.Dice as Dice (decode)
+import qualified Eeep.Types.Opcode.Dice as Dice (decode, encode)
 import Eeep.Types.Opcode.SaveFlags (SaveFlags)
-import qualified Eeep.Types.Opcode.SaveFlags as SaveFlags (decode)
+import qualified Eeep.Types.Opcode.SaveFlags as SaveFlags (decode, encode)
 import Eeep.Types.Opcode.SaveBonus (SaveBonus)
-import qualified Eeep.Types.Opcode.SaveBonus as SaveBonus (Error (..), decode)
+import qualified Eeep.Types.Opcode.SaveBonus as SaveBonus (Error (..), decode, encode)
 import Eeep.Types.Effect.Projectile (Projectile)
-import qualified Eeep.Types.Effect.Projectile as Projectile (decode)
+import qualified Eeep.Types.Effect.Projectile as Projectile (decode, encode)
 import Eeep.Types.Effect.School (School)
-import qualified Eeep.Types.Effect.School as School (decode)
+import qualified Eeep.Types.Effect.School as School (decode, encode)
 import Eeep.Types.Effect.Sectype (Sectype)
-import qualified Eeep.Types.Effect.Sectype as Sectype (decode)
+import qualified Eeep.Types.Effect.Sectype as Sectype (decode, encode)
 import Eeep.Types.Opcode.Special (Special)
-import qualified Eeep.Types.Opcode.Special as Special (decode)
+import qualified Eeep.Types.Opcode.Special as Special (decode, encode)
 
 
 {- | The t'Effect' @Error@ type.
@@ -185,3 +191,44 @@ decode = do
     sectype      <- first Right Sectype.decode
     _            <- first Right $ skipExact 60
     pure Effect {..}
+
+{- | Serializer for the t'Effect' type. -}
+{-# INLINEABLE encode #-}
+encode :: Serializers.Binary b s => Serializer s Effect
+encode
+    =  applied char8s "EFF V2.0"
+    <> nulls 8
+    <> contramap (^. #optype) OpType.encode
+    <> nulls 2
+    <> contramap (^. #target) Target.encode
+    <> nulls 3
+    <> contramap (^. #power) Power.encode
+    <> nulls 3
+    <> contramap (^. #parameter1) Parameter.encode
+    <> contramap (^. #parameter2) Parameter.encode
+    <> contramap (^. #timing) Timing.encode
+    <> nulls 3
+    <> contramap (^. #duration) Duration.encode
+    <> contramap (Probability.upper . view #probability) Serializers.word8
+    <> nulls 1
+    <> contramap (Probability.lower . view #probability) Serializers.word8
+    <> nulls 1
+    <> contramap (^. #resref1) Resref.encode
+    <> contramap (^. #dice) Dice.encode
+    <> contramap (^. #saveflags) SaveFlags.encode
+    <> contramap (^. #savebonus) SaveBonus.encode
+    <> contramap (^. #special) Special.encode
+    <> contramap (^. #school) School.encode
+    <> nulls 12
+    <> contramap (^. #resistdispel) ResistDispel.encode
+    <> nulls 3
+    <> contramap (^. #parameter3) Parameter.encode
+    <> contramap (^. #parameter4) Parameter.encode
+    <> nulls 8
+    <> contramap (^. #resref2) Resref.encode
+    <> contramap (^. #resref3) Resref.encode
+    <> nulls 32
+    <> contramap (^. #projectile) Projectile.encode
+    <> nulls 44
+    <> contramap (^. #sectype) Sectype.encode
+    <> nulls 60
