@@ -14,6 +14,7 @@ module Eeep.IO (
 
     -- * Reading and writing.
     fromFile,
+    fromFile',
     toFile,
     patch,
 ) where
@@ -30,7 +31,7 @@ import System.File.OsPath (readFile')
 
 -- non-Hackage libraries.
 import Trisagion.Utils.Either ((:+:))
-import Trisagion.Streams.Counter (Counter, initialize)
+import Trisagion.Streams.Offset (Offset, initialize)
 import Trisagion.Parser (Parser, eval)
 import Trisagion.Serializer (Serializer, run)
 
@@ -53,12 +54,22 @@ writeBinary path builder = do
 
 {- | Decode an @a@ from a binary file. -}
 fromFile
-    :: Parser (Counter ByteString) e a      -- ^ Parser.
+    :: Parser (Offset ByteString) e a       -- ^ Parser.
     -> OsPath                               -- ^ File path.
     -> IO (e :+: a)
 fromFile parser path = do
     xs <- fmap initialize $ readBinary path
     pure $ eval parser xs
+
+{- | Decode an @a@ from a binary file.
+
+The file path is given in the IO monad as a string.
+-}
+fromFile'
+    :: Parser (Offset ByteString) e a       -- ^ Parser.
+    -> String                               -- ^ File path.
+    -> IO (e :+: a)
+fromFile' parser path = fromString path >>= fromFile parser
 
 {- | Encode an @a@ to a binary file. -}
 toFile
@@ -70,7 +81,7 @@ toFile s x path = writeBinary path (run s x)
 
 {- | Patch an @a@ in a binary file. -}
 patch
-    :: Parser (Counter ByteString) e a      -- ^ Parser.
+    :: Parser (Offset ByteString) e a       -- ^ Parser.
     -> Serializer Builder a                 -- ^ Serializer.
     -> (a -> a)                             -- ^ Patcher.
     -> OsPath                               -- ^ File path.
