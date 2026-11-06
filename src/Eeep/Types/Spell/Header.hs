@@ -15,7 +15,6 @@ module Eeep.Types.Spell.Header (
 -- Imports.
 -- Base.
 import GHC.Generics (Generic)
-import Data.Word (Word32)
 
 -- Package.
 import Eeep.Types.Shared.Resref (Resref)
@@ -23,6 +22,7 @@ import Eeep.Types.Shared.School (School)
 import Eeep.Types.Shared.Sectype (Sectype)
 import Eeep.Types.Shared.Strref (Strref)
 import Eeep.Types.Spell.SpType (SpType)
+import Eeep.Types.Spell.Level (Level)
 import Eeep.Types.Spell.Exclusion (Exclusion)
 import Eeep.Types.Spell.Flags (Flags)
 import Eeep.Types.Spell.Graphics (Graphics)
@@ -38,7 +38,7 @@ data Header = Header {
     graphics    :: {-# UNPACK #-} !Graphics,
     school      :: {-# UNPACK #-} !School,
     sectype     :: {-# UNPACK #-} !Sectype,
-    level       :: {-# UNPACK #-} !Word32,
+    level       :: {-# UNPACK #-} !Level,
     bookicon    :: {-# UNPACK #-} !Resref,
     description :: {-# UNPACK #-} !Strref
 } deriving stock (Eq, Show, Generic)

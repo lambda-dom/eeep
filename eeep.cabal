@@ -81,8 +81,9 @@ library
         Eeep.Types.Opcode
         Eeep.Types.Effect
         Eeep.Types.Spell.SpType
-        Eeep.Types.Spell.Graphics
+        Eeep.Types.Spell.Level
         Eeep.Types.Spell.Flags
         Eeep.Types.Spell.Exclusion
+        Eeep.Types.Spell.Graphics
         Eeep.Types.Spell.Header
         Eeep.IO
