@@ -14,7 +14,7 @@ module Eeep.Types.Spell.Header (
     -- * Types.
     Header (..),
 
-    -- * Parsers and serializers.
+    -- ** Parsers and serializers.
     decode,
     encode,
 ) where
