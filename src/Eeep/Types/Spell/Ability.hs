@@ -22,7 +22,7 @@ module Eeep.Types.Spell.Ability (
 -- Base.
 import GHC.Generics (Generic)
 import Data.Bifunctor (Bifunctor (..))
-import Data.Word (Word8, Word16)
+import Data.Word (Word8)
 
 -- Libraries.
 import Data.ByteString.Short (ShortByteString)
@@ -37,6 +37,8 @@ import Trisagion.Parsers.Source (InputError)
 import Trisagion.Parsers.Split (skipExact)
 
 -- Package.
+import Eeep.Types.Shared.Block (Block)
+import qualified Eeep.Types.Shared.Block as Block (decode)
 import Eeep.Types.Shared.Projectile (Projectile)
 import qualified Eeep.Types.Shared.Projectile as Projectile (decode)
 import Eeep.Types.Shared.Resref (Resref)
@@ -85,7 +87,7 @@ data Ability = Ability {
 {-# INLINEABLE decode #-}
 decode
     :: (Parsers.Binary b s, MonoFoldable Word8 b)
-    => Parser s (Error :+: InputError) (Ability, Word16, Word16)
+    => Parser s (Error :+: InputError) (Ability, Block)
 decode = do
     _          <- first Right $ skipExact 2
     location   <- first (first (review $ #_LocationError % coercedTo)) Location.decode
@@ -98,8 +100,7 @@ decode = do
     _          <- first Right $ skipExact 1
     time       <- first (first (review $ #_TimeError % coercedTo)) Time.decode
     _          <- first Right $ skipExact 11
-    opcount    <- first Right Parsers.word16Le
-    opoffset   <- first Right Parsers.word16Le
+    block      <- first Right Block.decode
     _          <- first Right $ skipExact 4
     projectile <- first Right Projectile.decode
-    pure (Ability {..}, opcount, opoffset)
+    pure (Ability {..}, block)
