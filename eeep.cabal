@@ -79,4 +79,5 @@ library
         Eeep.Types.Effect.School
         Eeep.Types.Effect.Sectype
         Eeep.Types.Effect
+        Eeep.Types.Spell.SpType
         Eeep.IO
