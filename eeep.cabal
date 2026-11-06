@@ -83,6 +83,9 @@ library
         Eeep.Types.Spell.Ability.Location
         Eeep.Types.Spell.Ability.Target
         Eeep.Types.Spell.Ability.Time
+        Eeep.Types.Spell.Ability.Level
+        Eeep.Types.Spell.Ability.Range
+        Eeep.Types.Spell.Ability
         Eeep.Types.Spell.SpType
         Eeep.Types.Spell.Level
         Eeep.Types.Spell.Flags

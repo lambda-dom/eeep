@@ -5,6 +5,9 @@ Description: the spell ability's 'Location' type.
 -}
 
 module Eeep.Types.Spell.Ability.Location (
+    -- * Error types.
+    Error (..),
+
     -- * Types.
     Location (..),
 
