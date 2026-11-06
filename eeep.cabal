@@ -61,6 +61,7 @@ library
         trisagion          >=0.0.1  && <0.1,
     other-modules:
     exposed-modules:
+        Eeep.Types.Shared.Block
         Eeep.Types.Shared.Dice
         Eeep.Types.Shared.Resref
         Eeep.Types.Shared.Projectile
@@ -80,6 +81,12 @@ library
         Eeep.Types.Opcode.Special
         Eeep.Types.Opcode
         Eeep.Types.Effect
+        Eeep.Types.Spell.Ability.Location
+        Eeep.Types.Spell.Ability.Target
+        Eeep.Types.Spell.Ability.Time
+        Eeep.Types.Spell.Ability.Level
+        Eeep.Types.Spell.Ability.Range
+        Eeep.Types.Spell.Ability
         Eeep.Types.Spell.SpType
         Eeep.Types.Spell.Level
         Eeep.Types.Spell.Flags
