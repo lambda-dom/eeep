@@ -16,17 +16,19 @@ module Eeep.Types.Spell.Ability (
 
     -- ** Parsers and serializers.
     decode,
+    encode,
 ) where
 
 -- Imports.
 -- Base.
 import GHC.Generics (Generic)
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Bifunctor (Bifunctor (..))
 import Data.Word (Word8)
 
 -- Libraries.
 import Data.ByteString.Short (ShortByteString)
-import Optics.Core ((%), review, coercedTo)
+import Optics.Core ((%), (^.), review, coercedTo)
 
 -- non-Hackage libraries.
 import Mono.Typeclasses.MonoFoldable (MonoFoldable)
@@ -35,24 +37,28 @@ import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Source (InputError)
 import Trisagion.Parsers.Split (skipExact)
+import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Serializer (Serializer)
 
 -- Package.
 import Eeep.Types.Shared.Block (Block)
-import qualified Eeep.Types.Shared.Block as Block (decode)
+import qualified Eeep.Types.Shared.Block as Block (decode, encode)
 import Eeep.Types.Shared.Projectile (Projectile)
-import qualified Eeep.Types.Shared.Projectile as Projectile (decode)
+import qualified Eeep.Types.Shared.Projectile as Projectile (decode, encode)
 import Eeep.Types.Shared.Resref (Resref)
-import qualified Eeep.Types.Shared.Resref as Resref (Error (..), decode)
+import qualified Eeep.Types.Shared.Resref as Resref (Error (..), decode, encode)
 import Eeep.Types.Spell.Ability.Location (Location)
-import qualified Eeep.Types.Spell.Ability.Location as Location (Error (..), decode)
+import qualified Eeep.Types.Spell.Ability.Location as Location (Error (..), decode, encode)
 import Eeep.Types.Spell.Ability.Target (Target)
-import qualified Eeep.Types.Spell.Ability.Target as Target (Error (..), decode)
+import qualified Eeep.Types.Spell.Ability.Target as Target (Error (..), decode, encode)
 import Eeep.Types.Spell.Ability.Level (Level)
-import qualified Eeep.Types.Spell.Ability.Level as Level (Error (..), decode)
+import qualified Eeep.Types.Spell.Ability.Level as Level (Error (..), decode, encode)
 import Eeep.Types.Spell.Ability.Time (Time)
-import qualified Eeep.Types.Spell.Ability.Time as Time (Error (..), decode)
+import qualified Eeep.Types.Spell.Ability.Time as Time (Error (..), decode, encode)
 import Eeep.Types.Spell.Ability.Range (Range)
-import qualified Eeep.Types.Spell.Ability.Range as Range (decode)
+import qualified Eeep.Types.Spell.Ability.Range as Range (decode, encode)
+import Trisagion.Typeclasses.Serializers.Binary (nulls)
+import Trisagion.Serializers.Combinators (applied)
 
 
 {- | The t'Ability' @Error@ type.
@@ -104,3 +110,22 @@ decode = do
     _          <- first Right $ skipExact 4
     projectile <- first Right Projectile.decode
     pure (Ability {..}, block)
+
+{- | Serializer for the spell t'Ability' type. -}
+{-# INLINEABLE encode #-}
+encode :: Serializers.Binary b s => Block -> Serializer s Ability
+encode block
+    =  nulls 2
+    <> contramap (^. #location) Location.encode
+    <> nulls 1
+    <> contramap (^. #icon) Resref.encode
+    <> contramap (^. #target) Target.encode
+    <> contramap (^. #count) Serializers.word8
+    <> contramap (^. #range) Range.encode
+    <> contramap (^. #level) Level.encode
+    <> nulls 1
+    <> contramap (^. #time) Time.encode
+    <> nulls 11
+    <> applied Block.encode block
+    <> nulls 4
+    <> contramap (^. #projectile) Projectile.encode
