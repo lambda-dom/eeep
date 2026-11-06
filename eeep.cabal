@@ -84,4 +84,5 @@ library
         Eeep.Types.Spell.Graphics
         Eeep.Types.Spell.Flags
         Eeep.Types.Spell.Exclusion
+        Eeep.Types.Spell.Header
         Eeep.IO
