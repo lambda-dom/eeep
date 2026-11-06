@@ -1,10 +1,10 @@
 {- |
-Module: Eeep.Types.Opcode.Resref
+Module: Eeep.Types.Shared.Resref
 
 The @Resref@ type.
 -}
 
-module Eeep.Types.Opcode.Resref (
+module Eeep.Types.Shared.Resref (
     -- * Error types.
     Error (..),
 

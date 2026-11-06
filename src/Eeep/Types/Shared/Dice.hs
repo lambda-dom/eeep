@@ -2,12 +2,12 @@
 {-# LANGUAGE RecordWildCards #-}
 
 {- |
-Module: Eeep.Types.Opcode.Dice
+Module: Eeep.Types.Shared.Dice
 
 The @Dice@ type.
 -}
 
-module Eeep.Types.Opcode.Dice (
+module Eeep.Types.Shared.Dice (
     -- * Types.
     Dice,
 

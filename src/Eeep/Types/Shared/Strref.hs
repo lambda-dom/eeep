@@ -1,15 +1,15 @@
 {- |
-Module: Eeep.Types.Effect.Sectype
+Module: Eeep.Types.Shared.Strref
 
-The @Sectype@ type.
+The @Strref@ string reference type.
 -}
 
-module Eeep.Types.Effect.Sectype (
+module Eeep.Types.Shared.Strref (
     -- * Types.
-    Sectype (..),
+    Strref (..),
 
-    -- ** Isomorphisms.
-    sectype,
+    -- ** Prisms.
+    strref,
 
     -- ** Parsers and serializers.
     decode,
@@ -33,29 +33,27 @@ import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary
 import Trisagion.Serializer (Serializer)
 
 
-{- | The t'Sectype' numeric id type.
+{- | A .tlk string reference.
 
-note(s):
-
-    * t'Sectype' values can only be validated in the 'IO' monad.
+A .tlk string reference can only be dereferenced or validated in the IO monad.
 -}
-newtype Sectype = Sectype Word32
+newtype Strref = Strref Word32
     deriving stock (Eq, Ord, Bounded, Ix)
     deriving newtype (Enum, Show)
 
 
-{- | Isomorphism for the t'Sectype' type. -}
-{-# INLINE sectype #-}
-sectype :: Iso' Sectype Word32
-sectype = coercedTo
+{- | Isomorphism for the t'Strref' type. -}
+{-# INLINE strref #-}
+strref :: Iso' Strref Word32
+strref = coercedTo
 
 
-{- | Decode a t'Sectype'. -}
+{- | Decode a t'Strref'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s InputError Sectype
-decode = fmap (review sectype) Parsers.word32Le
+decode :: Parsers.Binary b s => Parser s InputError Strref
+decode = fmap (review strref) Parsers.word32Le
 
-{- | Encode a t'Sectype'. -}
+{- | Encode a t'Strref'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary b s => Serializer s Sectype
-encode = contramap (view sectype) Serializers.word32Le
+encode :: Serializers.Binary b s => Serializer s Strref
+encode = contramap (view strref) Serializers.word32Le

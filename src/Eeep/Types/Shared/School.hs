@@ -1,15 +1,15 @@
 {- |
-Module: Eeep.Types.Spell.Strref
+Module: Eeep.Types.Shared.School
 
-The @Strref@ string reference type.
+The @School@ type.
 -}
 
-module Eeep.Types.Spell.Strref (
+module Eeep.Types.Shared.School (
     -- * Types.
-    Strref (..),
+    School (..),
 
-    -- ** Prisms.
-    strref,
+    -- ** Isomorphisms.
+    school,
 
     -- ** Parsers and serializers.
     decode,
@@ -33,27 +33,29 @@ import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary
 import Trisagion.Serializer (Serializer)
 
 
-{- | A .tlk string reference.
+{- | The t'School' numeric id type.
 
-A .tlk string reference can only be dereferenced or validated in the IO monad.
+note(s):
+
+    * t'School' values can only be validated in the 'IO' monad.
 -}
-newtype Strref = Strref Word32
+newtype School = School Word32
     deriving stock (Eq, Ord, Bounded, Ix)
     deriving newtype (Enum, Show)
 
 
-{- | Isomorphism for the t'Strref' type. -}
-{-# INLINE strref #-}
-strref :: Iso' Strref Word32
-strref = coercedTo
+{- | Isomorphism for the t'School' type. -}
+{-# INLINE school #-}
+school :: Iso' School Word32
+school = coercedTo
 
 
-{- | Decode a t'Strref'. -}
+{- | Decode a t'School'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s InputError Strref
-decode = fmap (review strref) Parsers.word32Le
+decode :: Parsers.Binary b s => Parser s InputError School
+decode = fmap (review school) Parsers.word32Le
 
-{- | Encode a t'Strref'. -}
+{- | Encode a t'School'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary b s => Serializer s Strref
-encode = contramap (view strref) Serializers.word32Le
+encode :: Serializers.Binary b s => Serializer s School
+encode = contramap (view school) Serializers.word32Le

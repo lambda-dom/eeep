@@ -4,7 +4,7 @@
 {- |
 Module: Eeep.Spell
 
-The Spell 'Header' type.
+The Spell t'Header' type.
 -}
 
 module Eeep.Types.Spell.Header (
@@ -18,10 +18,10 @@ import GHC.Generics (Generic)
 import Data.Word (Word32)
 
 -- Package.
-import Eeep.Types.Opcode.Resref (Resref)
-import Eeep.Types.Effect.School (School)
-import Eeep.Types.Effect.Sectype (Sectype)
-import Eeep.Types.Spell.Strref (Strref)
+import Eeep.Types.Shared.Resref (Resref)
+import Eeep.Types.Shared.School (School)
+import Eeep.Types.Shared.Sectype (Sectype)
+import Eeep.Types.Shared.Strref (Strref)
 import Eeep.Types.Spell.SpType (SpType)
 import Eeep.Types.Spell.Exclusion (Exclusion)
 import Eeep.Types.Spell.Flags (Flags)
