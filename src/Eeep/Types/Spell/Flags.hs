@@ -23,6 +23,10 @@ module Eeep.Types.Spell.Flags (
     notCombat,
     targetInvis,
     castSilenced,
+
+    -- ** Parsers and serializers.
+    decode,
+    encode,
 ) where
 
 -- Imports.
@@ -35,6 +39,12 @@ import Optics.Core (Iso', Lens', (%), coercedTo, view)
 
 -- non-Hackage libraries.
 import Data.Bits.Optics (bitAt)
+import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
+import Trisagion.Parser (Parser)
+import Trisagion.Parsers.Source (InputError)
+import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Serializer (Serializer)
+import Data.Functor.Contravariant (Contravariant(..))
 
 
 {- | The spell flags type. -}
@@ -117,3 +127,14 @@ targetInvis = flags % bitAt 24
 {-# INLINE castSilenced #-}
 castSilenced :: Lens' Flags Bool
 castSilenced = flags % bitAt 25
+
+
+{- | Decode a t'Flags'. -}
+{-# INLINE decode #-}
+decode :: Parsers.Binary b s => Parser s InputError Flags
+decode = fmap toFlags Parsers.word32Le
+
+{- | Encode a t'Flags'. -}
+{-# INLINE encode #-}
+encode :: Serializers.Binary b s => Serializer s Flags
+encode = contramap fromFlags Serializers.word32Le

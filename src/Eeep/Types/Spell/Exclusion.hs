@@ -30,11 +30,16 @@ module Eeep.Types.Spell.Exclusion (
     wild,
     divine,
     nature,
+
+    -- ** Parsers and serializers.
+    decode,
+    encode,
 ) where
 
 -- Imports.
 -- Base.
 import Data.Bits ((.&.))
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Word (Word32)
 
 -- Libraries.
@@ -42,6 +47,11 @@ import Optics.Core (Iso', Lens', (%), coercedTo, view)
 
 -- non-Hackage libraries.
 import Data.Bits.Optics (bitAt)
+import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
+import Trisagion.Parser (Parser)
+import Trisagion.Parsers.Source (InputError)
+import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Serializer (Serializer)
 
 
 {- | The Exclusion flags type.
@@ -162,3 +172,14 @@ divine = exclusion % bitAt 30
 {-# INLINE nature #-}
 nature :: Lens' Exclusion Bool
 nature = exclusion % bitAt 31
+
+
+{- | Decode an t'Exclusion'. -}
+{-# INLINE decode #-}
+decode :: Parsers.Binary b s => Parser s InputError Exclusion
+decode = fmap toExclusion Parsers.word32Le
+
+{- | Encode an t'Exclusion'. -}
+{-# INLINE encode #-}
+encode :: Serializers.Binary b s => Serializer s Exclusion
+encode = contramap fromExclusion Serializers.word32Le
