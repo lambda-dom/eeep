@@ -80,6 +80,7 @@ library
         Eeep.Types.Opcode.Special
         Eeep.Types.Opcode
         Eeep.Types.Effect
+        Eeep.Types.Spell.Ability.Location
         Eeep.Types.Spell.SpType
         Eeep.Types.Spell.Level
         Eeep.Types.Spell.Flags
