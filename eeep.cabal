@@ -81,4 +81,5 @@ library
         Eeep.Types.Effect
         Eeep.Types.Spell.SpType
         Eeep.Types.Spell.Strref
+        Eeep.Types.Spell.Graphics
         Eeep.IO
