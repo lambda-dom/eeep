@@ -44,6 +44,7 @@ import qualified Eeep.Types.Shared.Resref as Resref (Error (..), decode)
 import Eeep.Types.Shared.School (School)
 import qualified Eeep.Types.Shared.School as School (decode)
 import Eeep.Types.Shared.Sectype (Sectype)
+import qualified Eeep.Types.Shared.Sectype as Sectype (decode)
 import Eeep.Types.Shared.Strref (Strref)
 import qualified Eeep.Types.Shared.Strref as Strref (decode)
 import Eeep.Types.Spell.SpType (SpType)
@@ -107,15 +108,23 @@ signature = skip $ validate v (takeExact 8)
 {-# INLINEABLE decode #-}
 decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error b :+: InputError) Header
 decode = do
-    _         <- signature
-    name      <- first Right Strref.decode
-    _         <- first Right $ skipExact 4
-    sound     <- first (first (review $ #_SoundError % coercedTo)) Resref.decode
-    flags     <- first Right Flags.decode
-    sptype    <- first (first (review $ #_SpTypeError % coercedTo)) SpType.decode
-    _         <- first Right $ skipExact 1
-    exclusion <- first Right Exclusion.decode
-    graphics  <- first Right Graphics.decode
-    level     <- first (first (review $ #_LevelError % coercedTo)) Level.decode
-    school    <- first Right School.decode
-    pure undefined
+    _           <- signature
+    name        <- first Right Strref.decode
+    _           <- first Right $ skipExact 4
+    sound       <- first (first (review $ #_SoundError % coercedTo)) Resref.decode
+    flags       <- first Right Flags.decode
+    sptype      <- first (first (review $ #_SpTypeError % coercedTo)) SpType.decode
+    _           <- first Right $ skipExact 1
+    exclusion   <- first Right Exclusion.decode
+    graphics    <- first Right Graphics.decode
+    _           <- first Right $ skipExact 1
+    school      <- first Right School.decode
+    sectype     <- first Right Sectype.decode
+    _           <- first Right $ skipExact 11
+    level       <- first (first (review $ #_LevelError % coercedTo)) Level.decode
+    _           <- first Right $ skipExact 5
+    icon        <- first (first (review $ #_IconError % coercedTo)) Resref.decode
+    _           <- first Right $ skipExact 14
+    description <- first Right Strref.decode
+    _           <- first Right $ skipExact 4
+    pure Header {..}
