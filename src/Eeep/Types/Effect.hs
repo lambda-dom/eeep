@@ -177,7 +177,7 @@ decode = do
     savebonus    <- first (first (review $ #_SaveBonusError % coercedTo)) SaveBonus.decode
     special      <- first Right Special.decode
     school       <- first Right School.decode
-    _            <- first Right $ skipExact 12
+    _            <- first Right $ skipExact 14
     resistdispel <- first (first (review $ #_ResistDispelError % coercedTo)) ResistDispel.decode
     _            <- first Right $ skipExact 3
     parameter3   <- first Right Parameter.decode
@@ -189,7 +189,7 @@ decode = do
     projectile   <- first Right Projectile.decode
     _            <- first Right $ skipExact 44
     sectype      <- first Right Sectype.decode
-    _            <- first Right $ skipExact 60
+    _            <- first Right $ skipExact 62
     pure Effect {..}
 
 {- | Serializer for the t'Effect' type. -}
