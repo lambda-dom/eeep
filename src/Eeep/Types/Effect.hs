@@ -47,6 +47,16 @@ import Trisagion.Serializer (Serializer)
 import Trisagion.Serializers.Combinators (applied)
 
 -- Package.
+import Eeep.Types.Shared.Dice (Dice)
+import qualified Eeep.Types.Shared.Dice as Dice (decode, encode)
+import Eeep.Types.Shared.Resref (Resref)
+import qualified Eeep.Types.Shared.Resref as Resref (Error (..), decode, encode)
+import Eeep.Types.Shared.Projectile (Projectile)
+import qualified Eeep.Types.Shared.Projectile as Projectile (decode, encode)
+import Eeep.Types.Shared.School (School)
+import qualified Eeep.Types.Shared.School as School (decode, encode)
+import Eeep.Types.Shared.Sectype (Sectype)
+import qualified Eeep.Types.Shared.Sectype as Sectype (decode, encode)
 import Eeep.Types.Opcode.OpType (OpType)
 import qualified Eeep.Types.Opcode.OpType as OpType (Error (..), decode, encode)
 import Eeep.Types.Opcode.Parameter (Parameter)
@@ -63,20 +73,10 @@ import Eeep.Types.Opcode.Probability (Probability)
 import qualified Eeep.Types.Opcode.Probability as Probability (probability, upper, lower)
 import Eeep.Types.Opcode.ResistDispel (ResistDispel)
 import qualified Eeep.Types.Opcode.ResistDispel as ResistDispel (Error (..), decode, encode)
-import Eeep.Types.Opcode.Resref (Resref)
-import qualified Eeep.Types.Opcode.Resref as Resref (Error (..), decode, encode)
-import Eeep.Types.Opcode.Dice (Dice)
-import qualified Eeep.Types.Opcode.Dice as Dice (decode, encode)
 import Eeep.Types.Opcode.SaveFlags (SaveFlags)
 import qualified Eeep.Types.Opcode.SaveFlags as SaveFlags (decode, encode)
 import Eeep.Types.Opcode.SaveBonus (SaveBonus)
 import qualified Eeep.Types.Opcode.SaveBonus as SaveBonus (Error (..), decode, encode)
-import Eeep.Types.Effect.Projectile (Projectile)
-import qualified Eeep.Types.Effect.Projectile as Projectile (decode, encode)
-import Eeep.Types.Effect.School (School)
-import qualified Eeep.Types.Effect.School as School (decode, encode)
-import Eeep.Types.Effect.Sectype (Sectype)
-import qualified Eeep.Types.Effect.Sectype as Sectype (decode, encode)
 import Eeep.Types.Opcode.Special (Special)
 import qualified Eeep.Types.Opcode.Special as Special (decode, encode)
 
@@ -177,7 +177,7 @@ decode = do
     savebonus    <- first (first (review $ #_SaveBonusError % coercedTo)) SaveBonus.decode
     special      <- first Right Special.decode
     school       <- first Right School.decode
-    _            <- first Right $ skipExact 12
+    _            <- first Right $ skipExact 14
     resistdispel <- first (first (review $ #_ResistDispelError % coercedTo)) ResistDispel.decode
     _            <- first Right $ skipExact 3
     parameter3   <- first Right Parameter.decode
@@ -189,7 +189,7 @@ decode = do
     projectile   <- first Right Projectile.decode
     _            <- first Right $ skipExact 44
     sectype      <- first Right Sectype.decode
-    _            <- first Right $ skipExact 60
+    _            <- first Right $ skipExact 62
     pure Effect {..}
 
 {- | Serializer for the t'Effect' type. -}

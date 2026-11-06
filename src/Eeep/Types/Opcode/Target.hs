@@ -61,7 +61,7 @@ data Target
 
 
 {- | Prism for the @t'Target'@ type. -}
-{-# INLINABLE target #-}
+{-# INLINE target #-}
 target :: Prism' Word8 Target
 target = prism' construct match
     where

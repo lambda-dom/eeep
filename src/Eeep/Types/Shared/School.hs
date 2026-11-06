@@ -1,15 +1,15 @@
 {- |
-Module: Eeep.Types.Effect.Sectype
+Module: Eeep.Types.Shared.School
 
-The @Sectype@ type.
+The @School@ type.
 -}
 
-module Eeep.Types.Effect.Sectype (
+module Eeep.Types.Shared.School (
     -- * Types.
-    Sectype (..),
+    School (..),
 
     -- ** Isomorphisms.
-    sectype,
+    school,
 
     -- ** Parsers and serializers.
     decode,
@@ -20,7 +20,7 @@ module Eeep.Types.Effect.Sectype (
 -- Base.
 import Data.Functor.Contravariant (Contravariant (..))
 import Data.Ix (Ix)
-import Data.Word (Word32)
+import Data.Word (Word16)
 
 -- Libraries.
 import Optics.Core (Iso', coercedTo, view, review)
@@ -33,29 +33,29 @@ import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary
 import Trisagion.Serializer (Serializer)
 
 
-{- | The t'Sectype' numeric id type.
+{- | The t'School' numeric id type.
 
 note(s):
 
-    * t'Sectype' values can only be validated in the 'IO' monad.
+    * t'School' values can only be validated in the 'IO' monad.
 -}
-newtype Sectype = Sectype Word32
+newtype School = School Word16
     deriving stock (Eq, Ord, Bounded, Ix)
     deriving newtype (Enum, Show)
 
 
-{- | Isomorphism for the t'Sectype' type. -}
-{-# INLINE sectype #-}
-sectype :: Iso' Sectype Word32
-sectype = coercedTo
+{- | Isomorphism for the t'School' type. -}
+{-# INLINE school #-}
+school :: Iso' School Word16
+school = coercedTo
 
 
-{- | Decode a t'Sectype'. -}
+{- | Decode a t'School'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s InputError Sectype
-decode = fmap (review sectype) Parsers.word32Le
+decode :: Parsers.Binary b s => Parser s InputError School
+decode = fmap (review school) Parsers.word16Le
 
-{- | Encode a t'Sectype'. -}
+{- | Encode a t'School'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary b s => Serializer s Sectype
-encode = contramap (view sectype) Serializers.word32Le
+encode :: Serializers.Binary b s => Serializer s School
+encode = contramap (view school) Serializers.word16Le

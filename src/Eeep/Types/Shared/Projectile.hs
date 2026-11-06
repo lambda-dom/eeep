@@ -1,10 +1,10 @@
 {- |
-Module: Eeep.Types.Effect.Projectile
+Module: Eeep.Types.Shared.Projectile
 
 The @Projectile@ type.
 -}
 
-module Eeep.Types.Effect.Projectile (
+module Eeep.Types.Shared.Projectile (
     -- * Types.
     Projectile (..),
 
