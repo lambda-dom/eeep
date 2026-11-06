@@ -68,6 +68,7 @@ location = prism' construct match
         match :: Word8 -> Maybe Location
         match = preview enum . fromIntegral @Word8 @Int
 
+
 {- | Decode a t'Location'. -}
 {-# INLINE decode #-}
 decode :: Parsers.Binary b s => Parser s (Error :+: InputError) Location

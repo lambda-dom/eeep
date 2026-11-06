@@ -81,6 +81,7 @@ library
         Eeep.Types.Opcode
         Eeep.Types.Effect
         Eeep.Types.Spell.Ability.Location
+        Eeep.Types.Spell.Ability.Target
         Eeep.Types.Spell.SpType
         Eeep.Types.Spell.Level
         Eeep.Types.Spell.Flags
