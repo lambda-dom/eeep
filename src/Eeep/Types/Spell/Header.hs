@@ -16,18 +16,20 @@ module Eeep.Types.Spell.Header (
 
     -- * Parsers and serializers.
     decode,
+    encode,
 ) where
 
 -- Imports.
 -- Base.
 import GHC.Generics (Generic)
 import Data.Bifunctor (Bifunctor (..))
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Char (ord)
 import Data.Word (Word8)
 
 -- non-Hackage libraries.
 import Data.ByteString.Short (ShortByteString)
-import Optics.Core ((%), review, coercedTo)
+import Optics.Core ((%), (^.), review, coercedTo)
 
 -- non-Hackage libraries.
 import Mono.Typeclasses.MonoFoldable (MonoFoldable (..))
@@ -37,26 +39,30 @@ import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Combinators (skip, validate)
 import Trisagion.Parsers.Source (InputError)
 import Trisagion.Parsers.Split (takeExact, skipExact)
+import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Serializer (Serializer)
+import Trisagion.Serializers.Combinators (applied)
+import Trisagion.Typeclasses.Serializers.Binary (char8s, nulls)
 
 -- Package.
 import Eeep.Types.Shared.Resref (Resref)
-import qualified Eeep.Types.Shared.Resref as Resref (Error (..), decode)
+import qualified Eeep.Types.Shared.Resref as Resref (Error (..), decode, encode)
 import Eeep.Types.Shared.School (School)
-import qualified Eeep.Types.Shared.School as School (decode)
+import qualified Eeep.Types.Shared.School as School (decode, encode)
 import Eeep.Types.Shared.Sectype (Sectype)
-import qualified Eeep.Types.Shared.Sectype as Sectype (decode)
+import qualified Eeep.Types.Shared.Sectype as Sectype (decode, encode)
 import Eeep.Types.Shared.Strref (Strref)
-import qualified Eeep.Types.Shared.Strref as Strref (decode)
+import qualified Eeep.Types.Shared.Strref as Strref (decode, encode)
 import Eeep.Types.Spell.SpType (SpType)
-import qualified Eeep.Types.Spell.SpType as SpType (Error (..), decode)
+import qualified Eeep.Types.Spell.SpType as SpType (Error (..), decode, encode)
 import Eeep.Types.Spell.Level (Level)
-import qualified Eeep.Types.Spell.Level as Level (Error (..), decode)
+import qualified Eeep.Types.Spell.Level as Level (Error (..), decode, encode)
 import Eeep.Types.Spell.Exclusion (Exclusion)
-import qualified Eeep.Types.Spell.Exclusion as Exclusion (decode)
+import qualified Eeep.Types.Spell.Exclusion as Exclusion (decode, encode)
 import Eeep.Types.Spell.Flags (Flags)
-import qualified Eeep.Types.Spell.Flags as Flags (decode)
+import qualified Eeep.Types.Spell.Flags as Flags (decode, encode)
 import Eeep.Types.Spell.Graphics (Graphics)
-import qualified Eeep.Types.Spell.Graphics as Graphics (decode)
+import qualified Eeep.Types.Spell.Graphics as Graphics (decode, encode)
 
 
 {- | The t'Header' @Error@ type.
@@ -128,3 +134,27 @@ decode = do
     description <- first Right Strref.decode
     _           <- first Right $ skipExact 4
     pure Header {..}
+
+{- | Serializer for the Spell t'Header' type. -}
+{-# INLINEABLE encode #-}
+encode :: Serializers.Binary b s => Serializer s Header
+encode
+    =  applied char8s "SPL V1  "
+    <> contramap (^. #name) Strref.encode
+    <> nulls 4
+    <> contramap (^. #sound) Resref.encode
+    <> contramap (^. #flags) Flags.encode
+    <> contramap (^. #sptype) SpType.encode
+    <> nulls 1
+    <> contramap (^. #exclusion) Exclusion.encode
+    <> contramap (^. #graphics) Graphics.encode
+    <> nulls 1
+    <> contramap (^. #school) School.encode
+    <> contramap (^. #sectype) Sectype.encode
+    <> nulls 11
+    <> contramap (^. #level) Level.encode
+    <> nulls 5
+    <> contramap (^. #icon) Resref.encode
+    <> nulls 14
+    <> contramap (^. #description) Strref.encode
+    <> nulls 4
