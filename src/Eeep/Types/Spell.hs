@@ -18,6 +18,7 @@ module Eeep.Types.Spell (
     -- ** Parsers and serializers.
     signature,
     decode,
+    encode,
 ) where
 
 -- Imports.
@@ -25,11 +26,12 @@ module Eeep.Types.Spell (
 import GHC.Generics (Generic)
 import Data.Bifunctor (Bifunctor (..))
 import Data.Char (ord)
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Word (Word8)
 
 -- Libraries.
 import Data.Vector.Strict (Vector, fromListN)
-import Optics.Core (review)
+import Optics.Core (review, (^.))
 
 -- non-Hackage libraries.
 import Data.Word.Optics (word16ToInt)
@@ -40,11 +42,15 @@ import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Combinators (skip, validate, repeatN)
 import Trisagion.Parsers.Source (InputError)
 import Trisagion.Parsers.Split (takeExact, skipExact)
+import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Serializer (Serializer)
+import Trisagion.Serializers.Combinators (applied)
+import Trisagion.Typeclasses.Serializers.Binary (char8s)
 
 -- Package.
 import Eeep.Types.Opcode (Opcode)
 import qualified Eeep.Types.Opcode as Opcode (Error, decode)
-import qualified Eeep.Types.Spell.Header as Spell (Error, Header, decode)
+import qualified Eeep.Types.Spell.Header as Spell (Error, Header, decode, encode)
 import qualified Eeep.Types.Spell.Ability.Header as Ability (Header, Error, decode)
 
 
@@ -115,3 +121,11 @@ decode = do
                 opcodes    = fromListN n os
             in
                 Ability {..} : go rest pps
+
+{- | Serializer for the t'Effect' type. -}
+{-# INLINEABLE encode #-}
+encode :: Serializers.Binary b s => Serializer s Spell
+encode
+    =  applied char8s "SPL V1  "
+    <> contramap (^. #header) Spell.encode
+    -- TODO: rest is still tbd.
