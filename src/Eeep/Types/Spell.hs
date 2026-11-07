@@ -42,12 +42,10 @@ import Trisagion.Parsers.Source (InputError)
 import Trisagion.Parsers.Split (takeExact, skipExact)
 
 -- Package.
-import qualified Eeep.Types.Shared.Block as Block (count)
 import Eeep.Types.Opcode (Opcode)
 import qualified Eeep.Types.Opcode as Opcode (Error, decode)
 import qualified Eeep.Types.Spell.Header as Spell (Error, Header, decode)
 import qualified Eeep.Types.Spell.Ability.Header as Ability (Header, Error, decode)
-import Eeep.Types.Shared.Block (Block)
 
 
 {- | The t'Spell' @Error@ type. -}
@@ -101,7 +99,7 @@ decode = do
         cst_count <- bimap Right (review word16ToInt) $ Parsers.word16Le
         ab_blocks <- repeatN hdr_count $ first (first AbilityError) Ability.decode
         let
-            op_count = cst_count + (sum . fmap (review word16ToInt . Block.count . snd) $ ab_blocks)
+            op_count = cst_count + (sum . fmap snd $ ab_blocks)
         opcs      <- repeatN op_count $ first (first OpcodeError) Opcode.decode
         let
             (cst_opcs, rest_opcs) = splitAt cst_count opcs
@@ -109,11 +107,10 @@ decode = do
             abilities             = fromListN hdr_count $ go rest_opcs ab_blocks
         pure $ Spell {..}
     where
-        go :: [Opcode] -> [(Ability.Header, Block)] -> [Ability]
+        go :: [Opcode] -> [(Ability.Header, Int)] -> [Ability]
         go _  []                      = []
-        go xs ((header, block) : pps) =
+        go xs ((header, n) : pps) =
             let
-                n          = review word16ToInt $ Block.count block
                 (os, rest) = splitAt n xs
                 opcodes    = fromListN n os
             in

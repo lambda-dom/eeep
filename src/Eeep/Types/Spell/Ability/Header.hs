@@ -31,6 +31,7 @@ import Data.ByteString.Short (ShortByteString)
 import Optics.Core ((%), (^.), review, coercedTo)
 
 -- non-Hackage libraries.
+import Data.Word.Optics (word16ToInt)
 import Mono.Typeclasses.MonoFoldable (MonoFoldable)
 import Trisagion.Utils.Either ((:+:))
 import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
@@ -39,10 +40,12 @@ import Trisagion.Parsers.Source (InputError)
 import Trisagion.Parsers.Split (skipExact)
 import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
 import Trisagion.Serializer (Serializer)
+import Trisagion.Serializers.Combinators (applied)
+import Trisagion.Typeclasses.Serializers.Binary (nulls)
 
 -- Package.
 import Eeep.Types.Shared.Block (Block)
-import qualified Eeep.Types.Shared.Block as Block (decode, encode)
+import qualified Eeep.Types.Shared.Block as Block (encode)
 import Eeep.Types.Shared.Projectile (Projectile)
 import qualified Eeep.Types.Shared.Projectile as Projectile (decode, encode)
 import Eeep.Types.Shared.Resref (Resref)
@@ -57,8 +60,6 @@ import Eeep.Types.Spell.Ability.Time (Time)
 import qualified Eeep.Types.Spell.Ability.Time as Time (Error (..), decode, encode)
 import Eeep.Types.Spell.Ability.Range (Range)
 import qualified Eeep.Types.Spell.Ability.Range as Range (decode, encode)
-import Trisagion.Typeclasses.Serializers.Binary (nulls)
-import Trisagion.Serializers.Combinators (applied)
 
 
 {- | The spell ability t'Header' @Error@ type.
@@ -93,7 +94,7 @@ data Header = Header {
 {-# INLINEABLE decode #-}
 decode
     :: (Parsers.Binary b s, MonoFoldable Word8 b)
-    => Parser s (Error :+: InputError) (Header, Block)
+    => Parser s (Error :+: InputError) (Header, Int)
 decode = do
     _          <- first Right $ skipExact 2
     location   <- first (first (review $ #_LocationError % coercedTo)) Location.decode
@@ -106,10 +107,12 @@ decode = do
     _          <- first Right $ skipExact 1
     time       <- first (first (review $ #_TimeError % coercedTo)) Time.decode
     _          <- first Right $ skipExact 11
-    block      <- first Right Block.decode
+    op_count   <- bimap Right (review word16ToInt) Parsers.word16Le
+    -- Note: opcode block offset is not needed.
+    _          <- first Right $ skipExact 2
     _          <- first Right $ skipExact 4
     projectile <- first Right Projectile.decode
-    pure (Header {..}, block)
+    pure (Header {..}, op_count)
 
 {- | Serializer for the spell ability t'Header' type. -}
 {-# INLINEABLE encode #-}
