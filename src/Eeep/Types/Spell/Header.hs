@@ -24,7 +24,6 @@ module Eeep.Types.Spell.Header (
 import GHC.Generics (Generic)
 import Data.Bifunctor (Bifunctor (..))
 import Data.Functor.Contravariant (Contravariant (..))
-import Data.Char (ord)
 import Data.Word (Word8)
 
 -- non-Hackage libraries.
@@ -36,9 +35,8 @@ import Mono.Typeclasses.MonoFoldable (MonoFoldable (..))
 import Trisagion.Utils.Either ((:+:))
 import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Combinators (skip, validate)
 import Trisagion.Parsers.Source (InputError)
-import Trisagion.Parsers.Split (takeExact, skipExact)
+import Trisagion.Parsers.Split (skipExact)
 import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
 import Trisagion.Serializer (Serializer)
 import Trisagion.Serializers.Combinators (applied)
@@ -71,9 +69,8 @@ note(s):
 
     * To be imported qualified.
 -}
-data Error b
-    = SignatureError                   !b
-    | SpTypeError       {-# UNPACK #-} !Word8
+data Error
+    = SpTypeError       {-# UNPACK #-} !Word8
     | LevelError        {-# UNPACK #-} !Word8
     | SoundError                       !ShortByteString
     | IconError                        !ShortByteString
@@ -96,25 +93,11 @@ data Header = Header {
 } deriving stock (Eq, Show, Generic)
 
 
--- | Parser for the Spell @t'Header'@ signature. Not exported.
-{-# INLINE signature #-}
-signature
-    :: forall b s . (Parsers.Binary b s, MonoFoldable Word8 b)
-    => Parser s (Error b :+: InputError) ()
-signature = skip $ validate v (takeExact 8)
-    where
-        v :: b -> Error b :+: b
-        v xs =
-            if fmap (fromIntegral @Int @Word8 . ord) "SPL V1  " /= monotoList xs
-            then Left $ SignatureError xs
-            else Right xs
-
 
 {- | Parser for the Spell @t'Header'@ type. -}
 {-# INLINEABLE decode #-}
-decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error b :+: InputError) Header
+decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error :+: InputError) Header
 decode = do
-    _           <- signature
     name        <- first Right Strref.decode
     _           <- first Right $ skipExact 4
     sound       <- first (first (review $ #_SoundError % coercedTo)) Resref.decode

@@ -86,11 +86,12 @@ library
         Eeep.Types.Spell.Ability.Time
         Eeep.Types.Spell.Ability.Level
         Eeep.Types.Spell.Ability.Range
-        Eeep.Types.Spell.Ability
+        Eeep.Types.Spell.Ability.Header
         Eeep.Types.Spell.SpType
         Eeep.Types.Spell.Level
         Eeep.Types.Spell.Flags
         Eeep.Types.Spell.Exclusion
         Eeep.Types.Spell.Graphics
         Eeep.Types.Spell.Header
+        Eeep.Types.Spell
         Eeep.IO
