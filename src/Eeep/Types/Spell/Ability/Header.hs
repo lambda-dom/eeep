@@ -7,12 +7,12 @@ Module: Eeep.Types.Spell.Ability
 The spell t'Ability' type.
 -}
 
-module Eeep.Types.Spell.Ability (
+module Eeep.Types.Spell.Ability.Header (
     -- * Error types.
     Error (..),
 
     -- * Types.
-    Ability (..),
+    Header (..),
 
     -- ** Parsers and serializers.
     decode,
@@ -61,7 +61,7 @@ import Trisagion.Typeclasses.Serializers.Binary (nulls)
 import Trisagion.Serializers.Combinators (applied)
 
 
-{- | The t'Ability' @Error@ type.
+{- | The spell ability t'Header' @Error@ type.
 
 note(s):
 
@@ -76,8 +76,8 @@ data Error
     deriving stock (Eq, Ord, Generic, Show)
 
 
-{- | The spell t'Ability' type. -}
-data Ability = Ability {
+{- | The spell ability t'Header' type. -}
+data Header = Header {
     location    :: {-# UNPACK #-} !Location,
     target      :: {-# UNPACK #-} !Target,
     count       :: {-# UNPACK #-} !Word8,
@@ -93,7 +93,7 @@ data Ability = Ability {
 {-# INLINEABLE decode #-}
 decode
     :: (Parsers.Binary b s, MonoFoldable Word8 b)
-    => Parser s (Error :+: InputError) (Ability, Block)
+    => Parser s (Error :+: InputError) (Header, Block)
 decode = do
     _          <- first Right $ skipExact 2
     location   <- first (first (review $ #_LocationError % coercedTo)) Location.decode
@@ -109,11 +109,11 @@ decode = do
     block      <- first Right Block.decode
     _          <- first Right $ skipExact 4
     projectile <- first Right Projectile.decode
-    pure (Ability {..}, block)
+    pure (Header {..}, block)
 
 {- | Serializer for the spell t'Ability' type. -}
 {-# INLINEABLE encode #-}
-encode :: Serializers.Binary b s => Block -> Serializer s Ability
+encode :: Serializers.Binary b s => Block -> Serializer s Header
 encode block
     =  nulls 2
     <> contramap (^. #location) Location.encode
