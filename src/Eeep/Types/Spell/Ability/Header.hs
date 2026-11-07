@@ -2,9 +2,9 @@
 {-# LANGUAGE RecordWildCards #-}
 
 {- |
-Module: Eeep.Types.Spell.Ability
+Module: Eeep.Types.Spell.Ability.Header
 
-The spell t'Ability' type.
+The spell ability t'Header' type.
 -}
 
 module Eeep.Types.Spell.Ability.Header (
@@ -89,7 +89,7 @@ data Header = Header {
 } deriving stock (Eq, Show, Generic)
 
 
-{- | Parser for the Spell @t'Ability'@ type. -}
+{- | Parser for the spell ability @t'Header'@ type. -}
 {-# INLINEABLE decode #-}
 decode
     :: (Parsers.Binary b s, MonoFoldable Word8 b)
@@ -111,7 +111,7 @@ decode = do
     projectile <- first Right Projectile.decode
     pure (Header {..}, block)
 
-{- | Serializer for the spell t'Ability' type. -}
+{- | Serializer for the spell ability t'Header' type. -}
 {-# INLINEABLE encode #-}
 encode :: Serializers.Binary b s => Block -> Serializer s Header
 encode block

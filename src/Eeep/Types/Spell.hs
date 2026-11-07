@@ -32,12 +32,12 @@ import Data.Vector.Strict (Vector, fromListN)
 import Optics.Core (review)
 
 -- non-Hackage libraries.
-import Data.Word.Optics (word16ToWord, word16ToInt)
+import Data.Word.Optics (word16ToInt)
 import Mono.Typeclasses.MonoFoldable (MonoFoldable (..))
 import Trisagion.Utils.Either ((:+:))
 import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Combinators (skip, validate, count)
+import Trisagion.Parsers.Combinators (skip, validate, repeatN)
 import Trisagion.Parsers.Source (InputError)
 import Trisagion.Parsers.Split (takeExact, skipExact)
 
@@ -96,17 +96,17 @@ decode = do
         header    <- first (first HeaderError) Spell.decode
         -- Note: Header offset, opcode table offset and casting opcode offset can all be computed. 
         _         <- first Right $ skipExact 4
-        hdr_count <- first Right $ Parsers.word16Le
-        _            <- first Right $ skipExact 6
-        cst_count <- first Right $ Parsers.word16Le
-        ab_blocks <- count (review word16ToWord hdr_count) $ first (first AbilityError) Ability.decode
+        hdr_count <- bimap Right (review word16ToInt) $ Parsers.word16Le
+        _         <- first Right $ skipExact 6
+        cst_count <- bimap Right (review word16ToInt) $ Parsers.word16Le
+        ab_blocks <- repeatN hdr_count $ first (first AbilityError) Ability.decode
         let
-            op_count = cst_count + (sum . fmap (Block.count . snd) $ ab_blocks)
-        opcs      <- count (review word16ToWord op_count) $ first (first OpcodeError) Opcode.decode
+            op_count = cst_count + (sum . fmap (review word16ToInt . Block.count . snd) $ ab_blocks)
+        opcs      <- repeatN op_count $ first (first OpcodeError) Opcode.decode
         let
-            (cst_opcs, rest_opcs) = splitAt (review word16ToInt cst_count) opcs
-            opcodes = fromListN (review word16ToInt cst_count) (cst_opcs)
-            abilities = fromListN (review word16ToInt hdr_count) $ go rest_opcs ab_blocks
+            (cst_opcs, rest_opcs) = splitAt cst_count opcs
+            opcodes               = fromListN cst_count cst_opcs
+            abilities             = fromListN hdr_count $ go rest_opcs ab_blocks
         pure $ Spell {..}
     where
         go :: [Opcode] -> [(Ability.Header, Block)] -> [Ability]
