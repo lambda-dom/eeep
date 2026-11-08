@@ -114,11 +114,11 @@ signature =
 decodeStatic :: (Parsers.Binary b s) => Parser s InputError (Int, Int)
 decodeStatic = do
         -- Note: Header offset, opcode table offset and casting opcode offset can all be computed. 
-        _         <- skipExact 4
-        hdr_count <- fmap (fromIntegral @Word16 @Int) Parsers.word16Le
-        _         <- skipExact 6
-        cst_count <- fmap (fromIntegral @Word16 @Int) Parsers.word16Le
-        pure (hdr_count, cst_count)
+        _        <- skipExact 4
+        hd_count <- fmap (fromIntegral @Word16 @Int) Parsers.word16Le
+        _        <- skipExact 6
+        cs_count <- fmap (fromIntegral @Word16 @Int) Parsers.word16Le
+        pure (hd_count, cs_count)
 
 
 {- | Parser for the @t'Spell'@ type. -}
