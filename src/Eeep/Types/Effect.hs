@@ -15,6 +15,7 @@ module Eeep.Types.Effect (
     Effect (..),
 
     -- ** Parsers and serializers.
+    signature,
     decode,
     encode,
 ) where
@@ -31,20 +32,18 @@ import Data.Word (Word8, Word16)
 -- Libraries.
 import Control.Monad.Except (MonadError (..))
 import Data.ByteString.Short (ShortByteString)
-import Optics.Core ((%), review, coercedTo, preview, (^.), view)
+import Optics.Core ((%), (^.), review, coercedTo, preview, view)
 
 -- non-Hackage libraries.
 import Mono.Typeclasses.MonoFoldable (MonoFoldable (..))
 import Trisagion.Utils.Either ((:+:))
 import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Combinators (skip, validate)
-import Trisagion.Parsers.Source (InputError)
-import Trisagion.Parsers.Split (takeExact, skipExact)
+import Trisagion.Parsers.Source (InputError, ValidationError (..), matchFoldable)
+import Trisagion.Parsers.Split (skipExact)
 import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
-import Trisagion.Typeclasses.Serializers.Binary (char8s, nulls)
 import Trisagion.Serializer (Serializer)
-import Trisagion.Serializers.Combinators (applied)
+import Trisagion.Typeclasses.Serializers.Binary (nulls)
 
 -- Package.
 import Eeep.Types.Shared.Dice (Dice)
@@ -87,8 +86,8 @@ note(s):
 
     * To be imported qualified.
 -}
-data Error b
-    = SignatureError                   !b
+data Error
+    = SignatureError    {-# UNPACK #-} !Word8
     | OpTypeError       {-# UNPACK #-} !Word16
     | TargetError       {-# UNPACK #-} !Word8
     | PowerError        {-# UNPACK #-} !Word8
@@ -126,23 +125,20 @@ data Effect = Effect {
 } deriving stock (Eq, Show, Generic)
 
 
--- | Parser for the t'Effect' signature. Not exported.
+{- | Parser for the @t'Effect'@ signature. -}
 {-# INLINE signature #-}
 signature
-    :: forall b s . (Parsers.Binary b s, MonoFoldable Word8 b)
-    => Parser s (Error b :+: InputError) ()
-signature = skip $ validate v (takeExact 8)
-    where
-        v :: b -> Error b :+: b
-        v xs =
-            if fmap (fromIntegral @Int @Word8 . ord) "EFF V2.0" /= monotoList xs
-            then Left $ SignatureError xs
-            else Right xs
+    :: forall b s . (Parsers.Binary b s)
+    => Parser s (Error :+: InputError) ()
+signature =
+    first
+        (first (\ (ValidationError n) -> SignatureError n))
+        (matchFoldable (fmap (fromIntegral @Int @Word8 . ord) "EFF V2.0"))
 
 
 -- | Parser for t'Probability'. Not exported.
 {-# INLINE probParser #-}
-probParser :: Parsers.Binary b s => Parser s (Error b :+: InputError) Probability
+probParser :: Parsers.Binary b s => Parser s (Error :+: InputError) Probability
 probParser = do
     upper <- first Right Parsers.word8
     _     <- first Right $ skipExact 1
@@ -153,11 +149,10 @@ probParser = do
         Nothing -> throwError . Left $ ProbabilityError lower upper
 
 
-{- | Parser for the @t'Effect'@ type. -}
+{- | Parser for an embedded @t'Effect'@. -}
 {-# INLINEABLE decode #-}
-decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error b :+: InputError) Effect
+decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error :+: InputError) Effect
 decode = do
-    _            <- signature
     _            <- first Right $ skipExact 8
     optype       <- first (first (review $ #_OpTypeError % coercedTo)) OpType.decode
     _            <- first Right $ skipExact 2
@@ -192,13 +187,11 @@ decode = do
     _            <- first Right $ skipExact 62
     pure Effect {..}
 
-{- | Serializer for the t'Effect' type. -}
+{- | Serializer for an embedded t'Effect'. -}
 {-# INLINEABLE encode #-}
 encode :: Serializers.Binary b s => Serializer s Effect
 encode
-    =  applied char8s "EFF V2.0"
-    <> nulls 8
-    <> contramap (^. #optype) OpType.encode
+    =  contramap (^. #optype) OpType.encode
     <> nulls 2
     <> contramap (^. #target) Target.encode
     <> nulls 3
@@ -229,6 +222,6 @@ encode
     <> contramap (^. #resref3) Resref.encode
     <> nulls 32
     <> contramap (^. #projectile) Projectile.encode
-    <> nulls 44
+    <> nulls 46
     <> contramap (^. #sectype) Sectype.encode
     <> nulls 60

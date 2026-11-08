@@ -20,7 +20,7 @@ module Eeep.Types.Shared.Projectile (
 -- Base.
 import Data.Functor.Contravariant (Contravariant (..))
 import Data.Ix (Ix)
-import Data.Word (Word32)
+import Data.Word (Word16)
 
 -- Libraries.
 import Optics.Core (Iso', coercedTo, view, review)
@@ -39,23 +39,23 @@ note(s):
 
     * t'Projectile' values can only be validated in the 'IO' monad.
 -}
-newtype Projectile = Projectile Word32
+newtype Projectile = Projectile Word16
     deriving stock (Eq, Ord, Bounded, Ix)
     deriving newtype (Enum, Show)
 
 
 {- | Isomorphism for the t'Projectile' type. -}
 {-# INLINE projectile #-}
-projectile :: Iso' Projectile Word32
+projectile :: Iso' Projectile Word16
 projectile = coercedTo
 
 
 {- | Decode a t'Projectile'. -}
 {-# INLINE decode #-}
 decode :: Parsers.Binary b s => Parser s InputError Projectile
-decode = fmap (review projectile) Parsers.word32Le
+decode = fmap (review projectile) Parsers.word16Le
 
 {- | Encode a t'Projectile'. -}
 {-# INLINE encode #-}
 encode :: Serializers.Binary b s => Serializer s Projectile
-encode = contramap (view projectile) Serializers.word32Le
+encode = contramap (view projectile) Serializers.word16Le

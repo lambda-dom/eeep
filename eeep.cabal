@@ -46,19 +46,19 @@ library
         src
     build-depends:
         -- GHC >= 9.10 && < 9.12
-        base               >=4.20   && <4.21,
+        base               >=4.20  && <4.21,
         -- Libraries.
-        bytestring         >=0.12   && <0.13,
-        contravariant      >=1.5    && <1.6,
-        file-io            >=0.2    && <0.3,
-        filepath           >=1.5    && <1.6,
-        mtl                >=2.3    && <2.4,
-        optics-core        >=0.4.2  && <0.4.3,
-        vector             >=0.13   && <0.14,
+        bytestring         >=0.12  && <0.13,
+        contravariant      >=1.5   && <1.6,
+        file-io            >=0.2   && <0.3,
+        filepath           >=1.5   && <1.6,
+        mtl                >=2.3   && <2.4,
+        optics-core        >=0.4.2 && <0.4.3,
+        vector             >=0.13  && <0.14,
         -- Non-hackage libraries.
-        mono               >=0.1    && <0.2,
-        optics-conversions >=0.0.1  && <0.1,
-        trisagion          >=0.0.1  && <0.1,
+        mono               >=0.1   && <0.2,
+        optics-conversions >=0.0.1 && <0.1,
+        trisagion          >=0.0.1 && <0.1,
     other-modules:
     exposed-modules:
         Eeep.Types.Shared.Block
@@ -83,7 +83,7 @@ library
         Eeep.Types.Effect
         Eeep.Types.Spell.Ability.Location
         Eeep.Types.Spell.Ability.Target
-        Eeep.Types.Spell.Ability.Time
+        Eeep.Types.Spell.Ability.Speed
         Eeep.Types.Spell.Ability.Level
         Eeep.Types.Spell.Ability.Range
         Eeep.Types.Spell.Ability.Header
@@ -92,6 +92,7 @@ library
         Eeep.Types.Spell.Flags
         Eeep.Types.Spell.Exclusion
         Eeep.Types.Spell.Graphics
+        Eeep.Types.Spell.Ability
         Eeep.Types.Spell.Header
         Eeep.Types.Spell
         Eeep.IO

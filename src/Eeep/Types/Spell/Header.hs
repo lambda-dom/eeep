@@ -39,8 +39,7 @@ import Trisagion.Parsers.Source (InputError)
 import Trisagion.Parsers.Split (skipExact)
 import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
 import Trisagion.Serializer (Serializer)
-import Trisagion.Serializers.Combinators (applied)
-import Trisagion.Typeclasses.Serializers.Binary (char8s, nulls)
+import Trisagion.Typeclasses.Serializers.Binary (nulls)
 
 -- Package.
 import Eeep.Types.Shared.Resref (Resref)
@@ -93,7 +92,6 @@ data Header = Header {
 } deriving stock (Eq, Show, Generic)
 
 
-
 {- | Parser for the Spell @t'Header'@ type. -}
 {-# INLINEABLE decode #-}
 decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error :+: InputError) Header
@@ -115,15 +113,14 @@ decode = do
     icon        <- first (first (review $ #_IconError % coercedTo)) Resref.decode
     _           <- first Right $ skipExact 14
     description <- first Right Strref.decode
-    _           <- first Right $ skipExact 4
+    _           <- first Right $ skipExact 16
     pure Header {..}
 
 {- | Serializer for the Spell t'Header' type. -}
 {-# INLINEABLE encode #-}
 encode :: Serializers.Binary b s => Serializer s Header
 encode
-    =  applied char8s "SPL V1  "
-    <> contramap (^. #name) Strref.encode
+    =  contramap (^. #name) Strref.encode
     <> nulls 4
     <> contramap (^. #sound) Resref.encode
     <> contramap (^. #flags) Flags.encode
@@ -140,4 +137,4 @@ encode
     <> contramap (^. #icon) Resref.encode
     <> nulls 14
     <> contramap (^. #description) Strref.encode
-    <> nulls 4
+    <> nulls 16
