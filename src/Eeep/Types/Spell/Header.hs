@@ -113,7 +113,7 @@ decode = do
     icon        <- first (first (review $ #_IconError % coercedTo)) Resref.decode
     _           <- first Right $ skipExact 14
     description <- first Right Strref.decode
-    _           <- first Right $ skipExact 4
+    _           <- first Right $ skipExact 16
     pure Header {..}
 
 {- | Serializer for the Spell t'Header' type. -}
@@ -137,4 +137,4 @@ encode
     <> contramap (^. #icon) Resref.encode
     <> nulls 14
     <> contramap (^. #description) Strref.encode
-    <> nulls 4
+    <> nulls 16
