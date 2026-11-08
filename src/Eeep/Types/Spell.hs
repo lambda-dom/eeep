@@ -27,11 +27,11 @@ import GHC.Generics (Generic)
 import Data.Bifunctor (Bifunctor (..))
 import Data.Char (ord)
 import Data.Functor.Contravariant (Contravariant (..))
-import Data.Word (Word8)
+import Data.Word (Word8, Word16)
 
 -- Libraries.
-import Data.Vector.Strict (Vector, fromListN)
-import Optics.Core (review, (^.))
+import Data.Vector.Strict (Vector, fromListN, toList)
+import Optics.Core ((^.), review, view, folded, (%), toListOf)
 
 -- non-Hackage libraries.
 import Data.Word.Optics (word16ToInt)
@@ -48,10 +48,12 @@ import Trisagion.Serializers.Combinators (applied)
 import Trisagion.Typeclasses.Serializers.Binary (char8s)
 
 -- Package.
+import Eeep.Types.Shared.Block (Block (..))
 import Eeep.Types.Opcode (Opcode)
 import qualified Eeep.Types.Opcode as Opcode (Error, decode)
 import qualified Eeep.Types.Spell.Header as Spell (Error, Header, decode, encode)
 import qualified Eeep.Types.Spell.Ability.Header as Ability (Header, Error, decode)
+import qualified Trisagion.Serializers.Combinators as Serializers (repeatN)
 
 
 {- | The t'Spell' @Error@ type. -}
@@ -115,7 +117,7 @@ decode = do
     where
         go :: [Opcode] -> [(Ability.Header, Int)] -> [Ability]
         go _  []                      = []
-        go xs ((header, n) : pps) =
+        go xs ((header, !n) : pps) =
             let
                 (os, rest) = splitAt n xs
                 opcodes    = fromListN n os
@@ -126,6 +128,22 @@ decode = do
 {-# INLINEABLE encode #-}
 encode :: Serializers.Binary b s => Serializer s Spell
 encode
-    =  applied char8s "SPL V1  "
-    <> contramap (^. #header) Spell.encode
-    -- TODO: rest is still tbd.
+        =  applied char8s "SPL V1  "
+        <> contramap (^. #header) Spell.encode
+    where
+        lengthWord16 :: Foldable t => t a -> Word16
+        lengthWord16 = fromIntegral @Int @Word16 . length
+
+        blocks :: Spell -> [(Block, Ability.Header)]
+        blocks spl =
+            go
+                (lengthWord16 . view #opcodes $ spl)
+                (toListOf (#abilities % folded) spl)
+
+        go :: Word16 -> [Ability] -> [(Block, Ability.Header)]
+        go _       []             = []
+        go !offset (abil : abils) =
+            let
+                count = lengthWord16 . view #opcodes $ abil
+            in
+                (Block {..}, view #header abil) : go (count + offset) abils
