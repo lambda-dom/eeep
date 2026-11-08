@@ -222,6 +222,6 @@ encode
     <> contramap (^. #resref3) Resref.encode
     <> nulls 32
     <> contramap (^. #projectile) Projectile.encode
-    <> nulls 44
+    <> nulls 46
     <> contramap (^. #sectype) Sectype.encode
     <> nulls 60

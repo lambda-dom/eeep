@@ -31,7 +31,6 @@ import Data.ByteString.Short (ShortByteString)
 import Optics.Core ((%), (^.), review, coercedTo, _1, _2)
 
 -- non-Hackage libraries.
-import Data.Word.Optics (word16ToInt)
 import Mono.Typeclasses.MonoFoldable (MonoFoldable)
 import Trisagion.Utils.Either ((:+:))
 import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
@@ -93,7 +92,7 @@ data Header = Header {
 {-# INLINEABLE decode #-}
 decode
     :: (Parsers.Binary b s, MonoFoldable Word8 b)
-    => Parser s (Error :+: InputError) (Header, Word16)
+    => Parser s (Error :+: InputError) (Header, Int)
 decode = do
     _          <- first Right $ skipExact 2
     location   <- first (first (review $ #_LocationError % coercedTo)) Location.decode
@@ -106,7 +105,7 @@ decode = do
     _          <- first Right $ skipExact 1
     time       <- first (first (review $ #_TimeError % coercedTo)) Time.decode
     _          <- first Right $ skipExact 11
-    op_count   <- first Right Parsers.word16Le
+    op_count   <- bimap Right (fromIntegral @Word16 @Int) Parsers.word16Le
     -- Note: opcode block offset is not needed, so skip two more bytes.
     _          <- first Right $ skipExact 6
     projectile <- first Right Projectile.decode

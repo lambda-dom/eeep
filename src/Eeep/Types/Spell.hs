@@ -33,7 +33,7 @@ import Data.Functor.Contravariant (Contravariant (..))
 import Data.Word (Word8, Word16)
 
 -- Libraries.
-import Data.Vector.Strict (Vector, empty)
+import Data.Vector.Strict (Vector, fromListN)
 import Optics.Core ((^.), (%), (^..), view, folded, toListOf)
 
 -- non-Hackage libraries.
@@ -41,6 +41,7 @@ import Mono.Typeclasses.MonoFoldable (MonoFoldable (..))
 import Trisagion.Utils.Either ((:+:))
 import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
+import qualified Trisagion.Parsers.Combinators as Parsers (repeatN)
 import Trisagion.Parsers.Source (InputError, matchFoldable, ValidationError (..))
 import Trisagion.Parsers.Split (skipExact)
 import Trisagion.Typeclasses.Serializers.Binary (char8s)
@@ -52,11 +53,12 @@ import qualified Trisagion.Serializers.Combinators as Serializers (many)
 -- Package.
 import Eeep.Types.Shared.Block (Block (..))
 import Eeep.Types.Opcode (Opcode)
-import qualified Eeep.Types.Opcode as Opcode (Error, encode)
+import qualified Eeep.Types.Opcode as Opcode (Error, encode, decode)
 import qualified Eeep.Types.Spell.Ability.Header as AbilityHeader (Header, Error, encode, decode)
 import Eeep.Types.Spell.Ability (Ability (..))
 import qualified Eeep.Types.Spell.Ability as Ability (opCount)
 import qualified Eeep.Types.Spell.Header as SpellHeader (Error, Header, decode, encode)
+import Trisagion.Parsers.Combinators (repeatN)
 
 
 {- | The t'Spell' @Error@ type. -}
@@ -109,13 +111,13 @@ signature =
 
 -- | Parser for the table information of a spell header. Not exported.
 {-# INLINEABLE decodeStatic #-}
-decodeStatic :: (Parsers.Binary b s) => Parser s InputError (Word16, Word16)
+decodeStatic :: (Parsers.Binary b s) => Parser s InputError (Int, Int)
 decodeStatic = do
         -- Note: Header offset, opcode table offset and casting opcode offset can all be computed. 
         _         <- skipExact 4
-        hdr_count <- Parsers.word16Le
+        hdr_count <- fmap (fromIntegral @Word16 @Int) Parsers.word16Le
         _         <- skipExact 6
-        cst_count <- Parsers.word16Le
+        cst_count <- fmap (fromIntegral @Word16 @Int) Parsers.word16Le
         pure (hdr_count, cst_count)
 
 
@@ -123,39 +125,30 @@ decodeStatic = do
 {-# INLINEABLE decode #-}
 decode
     :: (Parsers.Binary b s, MonoFoldable Word8 b)
-    => Parser s (Error :+: InputError) (SpellHeader.Header, AbilityHeader.Header, Word16)
+    => Parser s (Error :+: InputError) Spell
 decode = do
         _      <- signature
         header <- first (first HeaderError) SpellHeader.decode
-        (n, m) <- first Right decodeStatic
+        (hd_count, cs_count) <- first Right decodeStatic
+        abils  <- Parsers.repeatN hd_count (first (first AbilityError) AbilityHeader.decode)
         let
-            _ = fromIntegral @Word16 @Int n
-            _ = fromIntegral @Word16 @Int m
-        (hdr, i)   <- first (first AbilityError) AbilityHeader.decode
-        pure $ (header, hdr, i)
+            op_count = cs_count + (sum . fmap snd $ abils)
+        opcs   <- repeatN op_count $ first (first OpcodeError) Opcode.decode
+        let
+            (cst_opcs, rest_opcs) = splitAt cs_count opcs
+            opcodes               = fromListN cs_count cst_opcs
+            abilities             = fromListN hd_count $ go rest_opcs abils
+        pure $ Spell {..}
+    where
+        go :: [Opcode] -> [(AbilityHeader.Header, Int)] -> [Ability]
+        go _  []                      = []
+        go xs ((header, !n) : pps) =
+            let
+                (os, rest) = splitAt n xs
+                opcodes    = fromListN n os
+            in
+                Ability {..} : go rest pps
 
-
--- {- | Parser for the @t'Spell'@ type. -}
--- {-# INLINEABLE decode #-}
--- decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error :+: InputError) Spell
--- decode = do
---         let
---             op_count = cst_count + (sum . fmap snd $ ab_blocks)
---         opcs      <- repeatN op_count $ first (first OpcodeError) Opcode.decode
---         let
---             (cst_opcs, rest_opcs) = splitAt cst_count opcs
---             opcodes               = fromListN cst_count cst_opcs
---             abilities             = fromListN hdr_count $ go rest_opcs ab_blocks
---         pure $ Spell {..}
---     where
---         go :: [Opcode] -> [(Ability.Header, Int)] -> [Ability]
---         go _  []                      = []
---         go xs ((header, !n) : pps) =
---             let
---                 (os, rest) = splitAt n xs
---                 opcodes    = fromListN n os
---             in
---                 Ability {..} : go rest pps
 
 -- | Serializer for the static block of a spell header. Not exported.
 {-# INLINE encodeStatic #-}
