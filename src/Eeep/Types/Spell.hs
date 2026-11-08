@@ -11,25 +11,17 @@ module Eeep.Types.Spell (
     -- * Error types.
     Error (..),
 
-    -- * The @t'Ability'@ type.
-    Ability (..),
-
-    -- ** Getters.
-    abOpcodeCount,
-
     -- * The @t'Spell'@ type.
     Spell (..),
 
     -- ** Getters.
-    abilityCount,
-    abilityOffset,
+    abCount,
+    opCount,
 
     -- ** Parsers and serializers.
     signature,
     decode,
     encode,
-    opcodeOffset,
-    opcodeCount,
 ) where
 
 -- Imports.
@@ -38,7 +30,7 @@ import GHC.Generics (Generic)
 import Data.Bifunctor (Bifunctor (..))
 import Data.Char (ord)
 import Data.Functor.Contravariant (Contravariant (..))
-import Data.Word (Word8, Word16, Word32)
+import Data.Word (Word8, Word16)
 
 -- Libraries.
 import Data.Vector.Strict (Vector, fromListN)
@@ -63,8 +55,10 @@ import qualified Trisagion.Serializers.Combinators as Serializers (many)
 import Eeep.Types.Shared.Block (Block (..))
 import Eeep.Types.Opcode (Opcode)
 import qualified Eeep.Types.Opcode as Opcode (Error, decode, encode)
-import qualified Eeep.Types.Spell.Header as Spell (Error, Header, decode, encode)
 import qualified Eeep.Types.Spell.Ability.Header as Ability (Header, Error, decode, encode)
+import Eeep.Types.Spell.Ability (Ability (..))
+import qualified Eeep.Types.Spell.Ability as Ability (opCount)
+import qualified Eeep.Types.Spell.Header as Spell (Error, Header, decode, encode)
 
 
 {- | The t'Spell' @Error@ type. -}
@@ -76,19 +70,6 @@ data Error b
     deriving stock (Eq, Show, Generic)
 
 
-{- | The spell @Ability@ type. -}
-data Ability = Ability {
-    header    :: !Ability.Header,
-    opcodes   :: !(Vector Opcode)
-} deriving stock (Eq, Show, Generic)
-
-
-{- | Return the number of opcodes in a spell ability. -}
-{-# INLINE abOpcodeCount #-}
-abOpcodeCount :: Ability -> Int
-abOpcodeCount = length . view #opcodes
-
-
 {- | The @Spell@ type. -}
 data Spell = Spell {
     header    :: !Spell.Header,
@@ -98,29 +79,24 @@ data Spell = Spell {
 
 
 {- | Return the number of abilities in a spell. -}
-{-# INLINE abilityCount #-}
-abilityCount :: Spell -> Int
-abilityCount = length . view #abilities
+{-# INLINE abCount #-}
+abCount :: forall a . Integral a => Spell -> a
+abCount = fromIntegral @Int @a . length . view #abilities
 
-{- | Return the offset of the abilities table.
+-- | Return the offset of the abilities table. Not exported.
+{-# INLINE abOffset #-}
+abOffset :: forall a . Integral a => Spell -> a
+abOffset = const 0x72
 
-note(s):
-
-    * This is a constant and the argument is discarded.
--}
-{-# INLINE abilityOffset #-}
-abilityOffset :: Spell -> Int
-abilityOffset = const 0x72
-
-{- | Return the offset of the opcodes table. -}
-{-# INLINE opcodeOffset #-}
-opcodeOffset :: Spell -> Int
-opcodeOffset spl = abilityOffset spl + (0x28 * abilityCount spl)
+-- | Return the offset of the opcodes table. Not exported.
+{-# INLINE opOffset #-}
+opOffset :: forall a . Integral a => Spell -> a
+opOffset spl = abOffset @a spl + (0x28 * abCount @a spl)
 
 {- | Return the number of the global or casting opcodes of the spell. -}
-{-# INLINE opcodeCount #-}
-opcodeCount :: Spell -> Int
-opcodeCount = length . view #opcodes
+{-# INLINE opCount #-}
+opCount :: forall a . Integral a => Spell -> a
+opCount = fromIntegral @Int @a . length . view #opcodes
 
 
 {- | Parser for the @t'Spell'@ signature. -}
@@ -167,38 +143,38 @@ decode = do
             in
                 Ability {..} : go rest pps
 
+-- | Serializer for the static block of a spell header. Not exported.
+static :: Serializers.Binary b s => Serializer s Spell
+static
+    =  contramap (abOffset) Serializers.word32Le
+    <> contramap (abCount) Serializers.word16Le
+    <> contramap (opOffset) Serializers.word32Le
+    <> contramap (const 0) Serializers.word16Le
+    <> contramap (opCount) Serializers.word16Le
+
 {- | Serializer for the t'Spell' type. -}
 {-# INLINEABLE encode #-}
 encode :: Serializers.Binary b s => Serializer s Spell
 encode
         =  value char8s "SPL V1  "
+        -- Spell header.
         <> contramap (^. #header) Spell.encode
         -- Static data.
-        <> contramap (fromIntegral @Int @Word32 . abilityOffset) Serializers.word32Le
-        <> contramap (fromIntegral @Int @Word16 . abilityCount) Serializers.word16Le
-        <> contramap (fromIntegral @Int @Word32 . opcodeOffset) Serializers.word32Le
-        <> contramap (const 0) Serializers.word16Le
-        <> contramap (fromIntegral @Int @Word16 . opcodeCount) Serializers.word16Le
+        <> static
         -- Headers.
-        <> contramap blocks (Serializers.many Ability.encode)
+        <> contramap
+            (\ spl -> go (opCount spl) (toListOf (#abilities % folded) spl))
+            (Serializers.many Ability.encode)
+        -- Opcodes.
         <> contramap (^. #opcodes) (Serializers.many Opcode.encode)
         <> contramap
             (^.. (#abilities % folded % #opcodes))
             (Serializers.many $ Serializers.many Opcode.encode)
     where
-        nbrSplOpcodes :: Spell -> Word16
-        nbrSplOpcodes = fromIntegral @Int @Word16 . length . view #opcodes
-
-        blocks :: Spell -> [(Ability.Header, Block)]
-        blocks spl =
-            go
-                (nbrSplOpcodes spl)
-                (toListOf (#abilities % folded) spl)
-
         go :: Word16 -> [Ability] -> [(Ability.Header, Block)]
         go _       []             = []
         go !offset (abil : abils) =
             let
-                count = fromIntegral @Int @Word16 . abOpcodeCount $ abil
+                count = Ability.opCount abil
             in
                 (view #header abil, Block {..}) : go (offset + count) abils
