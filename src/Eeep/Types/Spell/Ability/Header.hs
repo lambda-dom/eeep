@@ -105,11 +105,10 @@ decode = do
     level      <- first (first (review $ #_LevelError % coercedTo)) Level.decode
     _          <- first Right $ skipExact 1
     time       <- first (first (review $ #_TimeError % coercedTo)) Time.decode
-    _          <- first Right $ skipExact 11
+    _          <- first Right $ skipExact 10
     op_count   <- bimap Right (review word16ToInt) Parsers.word16Le
-    -- Note: opcode block offset is not needed.
-    _          <- first Right $ skipExact 2
-    _          <- first Right $ skipExact 4
+    -- Note: opcode block offset is not needed, so skip two more bytes.
+    _          <- first Right $ skipExact 6
     projectile <- first Right Projectile.decode
     pure (Header {..}, op_count)
 
@@ -127,7 +126,7 @@ encode
     <> contramap (^. _1 % #level) Level.encode
     <> nulls 1
     <> contramap (^. _1 % #time) Time.encode
-    <> nulls 11
+    <> nulls 10
     <> contramap (^. _2) Block.encode
     <> nulls 4
     <> contramap (^. _1 % #projectile) Projectile.encode

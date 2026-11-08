@@ -33,7 +33,7 @@ import Data.Functor.Contravariant (Contravariant (..))
 import Data.Word (Word8, Word16)
 
 -- Libraries.
-import Data.Vector.Strict (Vector, fromListN)
+import Data.Vector.Strict (Vector, fromListN, empty, singleton)
 import Optics.Core ((^.), (%), (^..), review, view, folded, toListOf)
 
 -- non-Hackage libraries.
@@ -59,6 +59,7 @@ import qualified Eeep.Types.Spell.Ability.Header as Ability (Header, Error, deco
 import Eeep.Types.Spell.Ability (Ability (..))
 import qualified Eeep.Types.Spell.Ability as Ability (opCount)
 import qualified Eeep.Types.Spell.Header as Spell (Error, Header, decode, encode)
+import qualified Eeep.Types.Spell.Ability as Spell
 
 
 {- | The t'Spell' @Error@ type. -}
@@ -123,26 +124,27 @@ decodeStatic = do
 
 {- | Parser for the @t'Spell'@ type. -}
 {-# INLINEABLE decode #-}
-decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error :+: InputError) (Spell.Header, Word16, Word16)
+decode
+    :: (Parsers.Binary b s, MonoFoldable Word8 b)
+    => Parser s (Error :+: InputError) Spell
 decode = do
-        _                      <- signature
-        header                 <- first (first HeaderError) Spell.decode
-        (hdr_count, cst_count) <- first Right decodeStatic
-        pure (header, hdr_count, cst_count)
+        _      <- signature
+        header <- first (first HeaderError) Spell.decode
+        (n, m) <- first Right decodeStatic
+        let
+            hdr_count = fromIntegral @Word16 @Int n
+            cst_count = fromIntegral @Word16 @Int m
+        (hdr, i)   <- first (first AbilityError) Ability.decode
+        let
+            abilities = singleton $ Ability hdr empty
+            opcodes = empty
+        pure $ Spell {..}
 
 
 -- {- | Parser for the @t'Spell'@ type. -}
 -- {-# INLINEABLE decode #-}
 -- decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error :+: InputError) Spell
 -- decode = do
---         _         <- signature
---         header    <- first (first HeaderError) Spell.decode
---         -- Note: Header offset, opcode table offset and casting opcode offset can all be computed. 
---         _         <- first Right $ skipExact 4
---         hdr_count <- bimap Right (review word16ToInt) $ Parsers.word16Le
---         _         <- first Right $ skipExact 6
---         cst_count <- bimap Right (review word16ToInt) $ Parsers.word16Le
---         ab_blocks <- repeatN hdr_count $ first (first AbilityError) Ability.decode
 --         let
 --             op_count = cst_count + (sum . fmap snd $ ab_blocks)
 --         opcs      <- repeatN op_count $ first (first OpcodeError) Opcode.decode
