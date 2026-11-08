@@ -190,7 +190,7 @@ decodeBody = do
     pure Effect {..}
 
 {- | Parser for a file @t'Effect'@. -}
-{-# INLINEABLE decode #-}
+{-# INLINE decode #-}
 decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error :+: InputError) Effect
 decode = do
     _ <- signature
@@ -237,7 +237,7 @@ encodeBody
     <> nulls 60
 
 {- | Serializer for an embedded t'Effect'. -}
-{-# INLINEABLE encode #-}
+{-# INLINE encode #-}
 encode :: Serializers.Binary b s => Serializer s Effect
 encode
     =  value char8s "EFF V2.0"
