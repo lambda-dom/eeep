@@ -1,18 +1,18 @@
 {- |
-Module: Eeep.Types.Spell.Ability.Time
+Module: Eeep.Types.Spell.Ability.Speed
 
-The t'Time 'type.
+The t'Speed 'type.
 -}
 
-module Eeep.Types.Spell.Ability.Time (
+module Eeep.Types.Spell.Ability.Speed (
     -- * Error types.
     Error (..),
 
     -- * Types.
-    Time,
+    Speed,
 
     -- ** Prisms.
-    time,
+    speed,
 
     -- ** Parsers and serializers.
     decode,
@@ -39,7 +39,7 @@ import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary
 import Trisagion.Serializer (Serializer)
 
 
-{- | The t'Time' @Error@ type.
+{- | The t'Speed' @Error@ type.
 
 note(s):
 
@@ -51,39 +51,39 @@ newtype Error = Error Word8
 
 
 {- | Wrapper around 'Word8' to constrain the values of the casting time field. -}
-newtype Time = Time Word8
+newtype Speed = Speed Word8
     deriving stock (Eq, Ord, Ix)
     deriving newtype (Enum, Show)
 
 
 -- Instances.
-instance Bounded Time where
+instance Bounded Speed where
     {-# INLINE minBound #-}
-    minBound :: Time
-    minBound = Time 0
+    minBound :: Speed
+    minBound = Speed 0
 
     {-# INLINE maxBound #-}
-    maxBound :: Time
-    maxBound = Time 10
+    maxBound :: Speed
+    maxBound = Speed 10
 
 
-{- | Prism for the @t'Time'@ type. -}
-{-# INLINE time #-}
-time :: Prism' Word8 Time
-time = prism' construct match
+{- | Prism for the @t'Speed'@ type. -}
+{-# INLINE speed #-}
+speed :: Prism' Word8 Speed
+speed = prism' construct match
     where
-        construct :: Time -> Word8
+        construct :: Speed -> Word8
         construct = fromIntegral @Int @Word8 . review enum
 
-        match :: Word8 -> Maybe Time
+        match :: Word8 -> Maybe Speed
         match = preview enum . fromIntegral @Word8 @Int
 
-{- | Decode a t'Time'. -}
+{- | Decode a t'Speed'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (Error :+: InputError) Time
-decode = validate (annotate Error (preview time)) Parsers.word8
+decode :: Parsers.Binary b s => Parser s (Error :+: InputError) Speed
+decode = validate (annotate Error (preview speed)) Parsers.word8
 
-{- | Encode a t'Time'. -}
+{- | Encode a t'Speed'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary b s => Serializer s Time
-encode = contramap (review time) Serializers.word8
+encode :: Serializers.Binary b s => Serializer s Speed
+encode = contramap (review speed) Serializers.word8

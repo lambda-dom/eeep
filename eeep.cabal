@@ -83,7 +83,7 @@ library
         Eeep.Types.Effect
         Eeep.Types.Spell.Ability.Location
         Eeep.Types.Spell.Ability.Target
-        Eeep.Types.Spell.Ability.Time
+        Eeep.Types.Spell.Ability.Speed
         Eeep.Types.Spell.Ability.Level
         Eeep.Types.Spell.Ability.Range
         Eeep.Types.Spell.Ability.Header

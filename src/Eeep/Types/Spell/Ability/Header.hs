@@ -54,8 +54,8 @@ import Eeep.Types.Spell.Ability.Target (Target)
 import qualified Eeep.Types.Spell.Ability.Target as Target (Error (..), decode, encode)
 import Eeep.Types.Spell.Ability.Level (Level)
 import qualified Eeep.Types.Spell.Ability.Level as Level (Error (..), decode, encode)
-import Eeep.Types.Spell.Ability.Time (Time)
-import qualified Eeep.Types.Spell.Ability.Time as Time (Error (..), decode, encode)
+import Eeep.Types.Spell.Ability.Speed (Speed)
+import qualified Eeep.Types.Spell.Ability.Speed as Speed (Error (..), decode, encode)
 import Eeep.Types.Spell.Ability.Range (Range)
 import qualified Eeep.Types.Spell.Ability.Range as Range (decode, encode)
 
@@ -70,7 +70,7 @@ data Error
     = LocationError     {-# UNPACK #-} !Word8
     | TargetError       {-# UNPACK #-} !Word8
     | LevelError        {-# UNPACK #-} !Word8
-    | TimeError         {-# UNPACK #-} !Word8
+    | SpeedError        {-# UNPACK #-} !Word8
     | IconError                        !ShortByteString
     deriving stock (Eq, Ord, Generic, Show)
 
@@ -82,7 +82,7 @@ data Header = Header {
     count       :: {-# UNPACK #-} !Word8,
     range       :: {-# UNPACK #-} !Range,
     level       :: {-# UNPACK #-} !Level,
-    time        :: {-# UNPACK #-} !Time,
+    speed       :: {-# UNPACK #-} !Speed,
     icon        :: {-# UNPACK #-} !Resref,
     projectile  :: {-# UNPACK #-} !Projectile
 } deriving stock (Eq, Show, Generic)
@@ -103,7 +103,7 @@ decode = do
     range      <- first Right Range.decode
     level      <- first (first (review $ #_LevelError % coercedTo)) Level.decode
     _          <- first Right $ skipExact 1
-    time       <- first (first (review $ #_TimeError % coercedTo)) Time.decode
+    speed      <- first (first (review $ #_SpeedError % coercedTo)) Speed.decode
     _          <- first Right $ skipExact 11
     op_count   <- bimap Right (fromIntegral @Word16 @Int) Parsers.word16Le
     -- Note: opcode block offset is not needed, so skip two more bytes.
@@ -124,7 +124,7 @@ encode
     <> contramap (^. _1 % #range) Range.encode
     <> contramap (^. _1 % #level) Level.encode
     <> nulls 1
-    <> contramap (^. _1 % #time) Time.encode
+    <> contramap (^. _1 % #speed) Speed.encode
     <> nulls 10
     <> contramap (^. _2) Block.encode
     <> nulls 4
