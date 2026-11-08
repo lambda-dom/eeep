@@ -28,7 +28,7 @@ import Data.Word (Word8)
 
 -- Libraries.
 import Data.ByteString.Short (ShortByteString)
-import Optics.Core ((%), (^.), review, coercedTo)
+import Optics.Core ((%), (^.), review, coercedTo, _1, _2)
 
 -- non-Hackage libraries.
 import Data.Word.Optics (word16ToInt)
@@ -40,7 +40,6 @@ import Trisagion.Parsers.Source (InputError)
 import Trisagion.Parsers.Split (skipExact)
 import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
 import Trisagion.Serializer (Serializer)
-import Trisagion.Serializers.Combinators (applied)
 import Trisagion.Typeclasses.Serializers.Binary (nulls)
 
 -- Package.
@@ -116,19 +115,19 @@ decode = do
 
 {- | Serializer for the spell ability t'Header' type. -}
 {-# INLINEABLE encode #-}
-encode :: Serializers.Binary b s => Block -> Serializer s Header
-encode block
+encode :: Serializers.Binary b s => Serializer s (Header, Block)
+encode
     =  nulls 2
-    <> contramap (^. #location) Location.encode
+    <> contramap (^. _1 % #location) Location.encode
     <> nulls 1
-    <> contramap (^. #icon) Resref.encode
-    <> contramap (^. #target) Target.encode
-    <> contramap (^. #count) Serializers.word8
-    <> contramap (^. #range) Range.encode
-    <> contramap (^. #level) Level.encode
+    <> contramap (^. _1 % #icon) Resref.encode
+    <> contramap (^. _1 % #target) Target.encode
+    <> contramap (^. _1 % #count) Serializers.word8
+    <> contramap (^. _1 % #range) Range.encode
+    <> contramap (^. _1 % #level) Level.encode
     <> nulls 1
-    <> contramap (^. #time) Time.encode
+    <> contramap (^. _1 % #time) Time.encode
     <> nulls 11
-    <> applied Block.encode block
+    <> contramap (^. _2) Block.encode
     <> nulls 4
-    <> contramap (^. #projectile) Projectile.encode
+    <> contramap (^. _1 % #projectile) Projectile.encode

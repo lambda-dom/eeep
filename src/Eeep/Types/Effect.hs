@@ -44,7 +44,7 @@ import Trisagion.Parsers.Split (takeExact, skipExact)
 import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
 import Trisagion.Typeclasses.Serializers.Binary (char8s, nulls)
 import Trisagion.Serializer (Serializer)
-import Trisagion.Serializers.Combinators (applied)
+import Trisagion.Serializers.Combinators (value)
 
 -- Package.
 import Eeep.Types.Shared.Dice (Dice)
@@ -196,7 +196,7 @@ decode = do
 {-# INLINEABLE encode #-}
 encode :: Serializers.Binary b s => Serializer s Effect
 encode
-    =  applied char8s "EFF V2.0"
+    =  value char8s "EFF V2.0"
     <> nulls 8
     <> contramap (^. #optype) OpType.encode
     <> nulls 2
