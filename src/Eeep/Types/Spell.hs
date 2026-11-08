@@ -33,16 +33,14 @@ import Data.Functor.Contravariant (Contravariant (..))
 import Data.Word (Word8, Word16)
 
 -- Libraries.
-import Data.Vector.Strict (Vector, fromListN, empty, singleton)
-import Optics.Core ((^.), (%), (^..), review, view, folded, toListOf)
+import Data.Vector.Strict (Vector, empty)
+import Optics.Core ((^.), (%), (^..), view, folded, toListOf)
 
 -- non-Hackage libraries.
-import Data.Word.Optics (word16ToInt)
 import Mono.Typeclasses.MonoFoldable (MonoFoldable (..))
 import Trisagion.Utils.Either ((:+:))
 import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Combinators (repeatN)
 import Trisagion.Parsers.Source (InputError, matchFoldable, ValidationError (..))
 import Trisagion.Parsers.Split (skipExact)
 import Trisagion.Typeclasses.Serializers.Binary (char8s)
@@ -54,26 +52,25 @@ import qualified Trisagion.Serializers.Combinators as Serializers (many)
 -- Package.
 import Eeep.Types.Shared.Block (Block (..))
 import Eeep.Types.Opcode (Opcode)
-import qualified Eeep.Types.Opcode as Opcode (Error, decode, encode)
-import qualified Eeep.Types.Spell.Ability.Header as Ability (Header, Error, decode, encode)
+import qualified Eeep.Types.Opcode as Opcode (Error, encode)
+import qualified Eeep.Types.Spell.Ability.Header as AbilityHeader (Header, Error, encode, decode)
 import Eeep.Types.Spell.Ability (Ability (..))
 import qualified Eeep.Types.Spell.Ability as Ability (opCount)
-import qualified Eeep.Types.Spell.Header as Spell (Error, Header, decode, encode)
-import qualified Eeep.Types.Spell.Ability as Spell
+import qualified Eeep.Types.Spell.Header as SpellHeader (Error, Header, decode, encode)
 
 
 {- | The t'Spell' @Error@ type. -}
 data Error
     = SignatureError !Word8
-    | HeaderError    !Spell.Error
-    | AbilityError   !Ability.Error
+    | HeaderError    !SpellHeader.Error
+    | AbilityError   !AbilityHeader.Error
     | OpcodeError    !Opcode.Error
     deriving stock (Eq, Show, Generic)
 
 
 {- | The @Spell@ type. -}
 data Spell = Spell {
-    header    :: !Spell.Header,
+    header    :: !SpellHeader.Header,
     abilities :: !(Vector Ability),
     opcodes   :: !(Vector Opcode)
 } deriving stock (Eq, Show, Generic)
@@ -126,19 +123,16 @@ decodeStatic = do
 {-# INLINEABLE decode #-}
 decode
     :: (Parsers.Binary b s, MonoFoldable Word8 b)
-    => Parser s (Error :+: InputError) Spell
+    => Parser s (Error :+: InputError) (SpellHeader.Header, AbilityHeader.Header, Word16)
 decode = do
         _      <- signature
-        header <- first (first HeaderError) Spell.decode
+        header <- first (first HeaderError) SpellHeader.decode
         (n, m) <- first Right decodeStatic
         let
-            hdr_count = fromIntegral @Word16 @Int n
-            cst_count = fromIntegral @Word16 @Int m
-        (hdr, i)   <- first (first AbilityError) Ability.decode
-        let
-            abilities = singleton $ Ability hdr empty
-            opcodes = empty
-        pure $ Spell {..}
+            _ = fromIntegral @Word16 @Int n
+            _ = fromIntegral @Word16 @Int m
+        (hdr, i)   <- first (first AbilityError) AbilityHeader.decode
+        pure $ (header, hdr, i)
 
 
 -- {- | Parser for the @t'Spell'@ type. -}
@@ -179,20 +173,20 @@ encode :: Serializers.Binary b s => Serializer s Spell
 encode
         =  value char8s "SPL V1  "
         -- Spell header.
-        <> contramap (^. #header) Spell.encode
+        <> contramap (^. #header) SpellHeader.encode
         -- Static data.
         <> encodeStatic
         -- Headers.
         <> contramap
             (\ spl -> go (opCount spl) (toListOf (#abilities % folded) spl))
-            (Serializers.many Ability.encode)
+            (Serializers.many AbilityHeader.encode)
         -- Opcodes.
         <> contramap (^. #opcodes) (Serializers.many Opcode.encode)
         <> contramap
             (^.. (#abilities % folded % #opcodes))
             (Serializers.many $ Serializers.many Opcode.encode)
     where
-        go :: Word16 -> [Ability] -> [(Ability.Header, Block)]
+        go :: Word16 -> [Ability] -> [(AbilityHeader.Header, Block)]
         go _       []             = []
         go !offset (abil : abils) =
             let

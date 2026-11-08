@@ -24,7 +24,7 @@ module Eeep.Types.Spell.Ability.Header (
 import GHC.Generics (Generic)
 import Data.Functor.Contravariant (Contravariant (..))
 import Data.Bifunctor (Bifunctor (..))
-import Data.Word (Word8)
+import Data.Word (Word8, Word16)
 
 -- Libraries.
 import Data.ByteString.Short (ShortByteString)
@@ -93,7 +93,7 @@ data Header = Header {
 {-# INLINEABLE decode #-}
 decode
     :: (Parsers.Binary b s, MonoFoldable Word8 b)
-    => Parser s (Error :+: InputError) (Header, Int)
+    => Parser s (Error :+: InputError) (Header, Word16)
 decode = do
     _          <- first Right $ skipExact 2
     location   <- first (first (review $ #_LocationError % coercedTo)) Location.decode
@@ -105,8 +105,8 @@ decode = do
     level      <- first (first (review $ #_LevelError % coercedTo)) Level.decode
     _          <- first Right $ skipExact 1
     time       <- first (first (review $ #_TimeError % coercedTo)) Time.decode
-    _          <- first Right $ skipExact 10
-    op_count   <- bimap Right (review word16ToInt) Parsers.word16Le
+    _          <- first Right $ skipExact 11
+    op_count   <- first Right Parsers.word16Le
     -- Note: opcode block offset is not needed, so skip two more bytes.
     _          <- first Right $ skipExact 6
     projectile <- first Right Projectile.decode
