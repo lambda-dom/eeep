@@ -42,9 +42,9 @@ import Mono.Typeclasses.MonoFoldable (MonoFoldable (..))
 import Trisagion.Utils.Either ((:+:))
 import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Combinators (skip, validate, repeatN)
-import Trisagion.Parsers.Source (InputError)
-import Trisagion.Parsers.Split (takeExact, skipExact)
+import Trisagion.Parsers.Combinators (repeatN)
+import Trisagion.Parsers.Source (InputError, matchFoldable, ValidationError (..))
+import Trisagion.Parsers.Split (skipExact)
 import Trisagion.Typeclasses.Serializers.Binary (char8s)
 import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
 import Trisagion.Serializer (Serializer)
@@ -62,8 +62,8 @@ import qualified Eeep.Types.Spell.Header as Spell (Error, Header, decode, encode
 
 
 {- | The t'Spell' @Error@ type. -}
-data Error b
-    = SignatureError !b
+data Error
+    = SignatureError !Word8
     | HeaderError    !Spell.Error
     | AbilityError   !Ability.Error
     | OpcodeError    !Opcode.Error
@@ -102,20 +102,17 @@ opCount = fromIntegral @Int @a . length . view #opcodes
 {- | Parser for the @t'Spell'@ signature. -}
 {-# INLINE signature #-}
 signature
-    :: forall b s . (Parsers.Binary b s, MonoFoldable Word8 b)
-    => Parser s (Error b :+: InputError) ()
-signature = skip $ validate v (takeExact 8)
-    where
-        v :: b -> Error b :+: b
-        v xs =
-            if fmap (fromIntegral @Int @Word8 . ord) "SPL V1  " /= monotoList xs
-            then Left $ SignatureError xs
-            else Right xs
+    :: forall b s . (Parsers.Binary b s)
+    => Parser s (Error :+: InputError) ()
+signature =
+    first
+        (first (\ (ValidationError n) -> SignatureError n))
+        (matchFoldable (fmap (fromIntegral @Int @Word8 . ord) "SPL V1  "))
 
 
 {- | Parser for the @t'Spell'@ type. -}
 {-# INLINEABLE decode #-}
-decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error b :+: InputError) Spell
+decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error :+: InputError) Spell
 decode = do
         _         <- signature
         header    <- first (first HeaderError) Spell.decode
