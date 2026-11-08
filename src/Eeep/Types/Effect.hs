@@ -16,7 +16,9 @@ module Eeep.Types.Effect (
 
     -- ** Parsers and serializers.
     signature,
+    decodeBody,
     decode,
+    encodeBody,
     encode,
 ) where
 
@@ -43,7 +45,7 @@ import Trisagion.Parsers.Source (InputError, ValidationError (..), matchFoldable
 import Trisagion.Parsers.Split (skipExact)
 import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
 import Trisagion.Serializer (Serializer)
-import Trisagion.Typeclasses.Serializers.Binary (nulls)
+import Trisagion.Typeclasses.Serializers.Binary (nulls, char8s)
 
 -- Package.
 import Eeep.Types.Shared.Dice (Dice)
@@ -78,6 +80,7 @@ import Eeep.Types.Opcode.SaveBonus (SaveBonus)
 import qualified Eeep.Types.Opcode.SaveBonus as SaveBonus (Error (..), decode, encode)
 import Eeep.Types.Opcode.Special (Special)
 import qualified Eeep.Types.Opcode.Special as Special (decode, encode)
+import Trisagion.Serializers.Combinators (value)
 
 
 {- | The t'Effect' @Error@ type.
@@ -150,10 +153,9 @@ probParser = do
 
 
 {- | Parser for an embedded @t'Effect'@. -}
-{-# INLINEABLE decode #-}
-decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error :+: InputError) Effect
-decode = do
-    _            <- first Right $ skipExact 8
+{-# INLINEABLE decodeBody #-}
+decodeBody :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error :+: InputError) Effect
+decodeBody = do
     optype       <- first (first (review $ #_OpTypeError % coercedTo)) OpType.decode
     _            <- first Right $ skipExact 2
     target       <- first (first (review $ #_TargetError % coercedTo)) Target.decode
@@ -187,10 +189,18 @@ decode = do
     _            <- first Right $ skipExact 62
     pure Effect {..}
 
+{- | Parser for a file @t'Effect'@. -}
+{-# INLINEABLE decode #-}
+decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error :+: InputError) Effect
+decode = do
+    _ <- signature
+    _ <- first Right $ skipExact 8
+    decodeBody
+    
 {- | Serializer for an embedded t'Effect'. -}
-{-# INLINEABLE encode #-}
-encode :: Serializers.Binary b s => Serializer s Effect
-encode
+{-# INLINEABLE encodeBody #-}
+encodeBody :: Serializers.Binary b s => Serializer s Effect
+encodeBody
     =  contramap (^. #optype) OpType.encode
     <> nulls 2
     <> contramap (^. #target) Target.encode
@@ -225,3 +235,11 @@ encode
     <> nulls 46
     <> contramap (^. #sectype) Sectype.encode
     <> nulls 60
+
+{- | Serializer for an embedded t'Effect'. -}
+{-# INLINEABLE encode #-}
+encode :: Serializers.Binary b s => Serializer s Effect
+encode
+    =  value char8s "EFF V2.0"
+    <> nulls 8
+    <> encodeBody  
