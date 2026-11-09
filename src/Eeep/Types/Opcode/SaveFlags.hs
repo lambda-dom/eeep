@@ -45,7 +45,13 @@ import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary
 import Trisagion.Serializer (Serializer)
 
 
-{- | The t'SaveFlags' type. -}
+{- | The t'SaveFlags' type.
+
+note(s):
+
+    * The 'Ord' and 'Bounded' instances have no significance and are present merely to be able to
+    use t'SaveFlags' values as keys in maps, etc.
+-}
 newtype SaveFlags = SaveFlags Word32
     deriving stock (Eq, Show)
 
@@ -59,7 +65,7 @@ note(s)
 -}
 {-# INLINE toSaveFlags #-}
 toSaveFlags :: Word32 -> SaveFlags
-toSaveFlags n = SaveFlags $ n .&. mask
+toSaveFlags = SaveFlags . (.&. mask)
     where
         mask :: Word32
         mask = 16780319
@@ -70,7 +76,7 @@ fromSaveFlags :: SaveFlags -> Word32
 fromSaveFlags = view saveFlags
 
 
--- | Prism for the t'SaveFlags' type. Not exported.
+-- | Isomorphism for the t'SaveFlags' type. Not exported.
 {-# INLINE saveFlags #-}
 saveFlags :: Iso' SaveFlags Word32
 saveFlags = coercedTo

@@ -2,7 +2,7 @@
 {-# LANGUAGE RecordWildCards #-}
 
 {- |
-Module: Eeep.Spell
+Module: Eeep.Types.Spell.Header
 
 The Spell t'Header' type.
 -}

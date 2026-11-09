@@ -61,10 +61,14 @@ library
         trisagion          >=0.0.1 && <0.1,
     other-modules:
     exposed-modules:
+        Eeep.Types.Shared.Attribute
+        Eeep.Types.Shared.Percentage
+        Eeep.Types.Shared.Strength
         Eeep.Types.Shared.Block
         Eeep.Types.Shared.Dice
         Eeep.Types.Shared.Resref
         Eeep.Types.Shared.Projectile
+        Eeep.Types.Shared.Proficiency
         Eeep.Types.Shared.School
         Eeep.Types.Shared.Sectype
         Eeep.Types.Shared.Strref
@@ -95,4 +99,10 @@ library
         Eeep.Types.Spell.Ability
         Eeep.Types.Spell.Header
         Eeep.Types.Spell
+        Eeep.Types.Item.Category
+        Eeep.Types.Item.Flags
+        Eeep.Types.Item.Usability
+        Eeep.Types.Item.KitUsability
+        Eeep.Types.Item.Animation
+        Eeep.Types.Item.Header
         Eeep.IO

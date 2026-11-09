@@ -1,7 +1,7 @@
 {- |
-Module: Eeep.Spell.Flags
+Module: Eeep.Types.Spell.Flags
 
-The Flags type for the flags field of the main spell header.
+The @Flags@ type for the flags field of the main spell header.
 -}
 
 module Eeep.Types.Spell.Flags (
@@ -32,6 +32,7 @@ module Eeep.Types.Spell.Flags (
 -- Imports.
 -- Base.
 import Data.Bits ((.&.))
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Word (Word32)
 
 -- Libraries.
@@ -44,12 +45,17 @@ import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Source (InputError)
 import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
 import Trisagion.Serializer (Serializer)
-import Data.Functor.Contravariant (Contravariant(..))
 
 
-{- | The spell flags type. -}
+{- | The spell @Flags@ type.
+
+note(s):
+
+    * The 'Ord' and 'Bounded' instances have no significance and are present merely to be able to
+    use t'Flags' values as keys in maps, etc.
+-}
 newtype Flags = Flags Word32
-    deriving stock (Eq, Show)
+    deriving stock (Eq, Ord, Bounded, Show)
 
 
 {- | Smart constructor for the t'Flags' type.
@@ -61,7 +67,7 @@ note(s)
 -}
 {-# INLINE toFlags #-}
 toFlags :: Word32 -> Flags
-toFlags n = Flags $ n .&. mask
+toFlags = Flags . (.&. mask)
     where
         mask :: Word32
         mask = 50462208
@@ -72,7 +78,7 @@ fromFlags :: Flags -> Word32
 fromFlags = view flags
 
 
--- | Prism for the t'Flags' type. Not exported.
+-- | Isomorphism for the t'Flags' type. Not exported.
 {-# INLINE flags #-}
 flags :: Iso' Flags Word32
 flags = coercedTo
