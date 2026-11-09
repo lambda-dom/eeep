@@ -59,7 +59,7 @@ note(s)
 -}
 {-# INLINE toSaveFlags #-}
 toSaveFlags :: Word32 -> SaveFlags
-toSaveFlags n = SaveFlags $ n .&. mask
+toSaveFlags = SaveFlags . (.&. mask)
     where
         mask :: Word32
         mask = 16780319
