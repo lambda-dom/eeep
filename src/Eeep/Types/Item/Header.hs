@@ -165,7 +165,7 @@ decode = do
     _               <- first Right $ skipExact 3
     pure $ Header {..}
 
-{- | Serializer for the Spell t'Header' type. -}
+{- | Serializer for the item t'Header' type. -}
 {-# INLINEABLE encode #-}
 encode :: Serializers.Binary b s => Serializer s Header
 encode
