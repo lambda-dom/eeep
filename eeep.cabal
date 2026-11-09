@@ -104,4 +104,5 @@ library
         Eeep.Types.Item.Usability
         Eeep.Types.Item.KitUsability
         Eeep.Types.Item.Animation
+        Eeep.Types.Item.Header
         Eeep.IO
