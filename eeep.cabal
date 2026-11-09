@@ -61,6 +61,7 @@ library
         trisagion          >=0.0.1 && <0.1,
     other-modules:
     exposed-modules:
+        Eeep.Types.Shared.Attribute
         Eeep.Types.Shared.Block
         Eeep.Types.Shared.Dice
         Eeep.Types.Shared.Resref
