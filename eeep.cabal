@@ -99,6 +99,7 @@ library
         Eeep.Types.Spell.Ability
         Eeep.Types.Spell.Header
         Eeep.Types.Spell
+        Eeep.Types.Item.Ability.Attack
         Eeep.Types.Item.Ability.Header
         Eeep.Types.Item.Category
         Eeep.Types.Item.Flags
