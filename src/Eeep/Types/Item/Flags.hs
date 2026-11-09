@@ -54,7 +54,7 @@ import Trisagion.Serializer (Serializer)
 import Data.Functor.Contravariant (Contravariant(..))
 
 
-{- | The spell @Flags@ type.
+{- | The item @Flags@ type.
 
 note(s):
 
@@ -62,7 +62,7 @@ note(s):
     use t'Flags' values as keys in maps, etc.
 -}
 newtype Flags = Flags Word32
-    deriving stock (Eq, Show)
+    deriving stock (Eq, Ord, Bounded, Show)
 
 
 {- | Smart constructor for the t'Flags' type.
@@ -85,7 +85,7 @@ fromFlags :: Flags -> Word32
 fromFlags = view flags
 
 
--- | Prism for the t'Flags' type. Because of normalization, not exported.
+-- | Isomorphism for the t'Flags' type. Because of normalization, not exported.
 {-# INLINE flags #-}
 flags :: Iso' Flags Word32
 flags = coercedTo

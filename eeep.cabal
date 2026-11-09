@@ -97,4 +97,5 @@ library
         Eeep.Types.Spell
         Eeep.Types.Item.Category
         Eeep.Types.Item.Flags
+        Eeep.Types.Item.Usability
         Eeep.IO

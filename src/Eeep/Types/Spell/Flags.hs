@@ -78,7 +78,7 @@ fromFlags :: Flags -> Word32
 fromFlags = view flags
 
 
--- | Prism for the t'Flags' type. Not exported.
+-- | Isomorphism for the t'Flags' type. Not exported.
 {-# INLINE flags #-}
 flags :: Iso' Flags Word32
 flags = coercedTo
