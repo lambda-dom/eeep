@@ -102,6 +102,7 @@ library
         Eeep.Types.Item.Ability.Attack
         Eeep.Types.Item.Ability.Charge
         Eeep.Types.Item.Ability.Damage
+        Eeep.Types.Item.Ability.Flags
         Eeep.Types.Item.Ability.Launcher
         Eeep.Types.Item.Ability.Header
         Eeep.Types.Item.Category
