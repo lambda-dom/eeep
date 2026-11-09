@@ -68,6 +68,7 @@ library
         Eeep.Types.Shared.Dice
         Eeep.Types.Shared.Resref
         Eeep.Types.Shared.Projectile
+        Eeep.Types.Shared.Proficiency
         Eeep.Types.Shared.School
         Eeep.Types.Shared.Sectype
         Eeep.Types.Shared.Strref
