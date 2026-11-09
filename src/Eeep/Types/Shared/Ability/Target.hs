@@ -1,10 +1,10 @@
 {- |
-Module: Eeep.Types.Spell.Ability.Target
+Module: Eeep.Types.Shared.Ability.Target
 
 The t'Target' type for the ability's target field.
 -}
 
-module Eeep.Types.Spell.Ability.Target (
+module Eeep.Types.Shared.Ability.Target (
     -- * Error types.
     Error (..),
 

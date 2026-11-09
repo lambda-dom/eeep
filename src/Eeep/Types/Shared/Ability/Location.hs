@@ -1,10 +1,10 @@
 {- |
-Module: Eeep.Types.Shared.Location
+Module: Eeep.Types.Shared.Ability.Location
 
-Description: the spell ability's 'Location' type.
+The ability @Location@ type.
 -}
 
-module Eeep.Types.Shared.Location (
+module Eeep.Types.Shared.Ability.Location (
     -- * Error types.
     Error (..),
 

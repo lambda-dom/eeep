@@ -64,7 +64,6 @@ library
         Eeep.Types.Shared.Attribute
         Eeep.Types.Shared.Block
         Eeep.Types.Shared.Dice
-        Eeep.Types.Shared.Location
         Eeep.Types.Shared.Percentage
         Eeep.Types.Shared.Proficiency
         Eeep.Types.Shared.Projectile
@@ -73,6 +72,10 @@ library
         Eeep.Types.Shared.Sectype
         Eeep.Types.Shared.Strength
         Eeep.Types.Shared.Strref
+        Eeep.Types.Shared.Ability.Location
+        Eeep.Types.Shared.Ability.Range
+        Eeep.Types.Shared.Ability.Speed
+        Eeep.Types.Shared.Ability.Target
         Eeep.Types.Opcode.OpType
         Eeep.Types.Opcode.Target
         Eeep.Types.Opcode.Parameter
@@ -86,10 +89,7 @@ library
         Eeep.Types.Opcode.Special
         Eeep.Types.Opcode
         Eeep.Types.Effect
-        Eeep.Types.Spell.Ability.Target
-        Eeep.Types.Spell.Ability.Speed
         Eeep.Types.Spell.Ability.Level
-        Eeep.Types.Spell.Ability.Range
         Eeep.Types.Spell.Ability.Header
         Eeep.Types.Spell.SpType
         Eeep.Types.Spell.Level
