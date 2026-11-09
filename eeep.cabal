@@ -62,6 +62,8 @@ library
     other-modules:
     exposed-modules:
         Eeep.Types.Shared.Attribute
+        Eeep.Types.Shared.Percentage
+        Eeep.Types.Shared.Strength
         Eeep.Types.Shared.Block
         Eeep.Types.Shared.Dice
         Eeep.Types.Shared.Resref
