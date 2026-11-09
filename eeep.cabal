@@ -100,6 +100,7 @@ library
         Eeep.Types.Spell.Header
         Eeep.Types.Spell
         Eeep.Types.Item.Ability.Attack
+        Eeep.Types.Item.Ability.Launcher
         Eeep.Types.Item.Ability.Header
         Eeep.Types.Item.Category
         Eeep.Types.Item.Flags
