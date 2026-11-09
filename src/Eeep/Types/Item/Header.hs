@@ -126,7 +126,7 @@ strParser = do
         Nothing -> throwError . Left $ StrengthError strAttr strPerc
         Just x  -> pure x
 
-{- | Parser for the Spell @t'Header'@ type. -}
+{- | Parser for the item @t'Header'@ type. -}
 {-# INLINEABLE decode #-}
 decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error :+: InputError) Header
 decode = do

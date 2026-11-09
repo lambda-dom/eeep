@@ -4,7 +4,7 @@
 {- |
 Module: Eeep.Types.Item.Ability.Header
 
-The item ability t'Header' type.
+The item ability @Header@ type.
 -}
 
 module Eeep.Types.Item.Ability.Header (
