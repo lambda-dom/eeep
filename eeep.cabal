@@ -101,5 +101,6 @@ library
         Eeep.Types.Item.Category
         Eeep.Types.Item.Flags
         Eeep.Types.Item.Usability
+        Eeep.Types.Item.KitUsability
         Eeep.Types.Item.Animation
         Eeep.IO
