@@ -74,8 +74,8 @@ import Eeep.Types.Opcode.Probability (Probability)
 import qualified Eeep.Types.Opcode.Probability as Probability (probability, upper, lower)
 import Eeep.Types.Opcode.ResistDispel (ResistDispel)
 import qualified Eeep.Types.Opcode.ResistDispel as ResistDispel (Error (..), decode, encode)
-import Eeep.Types.Opcode.SaveFlags (SaveFlags)
-import qualified Eeep.Types.Opcode.SaveFlags as SaveFlags (decode, encode)
+import Eeep.Types.Opcode.Flags (Flags)
+import qualified Eeep.Types.Opcode.Flags as Flags (decode, encode)
 import Eeep.Types.Opcode.SaveBonus (SaveBonus)
 import qualified Eeep.Types.Opcode.SaveBonus as SaveBonus (Error (..), decode, encode)
 import Eeep.Types.Opcode.Special (Special)
@@ -119,7 +119,7 @@ data Effect = Effect {
     resref2      :: {-# UNPACK #-} !Resref,
     resref3      :: {-# UNPACK #-} !Resref,
     dice         :: {-# UNPACK #-} !Dice,
-    saveflags    :: {-# UNPACK #-} !SaveFlags,
+    flags        :: {-# UNPACK #-} !Flags,
     savebonus    :: {-# UNPACK #-} !SaveBonus,
     projectile   :: {-# UNPACK #-} !Projectile,
     school       :: {-# UNPACK #-} !School,
@@ -170,7 +170,7 @@ decodeBody = do
     probability  <- probParser
     resref1      <- first (first (review $ #_ResrefError % coercedTo)) Resref.decode
     dice         <- first Right Dice.decode
-    saveflags    <- first Right SaveFlags.decode
+    flags        <- first Right Flags.decode
     savebonus    <- first (first (review $ #_SaveBonusError % coercedTo)) SaveBonus.decode
     special      <- first Right Special.decode
     school       <- first Right School.decode
@@ -218,7 +218,7 @@ encodeBody
     <> nulls 1
     <> contramap (^. #resref1) Resref.encode
     <> contramap (^. #dice) Dice.encode
-    <> contramap (^. #saveflags) SaveFlags.encode
+    <> contramap (^. #flags) Flags.encode
     <> contramap (^. #savebonus) SaveBonus.encode
     <> contramap (^. #special) Special.encode
     <> contramap (^. #school) School.encode

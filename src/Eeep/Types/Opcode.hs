@@ -61,8 +61,8 @@ import Eeep.Types.Opcode.ResistDispel (ResistDispel)
 import qualified Eeep.Types.Opcode.ResistDispel as ResistDispel (Error (..), decode, encode)
 import Eeep.Types.Opcode.Probability (Probability)
 import qualified Eeep.Types.Opcode.Probability as Probability (decode, error)
-import Eeep.Types.Opcode.SaveFlags (SaveFlags)
-import qualified Eeep.Types.Opcode.SaveFlags as SaveFlags (decode, encode)
+import Eeep.Types.Opcode.Flags (Flags)
+import qualified Eeep.Types.Opcode.Flags as Flags (decode, encode)
 import Eeep.Types.Opcode.SaveBonus (SaveBonus)
 import qualified Eeep.Types.Opcode.SaveBonus as SaveBonus (Error (..), decode, encode)
 import Eeep.Types.Opcode.Special (Special)
@@ -100,7 +100,7 @@ data Opcode = Opcode {
     probability  :: {-# UNPACK #-} !Probability,
     resref       :: {-# UNPACK #-} !Resref,
     dice         :: {-# UNPACK #-} !Dice,
-    saveflags    :: {-# UNPACK #-} !SaveFlags,
+    flags        :: {-# UNPACK #-} !Flags,
     savebonus    :: {-# UNPACK #-} !SaveBonus,
     special      :: {-# UNPACK #-} !Special
 } deriving stock (Eq, Show, Generic)
@@ -121,7 +121,7 @@ decode = do
     probability  <- first (first (review $ #_ProbabilityError % re Probability.error)) Probability.decode
     resref       <- first (first (review $ #_ResrefError % coercedTo)) Resref.decode
     dice         <- first Right Dice.decode
-    saveflags    <- first Right SaveFlags.decode
+    flags        <- first Right Flags.decode
     savebonus    <- first (first (review $ #_SaveBonusError % coercedTo)) SaveBonus.decode
     special      <- first Right Special.decode
     pure Opcode {..}
@@ -140,6 +140,6 @@ encode
     <> contramap (^. #duration) Duration.encode
     <> contramap (^. #resref) Resref.encode
     <> contramap (^. #dice) Dice.encode
-    <> contramap (^. #saveflags) SaveFlags.encode
+    <> contramap (^. #flags) Flags.encode
     <> contramap (^. #savebonus) SaveBonus.encode
     <> contramap (^. #special) Special.encode
