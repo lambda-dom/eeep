@@ -62,15 +62,16 @@ library
     other-modules:
     exposed-modules:
         Eeep.Types.Shared.Attribute
-        Eeep.Types.Shared.Percentage
-        Eeep.Types.Shared.Strength
         Eeep.Types.Shared.Block
         Eeep.Types.Shared.Dice
-        Eeep.Types.Shared.Resref
-        Eeep.Types.Shared.Projectile
+        Eeep.Types.Shared.Location
+        Eeep.Types.Shared.Percentage
         Eeep.Types.Shared.Proficiency
+        Eeep.Types.Shared.Projectile
+        Eeep.Types.Shared.Resref
         Eeep.Types.Shared.School
         Eeep.Types.Shared.Sectype
+        Eeep.Types.Shared.Strength
         Eeep.Types.Shared.Strref
         Eeep.Types.Opcode.OpType
         Eeep.Types.Opcode.Target
@@ -85,7 +86,6 @@ library
         Eeep.Types.Opcode.Special
         Eeep.Types.Opcode
         Eeep.Types.Effect
-        Eeep.Types.Spell.Ability.Location
         Eeep.Types.Spell.Ability.Target
         Eeep.Types.Spell.Ability.Speed
         Eeep.Types.Spell.Ability.Level
