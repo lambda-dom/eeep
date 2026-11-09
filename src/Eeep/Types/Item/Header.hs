@@ -16,18 +16,20 @@ module Eeep.Types.Item.Header (
 
     -- ** Parsers and serializers.
     decode,
+    encode,
 ) where
 
 -- Imports.
 -- Base.
 import GHC.Generics (Generic)
 import Data.Bifunctor (Bifunctor (..))
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Word (Word8, Word16, Word32)
 
 -- Libraries.
 import Control.Monad.Except (MonadError (..))
 import Data.ByteString.Short (ShortByteString)
-import Optics.Core ((%), coercedTo, review, preview)
+import Optics.Core ((%), (^.), coercedTo, review, preview, view, _1, _2, _3, _4)
 
 -- non-Hackage libraries.
 import Mono.Typeclasses.MonoFoldable (MonoFoldable (..))
@@ -36,29 +38,32 @@ import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Source (InputError)
 import Trisagion.Parsers.Split (skipExact)
+import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Typeclasses.Serializers.Binary (nulls)
+import Trisagion.Serializer (Serializer)
 
 -- Package.
 import Eeep.Types.Shared.Attribute (Attribute)
-import qualified Eeep.Types.Shared.Attribute as Attribute (Error (..), decode)
+import qualified Eeep.Types.Shared.Attribute as Attribute (Error (..), decode, encode)
 import Eeep.Types.Shared.Percentage (Percentage)
-import qualified Eeep.Types.Shared.Percentage as Percentage (Error (..), decode)
+import qualified Eeep.Types.Shared.Percentage as Percentage (Error (..), decode, encode)
 import Eeep.Types.Shared.Resref (Resref)
-import qualified Eeep.Types.Shared.Resref as Resref (Error (..), decode)
+import qualified Eeep.Types.Shared.Resref as Resref (Error (..), decode, encode)
 import Eeep.Types.Shared.Strref (Strref)
-import qualified Eeep.Types.Shared.Strref as Strref (decode)
+import qualified Eeep.Types.Shared.Strref as Strref (decode, encode)
 import Eeep.Types.Shared.Proficiency (Proficiency)
-import qualified Eeep.Types.Shared.Proficiency as Proficiency (decode)
+import qualified Eeep.Types.Shared.Proficiency as Proficiency (decode, encode)
 import Eeep.Types.Shared.Strength (Strength)
 import qualified Eeep.Types.Shared.Strength as Strength (strength)
 import Eeep.Types.Item.Flags (Flags)
-import qualified Eeep.Types.Item.Flags as Flags (decode)
+import qualified Eeep.Types.Item.Flags as Flags (decode, encode)
 import Eeep.Types.Item.Animation (Animation)
-import qualified Eeep.Types.Item.Animation as Animation (decode)
+import qualified Eeep.Types.Item.Animation as Animation (decode, encode)
 import Eeep.Types.Item.Category (Category)
-import qualified Eeep.Types.Item.Category as Category (decode)
+import qualified Eeep.Types.Item.Category as Category (decode, encode)
 import Eeep.Types.Item.KitUsability (KitUsability)
 import Eeep.Types.Item.Usability (Usability)
-import qualified Eeep.Types.Item.Usability as Usability (decode)
+import qualified Eeep.Types.Item.Usability as Usability (decode, encode)
 import qualified Eeep.Types.Item.KitUsability as KitUsability
 
 
@@ -110,7 +115,7 @@ data Header = Header {
 
 
 -- | Auxiliary 'Strength' parser. Not exported.
-{-# INLINEABLE strParser #-}
+{-# INLINE strParser #-}
 strParser :: (Parsers.Binary b s) => Parser s (Error :+: InputError) Strength
 strParser = do
     strAttr     <- first (first (review $ #_AttributeError % coercedTo)) Attribute.decode
@@ -159,3 +164,42 @@ decode = do
     enchantment     <- first Right Parsers.word8
     _               <- first Right $ skipExact 3
     pure $ Header {..}
+
+{- | Serializer for the Spell t'Header' type. -}
+{-# INLINEABLE encode #-}
+encode :: Serializers.Binary b s => Serializer s Header
+encode
+    =  contramap (^. #name) Strref.encode
+    <> contramap (^. #nameId) Strref.encode
+    <> contramap (^. #replacement) Resref.encode
+    <> contramap (^. #flags) Flags.encode
+    <> contramap (^. #category) Category.encode
+    <> contramap (^. #usability) Usability.encode
+    <> contramap (^. #animation) Animation.encode
+    <> contramap (^. #level) Serializers.word8
+    <> nulls 1
+    <> contramap (fst . review Strength.strength . view #strength) Attribute.encode
+    <> nulls 1
+    <> contramap (snd . review Strength.strength . view #strength) Percentage.encode
+    <> contramap (^. #kitUsability % KitUsability.exclusionBytes % _1) Serializers.word8
+    <> contramap (^. #intelligence) Attribute.encode
+    <> contramap (^. #kitUsability % KitUsability.exclusionBytes % _2) Serializers.word8
+    <> contramap (^. #dexterity) Attribute.encode
+    <> contramap (^. #kitUsability % KitUsability.exclusionBytes % _3) Serializers.word8
+    <> contramap (^. #wisdom) Attribute.encode
+    <> contramap (^. #kitUsability % KitUsability.exclusionBytes % _4) Serializers.word8
+    <> contramap (^. #constitution) Attribute.encode
+    <> contramap (^. #proficiency) Proficiency.encode
+    <> contramap (^. #charisma) Attribute.encode
+    <> nulls 1
+    <> contramap (^. #price) Serializers.word32Le
+    <> contramap (^. #stack) Serializers.word16Le
+    <> contramap (^. #inventoryIcon) Resref.encode
+    <> contramap (^. #lore) Serializers.word16Le
+    <> contramap (^. #groundIcon) Resref.encode
+    <> contramap (^. #weight) Serializers.word32Le
+    <> contramap (^. #description) Strref.encode
+    <> contramap (^. #descriptionId) Strref.encode
+    <> contramap (^. #descriptionIcon) Resref.encode
+    <> contramap (^. #enchantment) Serializers.word8
+    <> nulls 3
