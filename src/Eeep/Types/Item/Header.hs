@@ -39,8 +39,8 @@ import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Source (InputError)
 import Trisagion.Parsers.Split (skipExact)
 import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
-import Trisagion.Typeclasses.Serializers.Binary (nulls)
 import Trisagion.Serializer (Serializer)
+import Trisagion.Typeclasses.Serializers.Binary (nulls)
 
 -- Package.
 import Eeep.Types.Shared.Attribute (Attribute)
