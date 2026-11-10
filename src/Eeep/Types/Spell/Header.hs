@@ -24,6 +24,7 @@ module Eeep.Types.Spell.Header (
 import GHC.Generics (Generic)
 import Data.Bifunctor (Bifunctor (..))
 import Data.Functor.Contravariant (Contravariant (..))
+import Data.Void (absurd)
 import Data.Word (Word8)
 
 -- non-Hackage libraries.
@@ -36,7 +37,7 @@ import Trisagion.Utils.Either ((:+:))
 import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Source (InputError)
-import Trisagion.Parsers.Split (skipExact)
+import Trisagion.Parsers.Split (skipExact, skipPrefix)
 import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
 import Trisagion.Serializer (Serializer)
 import Trisagion.Typeclasses.Serializers.Binary (nulls)
@@ -97,21 +98,22 @@ data Header = Header {
 decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error :+: InputError) Header
 decode = do
     name        <- first Right Strref.decode
-    _           <- first Right $ skipExact 4
+    _           <- first absurd $ skipPrefix 4
     sound       <- first (first (review $ #_SoundError % coercedTo)) Resref.decode
     flags       <- first Right Flags.decode
     sptype      <- first (first (review $ #_SpTypeError % coercedTo)) SpType.decode
-    _           <- first Right $ skipExact 1
+    _           <- first absurd $ skipPrefix 1
     exclusion   <- first Right Exclusion.decode
     graphics    <- first Right Graphics.decode
-    _           <- first Right $ skipExact 1
+    _           <- first absurd $ skipPrefix 1
     school      <- first Right School.decode
+    _           <- first absurd $ skipPrefix 1
     sectype     <- first Right Sectype.decode
-    _           <- first Right $ skipExact 11
+    _           <- first absurd $ skipPrefix 12
     level       <- first (first (review $ #_LevelError % coercedTo)) Level.decode
-    _           <- first Right $ skipExact 5
+    _           <- first absurd $ skipPrefix 5
     icon        <- first (first (review $ #_IconError % coercedTo)) Resref.decode
-    _           <- first Right $ skipExact 14
+    _           <- first absurd $ skipPrefix 14
     description <- first Right Strref.decode
     _           <- first Right $ skipExact 16
     pure Header {..}
@@ -130,8 +132,9 @@ encode
     <> contramap (^. #graphics) Graphics.encode
     <> nulls 1
     <> contramap (^. #school) School.encode
+    <> nulls 1
     <> contramap (^. #sectype) Sectype.encode
-    <> nulls 11
+    <> nulls 12
     <> contramap (^. #level) Level.encode
     <> nulls 5
     <> contramap (^. #icon) Resref.encode

@@ -41,14 +41,13 @@ import Mono.Typeclasses.MonoFoldable (MonoFoldable (..))
 import Trisagion.Utils.Either ((:+:))
 import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
-import qualified Trisagion.Parsers.Combinators as Parsers (repeatN)
+import Trisagion.Parsers.Combinators (repeatN)
 import Trisagion.Parsers.Source (InputError, matchFoldable, ValidationError (..))
 import Trisagion.Parsers.Split (skipExact)
-import Trisagion.Typeclasses.Serializers.Binary (char8s)
 import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Typeclasses.Serializers.Binary (char8s)
 import Trisagion.Serializer (Serializer)
-import Trisagion.Serializers.Combinators (value)
-import qualified Trisagion.Serializers.Combinators as Serializers (many)
+import Trisagion.Serializers.Combinators (value, many)
 
 -- Package.
 import Eeep.Types.Shared.Block (Block (..))
@@ -58,7 +57,6 @@ import qualified Eeep.Types.Spell.Ability.Header as AbilityHeader (Header, Error
 import Eeep.Types.Spell.Ability (Ability (..))
 import qualified Eeep.Types.Spell.Ability as Ability (opCount)
 import qualified Eeep.Types.Spell.Header as SpellHeader (Error, Header, decode, encode)
-import Trisagion.Parsers.Combinators (repeatN)
 
 
 {- | The t'Spell' @Error@ type. -}
@@ -130,7 +128,7 @@ decode = do
         _      <- signature
         header <- first (first HeaderError) SpellHeader.decode
         (hd_count, cs_count) <- first Right decodeStatic
-        abils  <- Parsers.repeatN hd_count (first (first AbilityError) AbilityHeader.decode)
+        abils  <- repeatN hd_count (first (first AbilityError) AbilityHeader.decode)
         let
             op_count = cs_count + (sum . fmap snd $ abils)
         opcs   <- repeatN op_count $ first (first OpcodeError) Opcode.decode
@@ -172,12 +170,12 @@ encode
         -- Headers.
         <> contramap
             (\ spl -> go (opCount spl) (toListOf (#abilities % folded) spl))
-            (Serializers.many AbilityHeader.encode)
+            (many AbilityHeader.encode)
         -- Opcodes.
-        <> contramap (^. #opcodes) (Serializers.many Opcode.encode)
+        <> contramap (^. #opcodes) (many Opcode.encode)
         <> contramap
             (^.. (#abilities % folded % #opcodes))
-            (Serializers.many $ Serializers.many Opcode.encode)
+            (many $ many Opcode.encode)
     where
         go :: Word16 -> [Ability] -> [(AbilityHeader.Header, Block)]
         go _       []             = []

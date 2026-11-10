@@ -1,10 +1,10 @@
 {- |
-Module: Eeep.Types.Spell.Ability.Location
+Module: Eeep.Types.Shared.Ability.Location
 
-Description: the spell ability's 'Location' type.
+The ability @Location@ type.
 -}
 
-module Eeep.Types.Spell.Ability.Location (
+module Eeep.Types.Shared.Ability.Location (
     -- * Error types.
     Error (..),
 
@@ -52,7 +52,7 @@ newtype Error = Error Word8
 
 {- | The 'Location' enumeration type for the ui location of abilities. -}
 data Location
-    = Empty
+    = None
     | Weapon
     | Spell
     | Item

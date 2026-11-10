@@ -1,10 +1,10 @@
 {- |
-Module: Eeep.Types.Spell.Ability.Speed
+Module: Eeep.Types.Shared.Ability.Speed
 
 The t'Speed 'type.
 -}
 
-module Eeep.Types.Spell.Ability.Speed (
+module Eeep.Types.Shared.Ability.Speed (
     -- * Error types.
     Error (..),
 
@@ -50,7 +50,7 @@ newtype Error = Error Word8
     deriving newtype Enum
 
 
-{- | Wrapper around 'Word8' to constrain the values of the casting time field. -}
+{- | Refinement type to constrain the values of the ability speed to the interval [0 .. 10]. -}
 newtype Speed = Speed Word8
     deriving stock (Eq, Ord, Ix)
     deriving newtype (Enum, Show)

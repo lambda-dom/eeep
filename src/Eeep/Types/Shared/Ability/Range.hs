@@ -1,10 +1,10 @@
 {- |
-Module: Eeep.Types.Spell.Ability.Range
+Module: Eeep.Types.Shared.Ability.Range
 
-The spell ability @Range@ type.
+The ability @Range@ type.
 -}
 
-module Eeep.Types.Spell.Ability.Range (
+module Eeep.Types.Shared.Ability.Range (
     -- * Types.
     Range,
 

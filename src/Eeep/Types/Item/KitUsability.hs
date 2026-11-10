@@ -2,6 +2,11 @@
 Module: Eeep.Types.Item.KitUsability
 
 The @KitUsability@ type for the per kit usability flags field of the main item header.
+
+note(s):
+
+    * No custom parser and serializer provided, because the four exclusion bytes are not laid out
+    consecutively.
 -}
 
 module Eeep.Types.Item.KitUsability (

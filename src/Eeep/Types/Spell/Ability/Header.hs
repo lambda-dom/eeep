@@ -24,6 +24,7 @@ module Eeep.Types.Spell.Ability.Header (
 import GHC.Generics (Generic)
 import Data.Functor.Contravariant (Contravariant (..))
 import Data.Bifunctor (Bifunctor (..))
+import Data.Void (absurd)
 import Data.Word (Word8, Word16)
 
 -- Libraries.
@@ -36,7 +37,7 @@ import Trisagion.Utils.Either ((:+:))
 import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Source (InputError)
-import Trisagion.Parsers.Split (skipExact)
+import Trisagion.Parsers.Split (skipPrefix)
 import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
 import Trisagion.Serializer (Serializer)
 import Trisagion.Typeclasses.Serializers.Binary (nulls)
@@ -48,16 +49,16 @@ import Eeep.Types.Shared.Projectile (Projectile)
 import qualified Eeep.Types.Shared.Projectile as Projectile (decode, encode)
 import Eeep.Types.Shared.Resref (Resref)
 import qualified Eeep.Types.Shared.Resref as Resref (Error (..), decode, encode)
-import Eeep.Types.Spell.Ability.Location (Location)
-import qualified Eeep.Types.Spell.Ability.Location as Location (Error (..), decode, encode)
-import Eeep.Types.Spell.Ability.Target (Target)
-import qualified Eeep.Types.Spell.Ability.Target as Target (Error (..), decode, encode)
+import Eeep.Types.Shared.Ability.Location (Location)
+import qualified Eeep.Types.Shared.Ability.Location as Location (Error (..), decode, encode)
+import Eeep.Types.Shared.Ability.Target (Target)
+import qualified Eeep.Types.Shared.Ability.Target as Target (Error (..), decode, encode)
 import Eeep.Types.Spell.Ability.Level (Level)
 import qualified Eeep.Types.Spell.Ability.Level as Level (Error (..), decode, encode)
-import Eeep.Types.Spell.Ability.Speed (Speed)
-import qualified Eeep.Types.Spell.Ability.Speed as Speed (Error (..), decode, encode)
-import Eeep.Types.Spell.Ability.Range (Range)
-import qualified Eeep.Types.Spell.Ability.Range as Range (decode, encode)
+import Eeep.Types.Shared.Ability.Speed (Speed)
+import qualified Eeep.Types.Shared.Ability.Speed as Speed (Error (..), decode, encode)
+import Eeep.Types.Shared.Ability.Range (Range)
+import qualified Eeep.Types.Shared.Ability.Range as Range (decode, encode)
 
 
 {- | The spell ability t'Header' @Error@ type.
@@ -94,20 +95,20 @@ decode
     :: (Parsers.Binary b s, MonoFoldable Word8 b)
     => Parser s (Error :+: InputError) (Header, Int)
 decode = do
-    _          <- first Right $ skipExact 2
+    _          <- first absurd $ skipPrefix 2
     location   <- first (first (review $ #_LocationError % coercedTo)) Location.decode
-    _          <- first Right $ skipExact 1
+    _          <- first absurd $ skipPrefix 1
     icon       <- first (first (review $ #_IconError % coercedTo)) Resref.decode
     target     <- first (first (review $ #_TargetError % coercedTo)) Target.decode
     count      <- first Right Parsers.word8
     range      <- first Right Range.decode
     level      <- first (first (review $ #_LevelError % coercedTo)) Level.decode
-    _          <- first Right $ skipExact 1
+    _          <- first absurd $ skipPrefix 1
     speed      <- first (first (review $ #_SpeedError % coercedTo)) Speed.decode
-    _          <- first Right $ skipExact 11
+    _          <- first absurd $ skipPrefix 11
     op_count   <- bimap Right (fromIntegral @Word16 @Int) Parsers.word16Le
     -- Note: opcode block offset is not needed, so skip two more bytes.
-    _          <- first Right $ skipExact 6
+    _          <- first absurd $ skipPrefix 6
     projectile <- first Right Projectile.decode
     pure (Header {..}, op_count)
 
