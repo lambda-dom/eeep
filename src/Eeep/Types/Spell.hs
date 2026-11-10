@@ -44,11 +44,10 @@ import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Combinators (repeatN)
 import Trisagion.Parsers.Source (InputError, matchFoldable, ValidationError (..))
 import Trisagion.Parsers.Split (skipExact)
-import Trisagion.Typeclasses.Serializers.Binary (char8s)
 import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Typeclasses.Serializers.Binary (char8s)
 import Trisagion.Serializer (Serializer)
-import Trisagion.Serializers.Combinators (value)
-import qualified Trisagion.Serializers.Combinators as Serializers (many)
+import Trisagion.Serializers.Combinators (value, many)
 
 -- Package.
 import Eeep.Types.Shared.Block (Block (..))
@@ -171,12 +170,12 @@ encode
         -- Headers.
         <> contramap
             (\ spl -> go (opCount spl) (toListOf (#abilities % folded) spl))
-            (Serializers.many AbilityHeader.encode)
+            (many AbilityHeader.encode)
         -- Opcodes.
-        <> contramap (^. #opcodes) (Serializers.many Opcode.encode)
+        <> contramap (^. #opcodes) (many Opcode.encode)
         <> contramap
             (^.. (#abilities % folded % #opcodes))
-            (Serializers.many $ Serializers.many Opcode.encode)
+            (many $ many Opcode.encode)
     where
         go :: Word16 -> [Ability] -> [(AbilityHeader.Header, Block)]
         go _       []             = []
