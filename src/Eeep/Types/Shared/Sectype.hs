@@ -20,7 +20,7 @@ module Eeep.Types.Shared.Sectype (
 -- Base.
 import Data.Functor.Contravariant (Contravariant (..))
 import Data.Ix (Ix)
-import Data.Word (Word16)
+import Data.Word (Word8)
 
 -- Libraries.
 import Optics.Core (Iso', coercedTo, view, review)
@@ -39,23 +39,23 @@ note(s):
 
     * t'Sectype' values can only be validated in the 'IO' monad.
 -}
-newtype Sectype = Sectype Word16
+newtype Sectype = Sectype Word8
     deriving stock (Eq, Ord, Bounded, Ix)
     deriving newtype (Enum, Show)
 
 
 {- | Isomorphism for the t'Sectype' type. -}
 {-# INLINE sectype #-}
-sectype :: Iso' Sectype Word16
+sectype :: Iso' Sectype Word8
 sectype = coercedTo
 
 
 {- | Decode a t'Sectype'. -}
 {-# INLINE decode #-}
 decode :: Parsers.Binary b s => Parser s InputError Sectype
-decode = fmap (review sectype) Parsers.word16Le
+decode = fmap (review sectype) Parsers.word8
 
 {- | Encode a t'Sectype'. -}
 {-# INLINE encode #-}
 encode :: Serializers.Binary b s => Serializer s Sectype
-encode = contramap (view sectype) Serializers.word16Le
+encode = contramap (view sectype) Serializers.word8

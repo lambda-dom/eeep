@@ -20,7 +20,7 @@ module Eeep.Types.Shared.School (
 -- Base.
 import Data.Functor.Contravariant (Contravariant (..))
 import Data.Ix (Ix)
-import Data.Word (Word16)
+import Data.Word (Word8)
 
 -- Libraries.
 import Optics.Core (Iso', coercedTo, view, review)
@@ -39,23 +39,23 @@ note(s):
 
     * t'School' values can only be validated in the 'IO' monad.
 -}
-newtype School = School Word16
+newtype School = School Word8
     deriving stock (Eq, Ord, Bounded, Ix)
     deriving newtype (Enum, Show)
 
 
 {- | Isomorphism for the t'School' type. -}
 {-# INLINE school #-}
-school :: Iso' School Word16
+school :: Iso' School Word8
 school = coercedTo
 
 
 {- | Decode a t'School'. -}
 {-# INLINE decode #-}
 decode :: Parsers.Binary b s => Parser s InputError School
-decode = fmap (review school) Parsers.word16Le
+decode = fmap (review school) Parsers.word8
 
 {- | Encode a t'School'. -}
 {-# INLINE encode #-}
 encode :: Serializers.Binary b s => Serializer s School
-encode = contramap (view school) Serializers.word16Le
+encode = contramap (view school) Serializers.word8

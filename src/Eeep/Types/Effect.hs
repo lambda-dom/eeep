@@ -174,7 +174,7 @@ decodeBody = do
     savebonus    <- first (first (review $ #_SaveBonusError % coercedTo)) SaveBonus.decode
     special      <- first Right Special.decode
     school       <- first Right School.decode
-    _            <- first Right $ skipExact 14
+    _            <- first Right $ skipExact 15
     resistdispel <- first (first (review $ #_ResistDispelError % coercedTo)) ResistDispel.decode
     _            <- first Right $ skipExact 3
     parameter3   <- first Right Parameter.decode
@@ -186,7 +186,7 @@ decodeBody = do
     projectile   <- first Right Projectile.decode
     _            <- first Right $ skipExact 44
     sectype      <- first Right Sectype.decode
-    _            <- first Right $ skipExact 62
+    _            <- first Right $ skipExact 63
     pure Effect {..}
 
 {- | Parser for a file @t'Effect'@. -}
@@ -222,7 +222,7 @@ encodeBody
     <> contramap (^. #savebonus) SaveBonus.encode
     <> contramap (^. #special) Special.encode
     <> contramap (^. #school) School.encode
-    <> nulls 12
+    <> nulls 15
     <> contramap (^. #resistdispel) ResistDispel.encode
     <> nulls 3
     <> contramap (^. #parameter3) Parameter.encode
@@ -232,9 +232,9 @@ encodeBody
     <> contramap (^. #resref3) Resref.encode
     <> nulls 32
     <> contramap (^. #projectile) Projectile.encode
-    <> nulls 46
+    <> nulls 44
     <> contramap (^. #sectype) Sectype.encode
-    <> nulls 60
+    <> nulls 63
 
 {- | Serializer for an embedded t'Effect'. -}
 {-# INLINE encode #-}

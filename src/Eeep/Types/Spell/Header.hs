@@ -106,8 +106,9 @@ decode = do
     graphics    <- first Right Graphics.decode
     _           <- first Right $ skipExact 1
     school      <- first Right School.decode
+    _          <- first Right $ skipExact 1
     sectype     <- first Right Sectype.decode
-    _           <- first Right $ skipExact 11
+    _           <- first Right $ skipExact 12
     level       <- first (first (review $ #_LevelError % coercedTo)) Level.decode
     _           <- first Right $ skipExact 5
     icon        <- first (first (review $ #_IconError % coercedTo)) Resref.decode
@@ -130,8 +131,9 @@ encode
     <> contramap (^. #graphics) Graphics.encode
     <> nulls 1
     <> contramap (^. #school) School.encode
+    <> nulls 1
     <> contramap (^. #sectype) Sectype.encode
-    <> nulls 11
+    <> nulls 12
     <> contramap (^. #level) Level.encode
     <> nulls 5
     <> contramap (^. #icon) Resref.encode

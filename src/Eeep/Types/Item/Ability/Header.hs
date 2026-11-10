@@ -54,9 +54,9 @@ import qualified Eeep.Types.Shared.Projectile as Projectile (decode)
 import Eeep.Types.Shared.Resref (Resref)
 import qualified Eeep.Types.Shared.Resref as Resref (Error (..), decode)
 import Eeep.Types.Shared.School (School)
-import qualified Eeep.Types.Shared.School as School (school)
+import qualified Eeep.Types.Shared.School as School (decode)
 import Eeep.Types.Shared.Sectype (Sectype)
-import qualified Eeep.Types.Shared.Sectype as Sectype (sectype)
+import qualified Eeep.Types.Shared.Sectype as Sectype (decode)
 import Eeep.Types.Item.Ability.Attack (Attack)
 import qualified Eeep.Types.Item.Ability.Attack as Attack (Error (..), decode)
 import Eeep.Types.Item.Ability.Charge (Charge)
@@ -159,10 +159,10 @@ decode = do
     _          <- first Right $ skipExact 1
     thac0      <- first Right Parsers.int16Le
     sides      <- bimap Right (fromIntegral @Word8 @Word32) Parsers.word8
-    school     <- bimap Right (review School.school . fromIntegral @Word8 @Word16) Parsers.word8
+    school     <- first Right School.decode
     number     <- bimap Right (fromIntegral @Word8 @Word32) Parsers.word8
     let dice = review Dice.dice (sides, number)
-    sectype    <- bimap Right (review Sectype.sectype . fromIntegral @Word8 @Word16) Parsers.word8
+    sectype    <- first Right Sectype.decode
     damage     <- first Right Parsers.int16Le
     damtype    <- first (first (review $ #_DamageError % coercedTo)) Damage.decode
     _          <- first Right $ skipExact 1
