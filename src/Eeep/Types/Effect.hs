@@ -34,7 +34,7 @@ import Data.Word (Word8, Word16)
 -- Libraries.
 import Control.Monad.Except (MonadError (..))
 import Data.ByteString.Short (ShortByteString)
-import Optics.Core ((%), (^.), review, coercedTo, preview, view)
+import Optics.Core ((%), (^.), review, coercedTo, preview, view, _1, _2)
 
 -- non-Hackage libraries.
 import Mono.Typeclasses.MonoFoldable (MonoFoldable (..))
@@ -49,7 +49,7 @@ import Trisagion.Typeclasses.Serializers.Binary (nulls, char8s)
 
 -- Package.
 import Eeep.Types.Shared.Dice (Dice)
-import qualified Eeep.Types.Shared.Dice as Dice (decode, encode)
+import qualified Eeep.Types.Shared.Dice as Dice (dice)
 import Eeep.Types.Shared.Resref (Resref)
 import qualified Eeep.Types.Shared.Resref as Resref (Error (..), decode, encode)
 import Eeep.Types.Shared.Projectile (Projectile)
@@ -169,7 +169,11 @@ decodeBody = do
     duration     <- first Right Duration.decode
     probability  <- probParser
     resref1      <- first (first (review $ #_ResrefError % coercedTo)) Resref.decode
-    dice         <- first Right Dice.decode
+    number       <- first Right Parsers.word8
+    _            <- first Right $ skipExact 3
+    sides        <- first Right Parsers.word8
+    _            <- first Right $ skipExact 3
+    let dice = review Dice.dice (number, sides)
     flags        <- first Right Flags.decode
     savebonus    <- first (first (review $ #_SaveBonusError % coercedTo)) SaveBonus.decode
     special      <- first Right Special.decode
@@ -217,7 +221,10 @@ encodeBody
     <> contramap (Probability.lower . view #probability) Serializers.word8
     <> nulls 1
     <> contramap (^. #resref1) Resref.encode
-    <> contramap (^. #dice) Dice.encode
+    <> contramap (^. #dice % Dice.dice % _1) Serializers.word8
+    <> nulls 3
+    <> contramap (^. #dice % Dice.dice % _2) Serializers.word8
+    <> nulls 3
     <> contramap (^. #flags) Flags.encode
     <> contramap (^. #savebonus) SaveBonus.encode
     <> contramap (^. #special) Special.encode

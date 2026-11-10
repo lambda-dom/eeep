@@ -23,7 +23,7 @@ module Eeep.Types.Item.Ability.Header (
 import GHC.Generics (Generic)
 import Data.Bifunctor (Bifunctor (..))
 import Data.Int (Int16)
-import Data.Word (Word8, Word16, Word32)
+import Data.Word (Word8, Word16)
 
 -- Libraries.
 import Control.Monad.Except (MonadError (..))
@@ -158,9 +158,9 @@ decode = do
     speed      <- first (first (review $ #_SpeedError % coercedTo)) Speed.decode
     _          <- first Right $ skipExact 1
     thac0      <- first Right Parsers.int16Le
-    sides      <- bimap Right (fromIntegral @Word8 @Word32) Parsers.word8
+    sides      <- first Right Parsers.word8
     school     <- first Right School.decode
-    number     <- bimap Right (fromIntegral @Word8 @Word32) Parsers.word8
+    number     <- first Right Parsers.word8
     let dice = review Dice.dice (sides, number)
     sectype    <- first Right Sectype.decode
     damage     <- first Right Parsers.int16Le

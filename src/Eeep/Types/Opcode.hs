@@ -29,12 +29,12 @@ import Data.Word (Word8, Word16)
 
 -- Libraries.
 import Data.ByteString.Short (ShortByteString)
-import Optics.Core ((%), (^.), coercedTo, review, re)
+import Optics.Core ((%), (^.), coercedTo, review, re, _1, _2)
 
 -- non-Hackage libraries.
 import Mono.Typeclasses.MonoFoldable (MonoFoldable)
 import Trisagion.Utils.Either ((:+:))
-import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary)
+import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parsers.Source (InputError)
 import Trisagion.Parser (Parser)
 import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
@@ -42,7 +42,7 @@ import Trisagion.Serializer (Serializer)
 
 -- Package.
 import Eeep.Types.Shared.Dice (Dice)
-import qualified Eeep.Types.Shared.Dice as Dice (decode, encode)
+import qualified Eeep.Types.Shared.Dice as Dice (dice)
 import Eeep.Types.Shared.Resref (Resref)
 import qualified Eeep.Types.Shared.Resref as Resref (Error (..), decode, encode)
 import Eeep.Types.Opcode.OpType (OpType)
@@ -67,6 +67,8 @@ import Eeep.Types.Opcode.SaveBonus (SaveBonus)
 import qualified Eeep.Types.Opcode.SaveBonus as SaveBonus (Error (..), decode, encode)
 import Eeep.Types.Opcode.Special (Special)
 import qualified Eeep.Types.Opcode.Special as Special (decode, encode)
+import Trisagion.Parsers.Split (skipExact)
+import Trisagion.Typeclasses.Serializers.Binary (nulls)
 
 
 {- | The t'Opcode' @Error@ type.
@@ -120,7 +122,11 @@ decode = do
     duration     <- first Right Duration.decode
     probability  <- first (first (review $ #_ProbabilityError % re Probability.error)) Probability.decode
     resref       <- first (first (review $ #_ResrefError % coercedTo)) Resref.decode
-    dice         <- first Right Dice.decode
+    number       <- first Right Parsers.word8
+    _            <- first Right $ skipExact 3
+    sides        <- first Right Parsers.word8
+    _            <- first Right $ skipExact 3
+    let dice = review Dice.dice (number, sides)
     flags        <- first Right Flags.decode
     savebonus    <- first (first (review $ #_SaveBonusError % coercedTo)) SaveBonus.decode
     special      <- first Right Special.decode
@@ -139,7 +145,10 @@ encode
     <> contramap (^. #resistdispel) ResistDispel.encode
     <> contramap (^. #duration) Duration.encode
     <> contramap (^. #resref) Resref.encode
-    <> contramap (^. #dice) Dice.encode
+    <> contramap (^. #dice % Dice.dice % _1) Serializers.word8
+    <> nulls 3
+    <> contramap (^. #dice % Dice.dice % _2) Serializers.word8
+    <> nulls 3
     <> contramap (^. #flags) Flags.encode
     <> contramap (^. #savebonus) SaveBonus.encode
     <> contramap (^. #special) Special.encode
