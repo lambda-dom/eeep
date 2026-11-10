@@ -29,6 +29,7 @@ import Data.Bifunctor (Bifunctor (..))
 import Data.Char (ord)
 import Data.Functor.Contravariant (Contravariant (..))
 import Data.Int (Int32)
+import Data.Void (absurd)
 import Data.Word (Word8, Word16)
 
 -- Libraries.
@@ -42,9 +43,10 @@ import Trisagion.Utils.Either ((:+:))
 import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Source (InputError, ValidationError (..), matchFoldable)
-import Trisagion.Parsers.Split (skipExact)
+import Trisagion.Parsers.Split (skipPrefix, skipExact)
 import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
 import Trisagion.Serializer (Serializer)
+import Trisagion.Serializers.Combinators (value)
 import Trisagion.Typeclasses.Serializers.Binary (nulls, char8s)
 
 -- Package.
@@ -80,7 +82,6 @@ import Eeep.Types.Opcode.SaveBonus (SaveBonus)
 import qualified Eeep.Types.Opcode.SaveBonus as SaveBonus (Error (..), decode, encode)
 import Eeep.Types.Opcode.Special (Special)
 import qualified Eeep.Types.Opcode.Special as Special (decode, encode)
-import Trisagion.Serializers.Combinators (value)
 
 
 {- | The t'Effect' @Error@ type.
@@ -144,9 +145,9 @@ signature =
 probParser :: Parsers.Binary b s => Parser s (Error :+: InputError) Probability
 probParser = do
     upper <- first Right Parsers.word8
-    _     <- first Right $ skipExact 1
+    _     <- first absurd $ skipPrefix 1
     lower <- first Right Parsers.word8
-    _     <- first Right $ skipExact 1
+    _     <- first absurd $ skipPrefix 1
     case preview Probability.probability (lower, upper) of
         Just x  -> pure x
         Nothing -> throwError . Left $ ProbabilityError lower upper
@@ -157,38 +158,38 @@ probParser = do
 decodeBody :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error :+: InputError) Effect
 decodeBody = do
     optype       <- first (first (review $ #_OpTypeError % coercedTo)) OpType.decode
-    _            <- first Right $ skipExact 2
+    _            <- first absurd $ skipPrefix 2
     target       <- first (first (review $ #_TargetError % coercedTo)) Target.decode
-    _            <- first Right $ skipExact 3
+    _            <- first absurd $ skipPrefix 3
     power        <- first (first (review $ #_PowerError % coercedTo)) Power.decode
-    _            <- first Right $ skipExact 3
+    _            <- first absurd $ skipPrefix 3
     parameter1   <- first Right Parameter.decode
     parameter2   <- first Right Parameter.decode
     timing       <- first (first (review $ #_TimingError % coercedTo)) Timing.decode
-    _            <- first Right $ skipExact 3
+    _            <- first absurd $ skipPrefix 3
     duration     <- first Right Duration.decode
     probability  <- probParser
     resref1      <- first (first (review $ #_ResrefError % coercedTo)) Resref.decode
     number       <- first Right Parsers.word8
-    _            <- first Right $ skipExact 3
+    _            <- first absurd $ skipPrefix 3
     sides        <- first Right Parsers.word8
-    _            <- first Right $ skipExact 3
+    _            <- first absurd $ skipPrefix 3
     let dice = review Dice.dice (number, sides)
     flags        <- first Right Flags.decode
     savebonus    <- first (first (review $ #_SaveBonusError % coercedTo)) SaveBonus.decode
     special      <- first Right Special.decode
     school       <- first Right School.decode
-    _            <- first Right $ skipExact 15
+    _            <- first absurd $ skipPrefix 15
     resistdispel <- first (first (review $ #_ResistDispelError % coercedTo)) ResistDispel.decode
-    _            <- first Right $ skipExact 3
+    _            <- first absurd $ skipPrefix 3
     parameter3   <- first Right Parameter.decode
     parameter4   <- first Right Parameter.decode
-    _            <- first Right $ skipExact 8
+    _            <- first absurd $ skipPrefix 8
     resref2      <- first (first (review $ #_ResrefError % coercedTo)) Resref.decode
     resref3      <- first (first (review $ #_ResrefError % coercedTo)) Resref.decode
-    _            <- first Right $ skipExact 32
+    _            <- first absurd $ skipPrefix 32
     projectile   <- first Right Projectile.decode
-    _            <- first Right $ skipExact 44
+    _            <- first absurd $ skipPrefix 44
     sectype      <- first Right Sectype.decode
     _            <- first Right $ skipExact 63
     pure Effect {..}
@@ -198,7 +199,7 @@ decodeBody = do
 decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error :+: InputError) Effect
 decode = do
     _ <- signature
-    _ <- first Right $ skipExact 8
+    _ <- first absurd $ skipPrefix 8
     decodeBody
     
 {- | Serializer for an embedded t'Effect'. -}

@@ -23,10 +23,10 @@ module Eeep.Types.Item.Ability.Header (
 import GHC.Generics (Generic)
 import Data.Bifunctor (Bifunctor (..))
 import Data.Int (Int16)
+import Data.Void (absurd)
 import Data.Word (Word8, Word16)
 
 -- Libraries.
-import Control.Monad.Except (MonadError (..))
 import Data.ByteString.Short (ShortByteString)
 import Optics.Core ((%), review, coercedTo)
 
@@ -35,8 +35,9 @@ import Mono.Typeclasses.MonoFoldable (MonoFoldable (..))
 import Trisagion.Utils.Either ((:+:))
 import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..), int16Le)
 import Trisagion.Parser (Parser)
+import Trisagion.Parsers.Combinators (validate)
 import Trisagion.Parsers.Source (InputError)
-import Trisagion.Parsers.Split (skipExact)
+import Trisagion.Parsers.Split (skipExact, skipPrefix)
 
 -- Package.
 import Eeep.Types.Shared.Ability.Location (Location)
@@ -122,23 +123,22 @@ data Header = Header {
 -- | idRequired aux parser. Not exported.
 {-# INLINE idRequiredParser #-}
 idRequiredParser :: (Parsers.Binary b s) => Parser s (Error :+: InputError) Bool
-idRequiredParser = do
-    n <- first Right Parsers.word8
-    case n of
-        1 -> pure True
-        2 -> pure False
-        _ -> throwError . Left $ IdRequiredError n
+idRequiredParser = validate v Parsers.word8
+    where
+        v :: Word8 -> Error :+: Bool
+        v 0 = Right True
+        v 1 = Right False
+        v n = Left $ IdRequiredError n
 
 -- | isParser aux parser. Not exported.
 {-# INLINE isParser #-}
 isParser :: (Parsers.Binary b s) => Parser s (Error :+: InputError) Bool
-isParser = do
-    n <- first Right Parsers.word8
-    _ <- first Right $ skipExact 1
-    case n of
-        0 -> pure False
-        1 -> pure True
-        _ -> throwError . Left $ IsAmmoError n
+isParser = validate v Parsers.word8
+    where
+        v :: Word8 -> Error :+: Bool
+        v 0 = Right False
+        v 1 = Right True
+        v n = Left $ IsAmmoError n
 
 
 {- | Parser for the item @t'Header'@ type. -}
@@ -148,15 +148,15 @@ decode = do
     attack     <- first (first (review $ #_AttackError % coercedTo)) Attack.decode
     idRequired <- idRequiredParser
     location   <- first (first (review $ #_LocationError % coercedTo)) Location.decode
-    _          <- first Right $ skipExact 1
+    _          <- first absurd $ skipPrefix 1
     icon       <- first (first (review $ #_IconError % coercedTo)) Resref.decode
     target     <- first (first (review $ #_TargetError % coercedTo)) Target.decode
     count      <- first Right Parsers.word8
     range      <- first Right Range.decode
     launcher   <- first (first (review $ #_LauncherError % coercedTo)) Launcher.decode
-    _          <- first Right $ skipExact 1
+    _          <- first absurd $ skipPrefix 1
     speed      <- first (first (review $ #_SpeedError % coercedTo)) Speed.decode
-    _          <- first Right $ skipExact 1
+    _          <- first absurd $ skipPrefix 1
     thac0      <- first Right Parsers.int16Le
     sides      <- first Right Parsers.word8
     school     <- first Right School.decode
@@ -165,16 +165,19 @@ decode = do
     sectype    <- first Right Sectype.decode
     damage     <- first Right Parsers.int16Le
     damtype    <- first (first (review $ #_DamageError % coercedTo)) Damage.decode
-    _          <- first Right $ skipExact 1
+    _          <- first absurd $ skipPrefix 1
     op_count   <- bimap Right (fromIntegral @Word16 @Int) Parsers.word16Le
-    _          <- first Right $ skipExact 2
+    _          <- first absurd $ skipPrefix 2
     charges    <- first Right Parsers.word16Le
     charge     <- first (first (review $ #_ChargeError % coercedTo)) Charge.decode
-    _          <- first Right $ skipExact 1
+    _          <- first absurd $ skipPrefix 1
     flags      <- first Right Flags.decode
     projectile <- first Right Projectile.decode
     melee      <- first (first MeleeError) Melee.decode
     isArrow    <- isParser
+    _          <- first absurd $ skipPrefix 1
     isBolt     <- isParser
+    _          <- first absurd $ skipPrefix 1
     isBullet   <- isParser
+    _ <- first Right $ skipExact 1
     pure $ (Header {..}, op_count)

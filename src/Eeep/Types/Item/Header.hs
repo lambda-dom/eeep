@@ -24,6 +24,7 @@ module Eeep.Types.Item.Header (
 import GHC.Generics (Generic)
 import Data.Bifunctor (Bifunctor (..))
 import Data.Functor.Contravariant (Contravariant (..))
+import Data.Void (absurd)
 import Data.Word (Word8, Word16, Word32)
 
 -- Libraries.
@@ -37,7 +38,7 @@ import Trisagion.Utils.Either ((:+:))
 import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Source (InputError)
-import Trisagion.Parsers.Split (skipExact)
+import Trisagion.Parsers.Split (skipExact, skipPrefix)
 import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
 import Trisagion.Serializer (Serializer)
 import Trisagion.Typeclasses.Serializers.Binary (nulls)
@@ -119,7 +120,7 @@ data Header = Header {
 strParser :: (Parsers.Binary b s) => Parser s (Error :+: InputError) Strength
 strParser = do
     strAttr     <- first (first (review $ #_AttributeError % coercedTo)) Attribute.decode
-    _           <- first Right $ skipExact 1
+    _           <- first absurd $ skipPrefix 1
     strPerc     <- first (first (review $ #_PercentageError % coercedTo)) Percentage.decode
     let strength = preview Strength.strength (strAttr, strPerc)
     case strength of
@@ -138,7 +139,7 @@ decode = do
     usability       <- first Right Usability.decode
     animation       <- first Right Animation.decode
     level           <- first Right Parsers.word8
-    _               <- first Right $ skipExact 1
+    _               <- first absurd $ skipPrefix 1
     strength        <- strParser
     kitUse1         <- first Right Parsers.word8
     intelligence    <- first (first (review $ #_AttributeError % coercedTo)) Attribute.decode
@@ -151,7 +152,7 @@ decode = do
     constitution    <- first (first (review $ #_AttributeError % coercedTo)) Attribute.decode
     proficiency     <- first Right Proficiency.decode
     charisma        <- first (first (review $ #_AttributeError % coercedTo)) Attribute.decode
-    _               <- first Right $ skipExact 1
+    _               <- first absurd $ skipPrefix 1
     price           <- first Right Parsers.word32Le
     stack           <- first Right Parsers.word16Le
     inventoryIcon   <- first (first (review $ #_IconError % coercedTo)) Resref.decode

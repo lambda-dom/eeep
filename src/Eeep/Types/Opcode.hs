@@ -25,6 +25,7 @@ import GHC.Generics (Generic)
 import Data.Bifunctor (Bifunctor (..))
 import Data.Functor.Contravariant (Contravariant (..))
 import Data.Int (Int32)
+import Data.Void (absurd)
 import Data.Word (Word8, Word16)
 
 -- Libraries.
@@ -37,8 +38,11 @@ import Trisagion.Utils.Either ((:+:))
 import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parsers.Source (InputError)
 import Trisagion.Parser (Parser)
+import Trisagion.Parsers.Split (skipPrefix)
 import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Typeclasses.Serializers.Binary (nulls)
 import Trisagion.Serializer (Serializer)
+
 
 -- Package.
 import Eeep.Types.Shared.Dice (Dice)
@@ -67,8 +71,6 @@ import Eeep.Types.Opcode.SaveBonus (SaveBonus)
 import qualified Eeep.Types.Opcode.SaveBonus as SaveBonus (Error (..), decode, encode)
 import Eeep.Types.Opcode.Special (Special)
 import qualified Eeep.Types.Opcode.Special as Special (decode, encode)
-import Trisagion.Parsers.Split (skipExact)
-import Trisagion.Typeclasses.Serializers.Binary (nulls)
 
 
 {- | The t'Opcode' @Error@ type.
@@ -123,9 +125,9 @@ decode = do
     probability  <- first (first (review $ #_ProbabilityError % re Probability.error)) Probability.decode
     resref       <- first (first (review $ #_ResrefError % coercedTo)) Resref.decode
     number       <- first Right Parsers.word8
-    _            <- first Right $ skipExact 3
+    _            <- first absurd $ skipPrefix 3
     sides        <- first Right Parsers.word8
-    _            <- first Right $ skipExact 3
+    _            <- first absurd $ skipPrefix 3
     let dice = review Dice.dice (number, sides)
     flags        <- first Right Flags.decode
     savebonus    <- first (first (review $ #_SaveBonusError % coercedTo)) SaveBonus.decode
