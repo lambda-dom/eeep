@@ -27,17 +27,17 @@ import Data.Word (Word8)
 
 -- Libraries.
 import Optics.Core (Prism', prism', review, preview)
-import Data.Enum.Optics (enum)
 
 -- non-Hackage libraries.
+import Data.Enum.Optics (enum)
+import Data.Word.Optics (word8ToInt)
 import Trisagion.Utils.Either ((:+:), validator)
-import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Combinators (validate)
 import Trisagion.Parsers.IStream (InputError)
-import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Serializer (Serializer)
-import Data.Word.Optics (word8ToInt)
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 
 {- | The t'Attribute' @Error@ type. -}
