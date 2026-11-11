@@ -5,9 +5,6 @@ The @Resref@ type.
 -}
 
 module Eeep.Types.Shared.Resref (
-    -- * Error types.
-    Error (..),
-
     -- * Types.
     Resref,
 
@@ -40,19 +37,12 @@ import qualified Data.ByteString.Short as Short (length, takeWhile, replicate)
 import Data.MonoFunctor (MonoFunctor)
 import Data.MonoPointed (MonoPointed)
 import Data.MonoFoldable (MonoFoldable (..))
-import Trisagion.Utils.Either ((:+:), validator)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.IStream (InputError)
-import Trisagion.Parsers.Combinators (validate)
 import Trisagion.Parsers.Split (takeExact)
 import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Serializer (Serializer)
 import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
-
-
-{- | The t'Resref' @Error@ type. -}
-newtype Error = Error ShortByteString
-    deriving stock (Eq, Ord, Show)
 
 
 {- | The t'Resref' type for resource references.
@@ -142,8 +132,8 @@ isResrefChar c = isAscii c && not (isControl c) && c /= '\\' && c /= '/' && c /=
 
 {- | Decode a t'Resref'. -}
 {-# INLINE decode #-}
-decode :: (MonoFoldable Word8 b, Parsers.Binary b s) => Parser s (InputError :+: Error) Resref
-decode = validate (validator Error fromShort) (Parsers.shortBytes $ takeExact 8)
+decode :: (MonoFoldable Word8 b, Parsers.Binary b s) => Parser s InputError Resref
+decode = fmap Resref (Parsers.shortBytes $ takeExact 8)
 
 {- | Encode a t'Resref'. -}
 {-# INLINE encode #-}
