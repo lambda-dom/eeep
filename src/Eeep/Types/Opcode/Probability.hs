@@ -39,23 +39,21 @@ module Eeep.Types.Opcode.Probability (
 import Prelude hiding (error)
 
 -- Base.
-import GHC.Generics (Generic)
 import Data.Functor.Contravariant (Contravariant (..))
 import Data.Tuple (swap)
 import Data.Word (Word8)
 
 -- Libraries.
-import Data.Functor.Contravariant.Divisible (divided)
 import Optics.Core (Prism', Iso', prism', review, preview, iso)
 
 -- non-Hackage libraries.
-import Trisagion.Utils.Either ((:+:), annotate)
-import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
+import Trisagion.Utils.Either ((:+:), validator)
 import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Source (InputError)
-import Trisagion.Parsers.Combinators (zipP, validate)
-import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Parsers.IStream (InputError)
+import Trisagion.Parsers.Combinators (pair, validate)
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 
 {- | The t'Probability' @Error@ type.
@@ -67,7 +65,7 @@ note(s):
 data Error = Error {
     lower :: {-# UNPACK #-} !Word8,
     upper :: {-# UNPACK #-} !Word8
-} deriving stock (Eq, Ord, Bounded, Generic, Show)
+} deriving stock (Eq, Ord, Bounded, Show)
 
 
 {- | Isomorphism for the t'Probability' @Error@ type.
@@ -89,7 +87,7 @@ error = iso from to
 {- | The @Probability@ interval type.
 
 A /probability interval/ is a closed interval @[l, u]@ with @0 <= l, u <= 100@. If @l > u@ then
-the interval is empty.
+the interval is /empty/.
 -}
 data Probability = Probability !Word8 !Word8
     deriving stock (Eq, Ord, Bounded, Show)
@@ -143,13 +141,13 @@ toList (Probability l u) = enumFromTo l u
 
 {- | Decode a t'Probability' interval. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (Error :+: InputError) Probability
+decode :: Parsers.Binary b s => Parser s (InputError :+: Error) Probability
 decode =
     validate
-        (annotate (uncurry Error) (preview probability))
-        (fmap swap $ zipP Parsers.word8 Parsers.word8)
+        (validator (uncurry Error) (preview probability))
+        (fmap swap $ pair Parsers.word8 Parsers.word8)
 
 {- | Encode a t'Probability' interval. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary b s => Serializer s Probability
+encode :: Serializers.Binary s => Serializer s Probability
 encode = contramap (review probability) (divided Serializers.word8 Serializers.word8)
