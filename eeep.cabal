@@ -67,13 +67,12 @@ library
         Eeep.Types.Shared.Percentage
         Eeep.Types.Shared.Proficiency
         Eeep.Types.Shared.Projectile
-        -- Eeep.Types.Shared.Resref
+        Eeep.Types.Shared.Resref
         Eeep.Types.Shared.School
         Eeep.Types.Shared.Sectype
         -- Eeep.Types.Shared.Strength
         Eeep.Types.Shared.Strref
         -- Eeep.Types.Shared.Ability.Location
-        -- Eeep.Types.Shared.Ability.Range
         -- Eeep.Types.Shared.Ability.Speed
         -- Eeep.Types.Shared.Ability.Target
         -- Eeep.Types.Opcode.OpType
