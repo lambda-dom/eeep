@@ -30,13 +30,14 @@ import Optics.Core (Prism', prism', review, preview)
 
 -- non-Hackage libraries.
 import Data.Enum.Optics (enum)
-import Trisagion.Utils.Either ((:+:), annotate)
-import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
+import Data.Word.Optics (word8ToInt)
+import Trisagion.Utils.Either ((:+:), validator)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Combinators (validate)
-import Trisagion.Parsers.Source (InputError)
-import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Parsers.IStream (InputError)
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 
 {- | The t'Location' @Error@ type.
@@ -69,15 +70,15 @@ location = prism' construct match
         construct = fromIntegral @Int @Word8 . review enum
 
         match :: Word8 -> Maybe Location
-        match = preview enum . fromIntegral @Word8 @Int
+        match = preview enum . review word8ToInt
 
 
 {- | Decode a t'Location'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (Error :+: InputError) Location
-decode = validate (annotate Error (preview location)) Parsers.word8
+decode :: Parsers.Binary b s => Parser s (InputError :+: Error) Location
+decode = validate (validator Error (preview location)) Parsers.word8
 
 {- | Encode a t'Location'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary b s => Serializer s Location
+encode :: Serializers.Binary s => Serializer s Location
 encode = contramap (review location) Serializers.word8
