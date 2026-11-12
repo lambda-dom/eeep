@@ -61,6 +61,7 @@ library
         trisagion          >=0.0.1 && <0.1,
     other-modules:
     exposed-modules:
+        Eeep.Utils.Enum
         Eeep.Types.Shared.Attribute
         -- Eeep.Types.Shared.Block
         Eeep.Types.Shared.Dice
@@ -75,7 +76,7 @@ library
         Eeep.Types.Shared.Ability.Location
         Eeep.Types.Shared.Ability.Speed
         Eeep.Types.Shared.Ability.Target
-        -- Eeep.Types.Opcode.OpType
+        Eeep.Types.Opcode.OpType
         Eeep.Types.Opcode.Target
         Eeep.Types.Opcode.Power
         Eeep.Types.Opcode.Timing
