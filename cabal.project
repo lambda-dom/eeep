@@ -16,4 +16,4 @@ source-repository-package
 source-repository-package
     type: git
     location: https://github.com/lambda-dom/trisagion
-    tag: 56b54b4a9c6382fa4fb1492c2e9e66d949f2b33c
+    tag: fcbbf253d9ecf55cf598852e7636d4177626bfdc

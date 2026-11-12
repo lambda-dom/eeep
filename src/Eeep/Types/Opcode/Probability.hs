@@ -50,9 +50,11 @@ import Optics.Core (Prism', Iso', prism', review, preview, iso)
 import Trisagion.Utils.Either ((:+:), validator)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.IStream (InputError)
-import Trisagion.Parsers.Combinators (pair, validate)
+import Trisagion.Parsers.Combinators (validate)
+import qualified Trisagion.Parsers.Combinators as Parsers (pair)
 import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Combinators as Serializer (pair)
 import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 
@@ -145,9 +147,9 @@ decode :: Parsers.Binary b s => Parser s (InputError :+: Error) Probability
 decode =
     validate
         (validator (uncurry Error) (preview probability))
-        (fmap swap $ pair Parsers.word8 Parsers.word8)
+        (fmap swap $ Parsers.pair Parsers.word8 Parsers.word8)
 
 {- | Encode a t'Probability' interval. -}
 {-# INLINE encode #-}
 encode :: Serializers.Binary s => Serializer s Probability
-encode = contramap (review probability) (divided Serializers.word8 Serializers.word8)
+encode = contramap (review probability) (Serializer.pair Serializers.word8 Serializers.word8)

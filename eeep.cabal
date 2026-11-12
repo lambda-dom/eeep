@@ -79,7 +79,7 @@ library
         Eeep.Types.Opcode.Target
         Eeep.Types.Opcode.Power
         Eeep.Types.Opcode.Timing
-        -- Eeep.Types.Opcode.Probability
+        Eeep.Types.Opcode.Probability
         -- Eeep.Types.Opcode.ResistDispel
         -- Eeep.Types.Opcode.Flags
         -- Eeep.Types.Opcode.SaveBonus
