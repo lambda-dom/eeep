@@ -81,7 +81,7 @@ library
         Eeep.Types.Opcode.Timing
         Eeep.Types.Opcode.Probability
         Eeep.Types.Opcode.ResistDispel
-        -- Eeep.Types.Opcode.Flags
+        Eeep.Types.Opcode.Flags
         Eeep.Types.Opcode.SaveBonus
         -- Eeep.Types.Opcode
         -- Eeep.Types.Effect
