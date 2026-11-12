@@ -84,8 +84,8 @@ library
         Eeep.Types.Opcode.ResistDispel
         Eeep.Types.Opcode.Flags
         Eeep.Types.Opcode.SaveBonus
-        -- Eeep.Types.Opcode
-        -- Eeep.Types.Effect
+        Eeep.Types.Opcode
+        Eeep.Types.Effect
         -- Eeep.Types.Spell.Ability.Level
         -- Eeep.Types.Spell.Ability.Header
         -- Eeep.Types.Spell.SpType
@@ -111,4 +111,4 @@ library
         -- Eeep.Types.Item.Header
         -- Eeep.Types.Item.Ability
         -- Eeep.Types.Item
-        -- Eeep.IO
+        Eeep.IO
