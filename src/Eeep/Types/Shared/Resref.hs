@@ -45,6 +45,10 @@ import Trisagion.Serializer (Serializer)
 import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 
+-- $setup
+-- >>> import Data.Char
+
+
 {- | The t'Resref' type for resource references.
 
 The type is a wrapper around a 'ShortByteString' of length @< 8@. These represent the basename of

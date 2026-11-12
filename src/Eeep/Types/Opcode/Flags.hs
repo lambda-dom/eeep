@@ -12,6 +12,9 @@ module Eeep.Types.Opcode.Flags (
     toFlags,
     fromFlags,
 
+    -- ** Traversals.
+    flags,
+
     -- ** Lenses.
     spells,
     breath,
@@ -34,10 +37,10 @@ import Data.Functor.Contravariant (Contravariant (..))
 import Data.Word (Word32)
 
 -- Libraries.
-import Optics.Core (Lens', Iso', (%), coercedTo, view)
+import Optics.Core (Lens', Iso', IxTraversal', (%), coercedTo, view, elementsOf)
 
 -- non-Hackage libraries.
-import Data.Bits.Optics (bitAt)
+import Data.Bits.Optics (bitAt, bits)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.IStream (InputError)
 import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
@@ -76,10 +79,19 @@ fromFlags :: Flags -> Word32
 fromFlags = view saveFlags
 
 
--- | Isomorphism for the t'Flags' type. Not exported.
+-- | Isomorphism for the t'Flags' type. Not exported; needed only to fix intermediate types.
 {-# INLINE saveFlags #-}
 saveFlags :: Iso' Flags Word32
 saveFlags = coercedTo
+
+
+{- | Indexed traversal over the valid bit flags. -}
+{-# INLINE flags #-}
+flags :: IxTraversal' Int Flags Bool
+flags = elementsOf (saveFlags % bits) p
+    where
+        p :: Int -> Bool
+        p n = (0 <= n && n <= 4) || (11 <= n && n <= 12) || (n == 24)
 
 
 {- | The save vs. spells bit lens. -}
