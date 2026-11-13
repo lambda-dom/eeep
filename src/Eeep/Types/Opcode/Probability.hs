@@ -64,10 +64,8 @@ note(s):
 
     * To be imported qualified.
 -}
-data Error = Error {
-    lower :: {-# UNPACK #-} !Word8,
-    upper :: {-# UNPACK #-} !Word8
-} deriving stock (Eq, Ord, Bounded, Show)
+data Error = Error {-# UNPACK #-} !Word8 {-# UNPACK #-} !Word8
+    deriving stock (Eq, Ord, Bounded, Show)
 
 
 {- | Isomorphism for the t'Probability' @Error@ type.
@@ -91,8 +89,10 @@ error = iso from to
 A /probability interval/ is a closed interval @[l, u]@ with @0 <= l, u <= 100@. If @l > u@ then
 the interval is /empty/.
 -}
-data Probability = Probability !Word8 !Word8
-    deriving stock (Eq, Ord, Bounded, Show)
+data Probability = Probability {
+    lower :: {-# UNPACK #-} !Word8,
+    upper :: {-# UNPACK #-} !Word8
+} deriving stock (Eq, Ord, Bounded, Show)
 
 
 {- | Prism for a t'Probability' interval. -}
