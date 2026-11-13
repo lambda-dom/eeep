@@ -37,7 +37,7 @@ import Data.Functor.Contravariant (Contravariant (..))
 import Data.Word (Word32)
 
 -- Libraries.
-import Optics.Core (Lens', Iso', IxTraversal', (%), coercedTo, view, elementsOf)
+import Optics.Core (Lens', Iso', IxTraversal', (%), coercedTo, view, elementsOf, toListOf)
 
 -- non-Hackage libraries.
 import Data.Bits.Optics (bitAt, bits)
@@ -46,7 +46,6 @@ import Trisagion.Parsers.IStream (InputError)
 import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Serializer (Serializer)
 import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
-import Optics.Fold (toListOf)
 
 
 {- | The t'Flags' type for opcode flags.

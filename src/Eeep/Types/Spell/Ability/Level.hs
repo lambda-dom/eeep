@@ -30,13 +30,13 @@ import Optics.Core (Prism', review, preview, prism')
 
 -- non-Hackage libraries.
 import Data.Enum.Optics (enum)
-import Trisagion.Utils.Either ((:+:), annotate)
-import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
+import Trisagion.Utils.Either ((:+:), validator)
 import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Source (InputError)
+import Trisagion.Parsers.IStream (InputError)
 import Trisagion.Parsers.Combinators (validate)
-import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 
 {- | The t'Level' @Error@ type.
@@ -84,10 +84,10 @@ level = prism' construct match
 
 {- | Decode a t'Level'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (Error :+: InputError) Level
-decode = validate (annotate Error (preview level)) Parsers.word8
+decode :: Parsers.Binary b s => Parser s (InputError :+: Error) Level
+decode = validate (validator Error (preview level)) Parsers.word8
 
 {- | Encode a t'Level'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary b s => Serializer s Level
+encode :: Serializers.Binary s => Serializer s Level
 encode = contramap (review level) Serializers.word8

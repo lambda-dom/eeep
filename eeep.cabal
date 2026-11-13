@@ -86,15 +86,15 @@ library
         Eeep.Types.Opcode.SaveBonus
         Eeep.Types.Opcode
         Eeep.Types.Effect
-        -- Eeep.Types.Spell.Ability.Level
+        Eeep.Types.Spell.Ability.Level
         -- Eeep.Types.Spell.Ability.Header
-        -- Eeep.Types.Spell.SpType
-        -- Eeep.Types.Spell.Level
-        -- Eeep.Types.Spell.Flags
-        -- Eeep.Types.Spell.Exclusion
-        -- Eeep.Types.Spell.Graphics
+        Eeep.Types.Spell.SpType
+        Eeep.Types.Spell.Level
+        Eeep.Types.Spell.Flags
+        Eeep.Types.Spell.Exclusion
+        Eeep.Types.Spell.Graphics
         -- Eeep.Types.Spell.Ability
-        -- Eeep.Types.Spell.Header
+        Eeep.Types.Spell.Header
         -- Eeep.Types.Spell
         -- Eeep.Types.Item.Ability.Attack
         -- Eeep.Types.Item.Ability.Charge
