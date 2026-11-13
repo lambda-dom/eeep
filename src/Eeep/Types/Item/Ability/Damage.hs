@@ -1,7 +1,7 @@
 {- |
 Module: Eeep.Types.Item.Ability.Damage
 
-The @Damage@ type.
+The @DamageType@ type.
 -}
 
 module Eeep.Types.Item.Ability.Damage (
@@ -9,10 +9,10 @@ module Eeep.Types.Item.Ability.Damage (
     Error (..),
 
     -- * Types.
-    Damage (..),
+    DamageType (..),
 
     -- ** Prisms.
-    damage,
+    damageType,
 
     -- ** Parsers and serializers.
     decode,
@@ -30,23 +30,23 @@ import Optics.Core (Prism', review, preview, prism')
 
 -- Non-hackage libraries.
 import Data.Enum.Optics (enum)
-import Trisagion.Utils.Either ((:+:), annotate)
-import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
+import Trisagion.Utils.Either ((:+:), validator)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Combinators (validate)
-import Trisagion.Parsers.Source (InputError)
-import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Parsers.IStream (InputError)
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 
-{- | The t'Damage' @Error@ type. -}
+{- | The t'DamageType' @Error@. -}
 newtype Error = Error Word8
     deriving stock (Eq, Ord, Bounded, Show)
     deriving newtype Enum
 
 
-{- | The @Damage@ enumeration type for the damage type of weapon abilities. -}
-data Damage
+{- | The @DamageType@ enumeration for the damage type of weapon abilities. -}
+data DamageType
     = None
     | Piercing
     | Crushing
@@ -59,24 +59,24 @@ data Damage
     deriving stock (Eq, Ord, Enum, Bounded, Ix, Show)
 
 
-{- | Prism for the @t'Damage'@ type. -}
-{-# INLINE damage #-}
-damage :: Prism' Word8 Damage
-damage = prism' construct match
+{- | Prism for the @t'DamageType'@. -}
+{-# INLINE damageType #-}
+damageType :: Prism' Word8 DamageType
+damageType = prism' construct match
     where
-        construct :: Damage -> Word8
+        construct :: DamageType -> Word8
         construct = succ . fromIntegral @Int @Word8 . review enum
 
-        match :: Word8 -> Maybe Damage
+        match :: Word8 -> Maybe DamageType
         match = preview enum . pred . fromIntegral @Word8 @Int
 
 
-{- | Decode a t'Damage'. -}
+{- | Decode a t'DamageType'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (Error :+: InputError) Damage
-decode = validate (annotate Error (preview damage)) Parsers.word8
+decode :: Parsers.Binary b s => Parser s (InputError :+: Error) DamageType
+decode = validate (validator Error (preview damageType)) Parsers.word8
 
-{- | Encode a t'Damage'. -}
+{- | Encode a t'DamageType'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary b s => Serializer s Damage
-encode = contramap (review damage) Serializers.word8
+encode :: Serializers.Binary s => Serializer s DamageType
+encode = contramap (review damageType) Serializers.word8
