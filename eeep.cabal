@@ -49,18 +49,19 @@ library
         base               >=4.20  && <4.21,
         -- Libraries.
         bytestring         >=0.12  && <0.13,
-        contravariant      >=1.5   && <1.6,
+        -- contravariant      >=1.5   && <1.6,
         file-io            >=0.2   && <0.3,
         filepath           >=1.5   && <1.6,
-        mtl                >=2.3   && <2.4,
+        -- mtl                >=2.3   && <2.4,
         optics-core        >=0.4.2 && <0.4.3,
         vector             >=0.13  && <0.14,
         -- Non-hackage libraries.
-        mono               >=0.1   && <0.2,
+        mono               >=0.0.1 && <0.1,
         optics-conversions >=0.0.1 && <0.1,
         trisagion          >=0.0.1 && <0.1,
     other-modules:
     exposed-modules:
+        Eeep.Utils.Enum
         Eeep.Types.Shared.Attribute
         Eeep.Types.Shared.Block
         Eeep.Types.Shared.Dice
@@ -70,23 +71,18 @@ library
         Eeep.Types.Shared.Resref
         Eeep.Types.Shared.School
         Eeep.Types.Shared.Sectype
-        Eeep.Types.Shared.Strength
         Eeep.Types.Shared.Strref
         Eeep.Types.Shared.Ability.Location
-        Eeep.Types.Shared.Ability.Range
         Eeep.Types.Shared.Ability.Speed
         Eeep.Types.Shared.Ability.Target
         Eeep.Types.Opcode.OpType
         Eeep.Types.Opcode.Target
-        Eeep.Types.Opcode.Parameter
         Eeep.Types.Opcode.Power
-        Eeep.Types.Opcode.Duration
         Eeep.Types.Opcode.Timing
         Eeep.Types.Opcode.Probability
         Eeep.Types.Opcode.ResistDispel
         Eeep.Types.Opcode.Flags
         Eeep.Types.Opcode.SaveBonus
-        Eeep.Types.Opcode.Special
         Eeep.Types.Opcode
         Eeep.Types.Effect
         Eeep.Types.Spell.Ability.Level
@@ -99,19 +95,19 @@ library
         Eeep.Types.Spell.Ability
         Eeep.Types.Spell.Header
         Eeep.Types.Spell
-        Eeep.Types.Item.Ability.Attack
-        Eeep.Types.Item.Ability.Charge
-        Eeep.Types.Item.Ability.Damage
-        Eeep.Types.Item.Ability.Flags
-        Eeep.Types.Item.Ability.Launcher
-        Eeep.Types.Item.Ability.Melee
-        Eeep.Types.Item.Ability.Header
-        Eeep.Types.Item.Category
-        Eeep.Types.Item.Flags
-        Eeep.Types.Item.Usability
-        Eeep.Types.Item.KitUsability
-        Eeep.Types.Item.Animation
-        Eeep.Types.Item.Header
-        Eeep.Types.Item.Ability
-        Eeep.Types.Item
+        -- Eeep.Types.Item.Ability.Attack
+        -- Eeep.Types.Item.Ability.Charge
+        -- Eeep.Types.Item.Ability.Damage
+        -- Eeep.Types.Item.Ability.Flags
+        -- Eeep.Types.Item.Ability.Launcher
+        -- Eeep.Types.Item.Ability.Melee
+        -- Eeep.Types.Item.Ability.Header
+        -- Eeep.Types.Item.Category
+        -- Eeep.Types.Item.Flags
+        -- Eeep.Types.Item.Usability
+        -- Eeep.Types.Item.KitUsability
+        -- Eeep.Types.Item.Animation
+        -- Eeep.Types.Item.Header
+        -- Eeep.Types.Item.Ability
+        -- Eeep.Types.Item
         Eeep.IO

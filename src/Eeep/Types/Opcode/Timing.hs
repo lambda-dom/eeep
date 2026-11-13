@@ -30,13 +30,14 @@ import Optics.Core (Prism', prism', review, preview)
 
 -- non-Hackage libraries.
 import Data.Enum.Optics (enum)
-import Trisagion.Utils.Either ((:+:), annotate)
+import Data.Word.Optics (word8ToInt)
+import Trisagion.Utils.Either ((:+:), validator)
 import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Source (InputError)
-import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parsers.Combinators (validate)
-import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Parsers.IStream (InputError)
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 
 {- | The t'Timing' @Error@ type. -}
@@ -45,7 +46,7 @@ newtype Error = Error Word8
     deriving newtype Enum
 
 
-{- | The @Timing@ enumeration type. -}
+{- | The @Timing@ enumeration type for the timing mode of an opcode. -}
 data Timing
     = Limited
     | Instant
@@ -70,15 +71,15 @@ timing = prism' construct match
         construct = fromIntegral @Int @Word8 . review enum
 
         match :: Word8 -> Maybe Timing
-        match = preview enum . fromIntegral @Word8 @Int
+        match = preview enum . review word8ToInt
 
 
 {- | Decode a t'Timing'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (Error :+: InputError) Timing
-decode = validate (annotate Error (preview timing)) Parsers.word8
+decode :: Parsers.Binary b s => Parser s (InputError :+: Error) Timing
+decode = validate (validator Error (preview timing)) Parsers.word8
 
 {- | Encode a t'Timing'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary b s => Serializer s Timing
+encode :: Serializers.Binary s => Serializer s Timing
 encode = contramap (review timing) Serializers.word8

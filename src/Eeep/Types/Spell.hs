@@ -30,6 +30,7 @@ import GHC.Generics (Generic)
 import Data.Bifunctor (Bifunctor (..))
 import Data.Char (ord)
 import Data.Functor.Contravariant (Contravariant (..))
+import Data.Void (absurd)
 import Data.Word (Word8, Word16)
 
 -- Libraries.
@@ -37,17 +38,17 @@ import Data.Vector.Strict (Vector, fromListN)
 import Optics.Core ((^.), (%), (^..), view, folded, toListOf)
 
 -- non-Hackage libraries.
-import Mono.Typeclasses.MonoFoldable (MonoFoldable (..))
+import Data.MonoFoldable (MonoFoldable (..))
 import Trisagion.Utils.Either ((:+:))
-import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Combinators (repeatN)
-import Trisagion.Parsers.Source (InputError, matchFoldable, ValidationError (..))
-import Trisagion.Parsers.Split (skipExact)
-import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
-import Trisagion.Typeclasses.Serializers.Binary (char8s)
+import Trisagion.Parsers.IStream (InputError, ValidationError (..), matchFoldable)
+import Trisagion.Parsers.Split (skipN)
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
+import Trisagion.Serializers.Binary (char8s)
 import Trisagion.Serializer (Serializer)
 import Trisagion.Serializers.Combinators (value, many)
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 -- Package.
 import Eeep.Types.Shared.Block (Block (..))
@@ -83,7 +84,7 @@ abCount = fromIntegral @Int @a . length . view #abilities
 
 -- | Return the offset of the abilities table. Not exported.
 {-# INLINE abOffset #-}
-abOffset :: forall a . Integral a => Spell -> a
+abOffset :: Integral a => Spell -> a
 abOffset = const 0x72
 
 -- | Return the offset of the opcodes table. Not exported.
@@ -101,10 +102,10 @@ opCount = fromIntegral @Int @a . length . view #opcodes
 {-# INLINE signature #-}
 signature
     :: forall b s . (Parsers.Binary b s)
-    => Parser s (Error :+: InputError) ()
+    => Parser s (InputError :+: Error) ()
 signature =
     first
-        (first (\ (ValidationError n) -> SignatureError n))
+        (fmap (\ (ValidationError n) -> SignatureError n))
         (matchFoldable (fmap (fromIntegral @Int @Word8 . ord) "SPL V1  "))
 
 -- | Parser for the table information of a spell header. Not exported.
@@ -112,9 +113,9 @@ signature =
 decodeStatic :: (Parsers.Binary b s) => Parser s InputError (Int, Int)
 decodeStatic = do
         -- Note: Header offset, opcode table offset and casting opcode offset can all be computed. 
-        _        <- skipExact 4
+        _        <- first absurd $ skipN 4
         hd_count <- fmap (fromIntegral @Word16 @Int) Parsers.word16Le
-        _        <- skipExact 6
+        _        <- first absurd $ skipN 6
         cs_count <- fmap (fromIntegral @Word16 @Int) Parsers.word16Le
         pure (hd_count, cs_count)
 
@@ -123,15 +124,15 @@ decodeStatic = do
 {-# INLINEABLE decode #-}
 decode
     :: (Parsers.Binary b s, MonoFoldable Word8 b)
-    => Parser s (Error :+: InputError) Spell
+    => Parser s (InputError :+: Error) Spell
 decode = do
         _      <- signature
-        header <- first (first HeaderError) SpellHeader.decode
-        (hd_count, cs_count) <- first Right decodeStatic
-        abils  <- repeatN hd_count (first (first AbilityError) AbilityHeader.decode)
+        header <- first (fmap HeaderError) SpellHeader.decode
+        (hd_count, cs_count) <- first Left decodeStatic
+        abils  <- repeatN hd_count (first (fmap AbilityError) AbilityHeader.decode)
         let
             op_count = cs_count + (sum . fmap snd $ abils)
-        opcs   <- repeatN op_count $ first (first OpcodeError) Opcode.decode
+        opcs   <- repeatN op_count $ first (fmap OpcodeError) Opcode.decode
         let
             (cst_opcs, rest_opcs) = splitAt cs_count opcs
             opcodes               = fromListN cs_count cst_opcs
@@ -150,7 +151,7 @@ decode = do
 
 -- | Serializer for the static block of a spell header. Not exported.
 {-# INLINE encodeStatic #-}
-encodeStatic :: Serializers.Binary b s => Serializer s Spell
+encodeStatic :: Serializers.Binary s => Serializer s Spell
 encodeStatic
     =  contramap (abOffset) Serializers.word32Le
     <> contramap (abCount) Serializers.word16Le
@@ -160,7 +161,7 @@ encodeStatic
 
 {- | Serializer for the t'Spell' type. -}
 {-# INLINEABLE encode #-}
-encode :: Serializers.Binary b s => Serializer s Spell
+encode :: Serializers.Binary s => Serializer s Spell
 encode
         =  value char8s "SPL V1  "
         -- Spell header.
@@ -183,4 +184,4 @@ encode
             let
                 count = Ability.opCount abil
             in
-                (view #header abil, Block {..}) : go (offset + count) abils
+                (view #header abil, Block count offset) : go (offset + count) abils

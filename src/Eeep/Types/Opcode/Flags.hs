@@ -12,6 +12,9 @@ module Eeep.Types.Opcode.Flags (
     toFlags,
     fromFlags,
 
+    -- ** Traversals.
+    flags,
+
     -- ** Lenses.
     spells,
     breath,
@@ -34,18 +37,18 @@ import Data.Functor.Contravariant (Contravariant (..))
 import Data.Word (Word32)
 
 -- Libraries.
-import Optics.Core (Lens', Iso', (%), coercedTo, view)
+import Optics.Core (Lens', Iso', IxTraversal', (%), coercedTo, view, elementsOf, toListOf)
 
 -- non-Hackage libraries.
-import Data.Bits.Optics (bitAt)
-import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
+import Data.Bits.Optics (bitAt, bits)
 import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Source (InputError)
-import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Parsers.IStream (InputError)
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 
-{- | The t'Flags' type.
+{- | The t'Flags' type for opcode flags.
 
 note(s):
 
@@ -53,7 +56,13 @@ note(s):
     use t'Flags' values as keys in maps, etc.
 -}
 newtype Flags = Flags Word32
-    deriving stock (Eq, Show)
+    deriving stock (Eq, Ord, Bounded)
+
+
+-- Instances.
+instance Show Flags where
+    show :: Flags -> String
+    show = show . toListOf flags
 
 
 {- | Smart constructor for the t'Flags' type.
@@ -61,7 +70,7 @@ newtype Flags = Flags Word32
 note(s)
 
     * The constructor performs normalization so it is *not* an inverse of 'fromFlags', only a
-    right-inverse. By the same token, it is not part of a 'Optics.Core.Prism'.
+    right-inverse. By the same reason, it is not part of a 'Optics.Core.Prism'.
 -}
 {-# INLINE toFlags #-}
 toFlags :: Word32 -> Flags
@@ -76,10 +85,19 @@ fromFlags :: Flags -> Word32
 fromFlags = view saveFlags
 
 
--- | Isomorphism for the t'Flags' type. Not exported.
+-- | Isomorphism for the t'Flags' type. Not exported; needed only to fix intermediate types.
 {-# INLINE saveFlags #-}
 saveFlags :: Iso' Flags Word32
 saveFlags = coercedTo
+
+
+{- | Indexed traversal over the valid bit flags. -}
+{-# INLINE flags #-}
+flags :: IxTraversal' Int Flags Bool
+flags = elementsOf (saveFlags % bits) p
+    where
+        p :: Int -> Bool
+        p n = (0 <= n && n <= 4) || (11 <= n && n <= 12) || (n == 24)
 
 
 {- | The save vs. spells bit lens. -}
@@ -130,5 +148,5 @@ decode = fmap toFlags Parsers.word32Le
 
 {- | Encode a t'Flags'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary b s => Serializer s Flags
+encode :: Serializers.Binary s => Serializer s Flags
 encode = contramap fromFlags Serializers.word32Le
