@@ -94,7 +94,7 @@ library
         Eeep.Types.Spell.Graphics
         Eeep.Types.Spell.Ability
         Eeep.Types.Spell.Header
-        -- Eeep.Types.Spell
+        Eeep.Types.Spell
         -- Eeep.Types.Item.Ability.Attack
         -- Eeep.Types.Item.Ability.Charge
         -- Eeep.Types.Item.Ability.Damage
