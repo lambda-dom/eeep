@@ -109,7 +109,6 @@ data Effect = Effect {
     resistdispel :: {-# UNPACK #-} !ResistDispel,
     resref1      :: {-# UNPACK #-} !Resref,
     resref2      :: {-# UNPACK #-} !Resref,
-    resref3      :: {-# UNPACK #-} !Resref,
     dice         :: {-# UNPACK #-} !Dice,
     flags        :: {-# UNPACK #-} !Flags,
     savebonus    :: {-# UNPACK #-} !SaveBonus,
@@ -177,8 +176,7 @@ decodeBody = do
     parameter4   <- first Left Parsers.word32Le
     _            <- first absurd $ skipN 8
     resref2      <- first Left Resref.decode
-    resref3      <- first Left Resref.decode
-    _            <- first absurd $ skipN 32
+    _            <- first absurd $ skipN 40
     projectile   <- first Left Projectile.decode
     _            <- first absurd $ skipN 44
     sectype      <- first Left Sectype.decode
@@ -228,8 +226,7 @@ encodeBody
     <> contramap (^. #parameter4) Serializers.word32Le
     <> nullN 8
     <> contramap (^. #resref2) Resref.encode
-    <> contramap (^. #resref3) Resref.encode
-    <> nullN 32
+    <> nullN 40
     <> contramap (^. #projectile) Projectile.encode
     <> nullN 44
     <> contramap (^. #sectype) Sectype.encode

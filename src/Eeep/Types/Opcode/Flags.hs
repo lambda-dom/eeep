@@ -46,6 +46,7 @@ import Trisagion.Parsers.IStream (InputError)
 import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Serializer (Serializer)
 import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
+import Optics.Fold (toListOf)
 
 
 {- | The t'Flags' type for opcode flags.
@@ -56,7 +57,13 @@ note(s):
     use t'Flags' values as keys in maps, etc.
 -}
 newtype Flags = Flags Word32
-    deriving stock (Eq, Ord, Bounded, Show)
+    deriving stock (Eq, Ord, Bounded)
+
+
+-- Instances.
+instance Show Flags where
+    show :: Flags -> String
+    show = show . toListOf flags
 
 
 {- | Smart constructor for the t'Flags' type.
