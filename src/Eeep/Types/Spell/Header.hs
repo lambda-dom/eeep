@@ -51,8 +51,8 @@ import Eeep.Types.Shared.Sectype (Sectype)
 import qualified Eeep.Types.Shared.Sectype as Sectype (decode, encode)
 import Eeep.Types.Shared.Strref (Strref)
 import qualified Eeep.Types.Shared.Strref as Strref (decode, encode)
-import Eeep.Types.Spell.SpType (SpType)
-import qualified Eeep.Types.Spell.SpType as SpType (Error (..), decode, encode)
+import Eeep.Types.Spell.SpellType (SpellType)
+import qualified Eeep.Types.Spell.SpellType as SpellType (Error (..), decode, encode)
 import Eeep.Types.Spell.Level (Level)
 import qualified Eeep.Types.Spell.Level as Level (Error (..), decode, encode)
 import Eeep.Types.Spell.Exclusion (Exclusion)
@@ -70,7 +70,7 @@ note(s):
     * To be imported qualified.
 -}
 data Error
-    = SpTypeError       {-# UNPACK #-} !Word8
+    = SpellTypeError    {-# UNPACK #-} !Word8
     | LevelError        {-# UNPACK #-} !Word8
     | SoundError                       !ShortByteString
     | IconError                        !ShortByteString
@@ -82,7 +82,7 @@ data Header = Header {
     name        :: {-# UNPACK #-} !Strref,
     sound       :: {-# UNPACK #-} !Resref,
     flags       :: {-# UNPACK #-} !Flags,
-    sptype      :: {-# UNPACK #-} !SpType,
+    spelltype   :: {-# UNPACK #-} !SpellType,
     exclusion   :: {-# UNPACK #-} !Exclusion,
     graphics    :: {-# UNPACK #-} !Graphics,
     school      :: {-# UNPACK #-} !School,
@@ -101,7 +101,7 @@ decode = do
     _           <- first absurd $ skipN 4
     sound       <- first Left Resref.decode
     flags       <- first Left Flags.decode
-    sptype      <- first (fmap (review $ #_SpTypeError % coercedTo)) SpType.decode
+    spelltype   <- first (fmap (review $ #_SpellTypeError % coercedTo)) SpellType.decode
     _           <- first absurd $ skipN 1
     exclusion   <- first Left Exclusion.decode
     graphics    <- first Left Graphics.decode
@@ -126,7 +126,7 @@ encode
     <> nullN 4
     <> contramap (^. #sound) Resref.encode
     <> contramap (^. #flags) Flags.encode
-    <> contramap (^. #sptype) SpType.encode
+    <> contramap (^. #spelltype) SpellType.encode
     <> nullN 1
     <> contramap (^. #exclusion) Exclusion.encode
     <> contramap (^. #graphics) Graphics.encode

@@ -1,15 +1,15 @@
 {- |
-Module: Eeep.Types.Spell.SpType
+Module: Eeep.Types.Spell.SpellType
 
-The @SpType@ type.
+The @SpellType@ type.
 -}
 
-module Eeep.Types.Spell.SpType (
+module Eeep.Types.Spell.SpellType (
     -- * Error types.
     Error (..),
 
     -- * Types.
-    SpType (..),
+    SpellType (..),
 
     -- ** Prisms.
     spType,
@@ -39,7 +39,7 @@ import Trisagion.Serializer (Serializer)
 import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 
-{- | The t'SpType' @Error@ type.
+{- | The t'SpellType' @Error@ type.
 
 note(s):
 
@@ -50,8 +50,8 @@ newtype Error = Error Word8
     deriving newtype Enum
 
 
-{- | The spell 'SpType' enumeration type. -}
-data SpType
+{- | The 'SpellType' enumeration type. -}
+data SpellType
     = Special
     | Wizard
     | Priest
@@ -61,24 +61,24 @@ data SpType
     deriving stock (Eq, Ord, Enum, Bounded, Ix, Show)
 
 
-{- | Prism for the Spell type @t'SpType'@. -}
+{- | Prism for @t'SpellType'@. -}
 {-# INLINE spType #-}
-spType :: Prism' Word8 SpType
+spType :: Prism' Word8 SpellType
 spType = prism' construct match
     where
-        construct :: SpType -> Word8
+        construct :: SpellType -> Word8
         construct = fromIntegral @Int @Word8 . review enum
 
-        match :: Word8 -> Maybe SpType
+        match :: Word8 -> Maybe SpellType
         match = preview enum . fromIntegral @Word8 @Int
 
 
-{- | Decode a t'SpType'. -}
+{- | Decode a t'SpellType'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (InputError :+: Error) SpType
+decode :: Parsers.Binary b s => Parser s (InputError :+: Error) SpellType
 decode = validate (validator Error (preview spType)) Parsers.word8
 
-{- | Encode a t'SpType'. -}
+{- | Encode a t'SpellType'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary s => Serializer s SpType
+encode :: Serializers.Binary s => Serializer s SpellType
 encode = contramap (review spType) Serializers.word8
