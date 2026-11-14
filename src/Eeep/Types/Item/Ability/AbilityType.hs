@@ -1,18 +1,18 @@
 {- |
-Module: Eeep.Types.Item.Ability.AttackType
+Module: Eeep.Types.Item.Ability.AbilityType
 
-The @AttackType@ type.
+The @AbilityType@ type.
 -}
 
-module Eeep.Types.Item.Ability.AttackType (
+module Eeep.Types.Item.Ability.AbilityType (
     -- * Error types.
     Error (..),
 
     -- * Types.
-    AttackType (..),
+    AbilityType (..),
 
     -- ** Prisms.
-    attackType,
+    abilityType,
 
     -- ** Parsers and serializers.
     decode,
@@ -40,19 +40,19 @@ import Trisagion.Serializer (Serializer)
 import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 
-{- | The t'AttackType' @Error@ type. -}
+{- | The t'AbilityType' @Error@ type. -}
 newtype Error = Error Word8
     deriving stock (Eq, Ord, Bounded, Show)
     deriving newtype Enum
 
 
-{- | The @AttackType@ enumeration type for the type of attack of item abilities.
+{- | The @AbilityType@ enumeration type for the type of attack of item abilities.
 
 note(s):
 
     * As per the IESDP, None crashes the game for item abilities.
 -}
-data AttackType
+data AbilityType
     = Melee
     | Ranged
     | Magical
@@ -60,24 +60,24 @@ data AttackType
     deriving stock (Eq, Ord, Enum, Bounded, Ix, Show)
 
 
-{- | Prism for @t'AttackType'@. -}
-{-# INLINE attackType #-}
-attackType :: Prism' Word8 AttackType
-attackType = prism' construct match
+{- | Prism for @t'AbilityType'@. -}
+{-# INLINE abilityType #-}
+abilityType :: Prism' Word8 AbilityType
+abilityType = prism' construct match
     where
-        construct :: AttackType -> Word8
+        construct :: AbilityType -> Word8
         construct = succ . fromIntegral @Int @Word8 . review enum
 
-        match :: Word8 -> Maybe AttackType
+        match :: Word8 -> Maybe AbilityType
         match = preview enum . pred . review word8ToInt
 
 
-{- | Decode a t'AttackType'. -}
+{- | Decode a t'AbilityType'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (InputError :+: Error) AttackType
-decode = validate (validator Error (preview attackType)) Parsers.word8
+decode :: Parsers.Binary b s => Parser s (InputError :+: Error) AbilityType
+decode = validate (validator Error (preview abilityType)) Parsers.word8
 
-{- | Encode a t'AttackType'. -}
+{- | Encode a t'AbilityType'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary s => Serializer s AttackType
-encode = contramap (review attackType) Serializers.word8
+encode :: Serializers.Binary s => Serializer s AbilityType
+encode = contramap (review abilityType) Serializers.word8

@@ -58,8 +58,8 @@ import Eeep.Types.Shared.Projectile (Projectile)
 import qualified Eeep.Types.Shared.Projectile as Projectile (decode, encode)
 import Eeep.Types.Shared.Resref (Resref)
 import qualified Eeep.Types.Shared.Resref as Resref (decode, encode)
-import Eeep.Types.Item.Ability.AttackType (AttackType)
-import qualified Eeep.Types.Item.Ability.AttackType as AttackType (Error (..), decode, encode)
+import Eeep.Types.Item.Ability.AbilityType (AbilityType)
+import qualified Eeep.Types.Item.Ability.AbilityType as AbilityType (Error (..), decode, encode)
 import Eeep.Types.Item.Ability.Charge (Charge)
 import qualified Eeep.Types.Item.Ability.Charge as Charge (Error (..), decode, encode)
 import Eeep.Types.Item.Ability.DamageType (DamageType)
@@ -79,21 +79,21 @@ note(s):
     * To be imported qualified.
 -}
 data Error
-    = AttackTypeError {-# UNPACK #-} !Word8
-    | IdRequiredError {-# UNPACK #-} !Word8
-    | LocationError   {-# UNPACK #-} !Word8
-    | TargetError     {-# UNPACK #-} !Word8
-    | LauncherError   {-# UNPACK #-} !Word8
-    | SpeedError      {-# UNPACK #-} !Word8
-    | DamageTypeError {-# UNPACK #-} !Word8
-    | ChargeError     {-# UNPACK #-} !Word8
-    | IsAmmoError     {-# UNPACK #-} !Word8
-    | MeleeError                     !Melee.Error
+    = AbilityTypeError {-# UNPACK #-} !Word8
+    | IdRequiredError  {-# UNPACK #-} !Word8
+    | LocationError    {-# UNPACK #-} !Word8
+    | TargetError      {-# UNPACK #-} !Word8
+    | LauncherError    {-# UNPACK #-} !Word8
+    | SpeedError       {-# UNPACK #-} !Word8
+    | DamageTypeError  {-# UNPACK #-} !Word8
+    | ChargeError      {-# UNPACK #-} !Word8
+    | IsAmmoError      {-# UNPACK #-} !Word8
+    | MeleeError                      !Melee.Error
     deriving stock (Eq, Ord, Generic, Show)
 
 {- | The item ability @Header@ type. -}
 data Header = Header {
-    attacktype  :: {-# UNPACK #-} !AttackType,
+    abilitytype :: {-# UNPACK #-} !AbilityType,
     idRequired  :: {-# UNPACK #-} !Bool,
     location    :: {-# UNPACK #-} !Location,
     icon        :: {-# UNPACK #-} !Resref,
@@ -153,41 +153,41 @@ isSerializer = contramap (fromIntegral @Int @Word8 . fromEnum) Serializers.word8
 {-# INLINEABLE decode #-}
 decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (InputError :+: Error) (Header, Int)
 decode = do
-    attacktype <- first (fmap (review $ #_AttackTypeError % coercedTo)) AttackType.decode
-    idRequired <- idRequiredParser
-    location   <- first (fmap (review $ #_LocationError % coercedTo)) Location.decode
-    _          <- first absurd $ skipN 1
-    icon       <- first Left Resref.decode
-    target     <- first (fmap (review $ #_TargetError % coercedTo)) Target.decode
-    count      <- first Left Parsers.word8
-    range      <- first Left Parsers.word16Le
-    launcher   <- first (fmap (review $ #_LauncherError % coercedTo)) Launcher.decode
-    _          <- first absurd $ skipN 1
-    speed      <- first (fmap (review $ #_SpeedError % coercedTo)) Speed.decode
-    _          <- first absurd $ skipN 1
-    thac0      <- first Left Parsers.int16Le
-    sides      <- first Left Parsers.word8
-    _          <- first absurd $ skipN 1
-    number     <- first Left Parsers.word8
+    abilitytype <- first (fmap (review $ #_AbilityTypeError % coercedTo)) AbilityType.decode
+    idRequired  <- idRequiredParser
+    location    <- first (fmap (review $ #_LocationError % coercedTo)) Location.decode
+    _           <- first absurd $ skipN 1
+    icon        <- first Left Resref.decode
+    target      <- first (fmap (review $ #_TargetError % coercedTo)) Target.decode
+    count       <- first Left Parsers.word8
+    range       <- first Left Parsers.word16Le
+    launcher    <- first (fmap (review $ #_LauncherError % coercedTo)) Launcher.decode
+    _           <- first absurd $ skipN 1
+    speed       <- first (fmap (review $ #_SpeedError % coercedTo)) Speed.decode
+    _           <- first absurd $ skipN 1
+    thac0       <- first Left Parsers.int16Le
+    sides       <- first Left Parsers.word8
+    _           <- first absurd $ skipN 1
+    number      <- first Left Parsers.word8
     let dice = review Dice.dice (number, sides)
-    _          <- first absurd $ skipN 1
-    damage     <- first Left Parsers.int16Le
-    damtype    <- first (fmap (review $ #_DamageTypeError % coercedTo)) DamageType.decode
-    _          <- first absurd $ skipN 1
-    op_count   <- bimap Left (fromIntegral @Word16 @Int) Parsers.word16Le
+    _           <- first absurd $ skipN 1
+    damage      <- first Left Parsers.int16Le
+    damtype     <- first (fmap (review $ #_DamageTypeError % coercedTo)) DamageType.decode
+    _           <- first absurd $ skipN 1
+    op_count    <- bimap Left (fromIntegral @Word16 @Int) Parsers.word16Le
     -- Note: opcode offset not needed.
-    _          <- first absurd $ skipN 2
-    charges    <- first Left Parsers.word16Le
-    charge     <- first (fmap (review $ #_ChargeError % coercedTo)) Charge.decode
-    _          <- first absurd $ skipN 1
-    flags      <- first Left Flags.decode
-    projectile <- first Left Projectile.decode
-    melee      <- first (fmap MeleeError) Melee.decode
-    isArrow    <- isParser
-    _          <- first absurd $ skipN 1
-    isBolt     <- isParser
-    _          <- first absurd $ skipN 1
-    isBullet   <- isParser
+    _           <- first absurd $ skipN 2
+    charges     <- first Left Parsers.word16Le
+    charge      <- first (fmap (review $ #_ChargeError % coercedTo)) Charge.decode
+    _           <- first absurd $ skipN 1
+    flags       <- first Left Flags.decode
+    projectile  <- first Left Projectile.decode
+    melee       <- first (fmap MeleeError) Melee.decode
+    isArrow     <- isParser
+    _           <- first absurd $ skipN 1
+    isBolt      <- isParser
+    _           <- first absurd $ skipN 1
+    isBullet    <- isParser
     _ <- first Left $ skipExact 1
     pure $ (Header {..}, op_count)
 
@@ -196,7 +196,7 @@ decode = do
 {-# INLINEABLE encode #-}
 encode :: Serializers.Binary s => Serializer s (Header, Block)
 encode
-    =  contramap (^. _1 % #attacktype) AttackType.encode
+    =  contramap (^. _1 % #abilitytype) AbilityType.encode
     <> contramap (^. _1 % #idRequired) idRequiredSerializer
     <> contramap (^. _1 % #location) Location.encode
     <> nullN 1
