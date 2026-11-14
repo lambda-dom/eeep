@@ -29,7 +29,6 @@ import Data.Void (absurd)
 import Data.Word (Word8, Word16)
 
 -- Libraries.
-import Data.ByteString.Short (ShortByteString)
 import Optics.Core ((%), (^.), review, coercedTo, _1, _2)
 
 -- non-Hackage libraries.
@@ -90,7 +89,6 @@ data Error
     | ChargeError     {-# UNPACK #-} !Word8
     | IsAmmoError     {-# UNPACK #-} !Word8
     | MeleeError                     !Melee.Error
-    | IconError                      !ShortByteString
     deriving stock (Eq, Ord, Generic, Show)
 
 {- | The item ability @Header@ type. -}
