@@ -67,6 +67,8 @@ import Data.Bits.Optics (bitAt, word32BytesLe, bits)
 
 {- | The @KitUsability@ type for the per race/class usability flags field of the main item header.
 
+No parser or serializer is provided due to out the t'KitUsability' data is layed out.
+
 note(s):
 
     * The 'Ord' and 'Bounded' instances have no significance and are present merely to be able to
