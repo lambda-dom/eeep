@@ -35,8 +35,10 @@ import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 
 {- | The @Block@ type. -}
-data Block = Block {-# UNPACK #-} !Word16 {-# UNPACK #-} !Word16
-    deriving stock (Eq, Ord, Bounded, Show)
+data Block = Block {
+    count :: {-# UNPACK #-} !Word16,
+    index :: {-# UNPACK #-} !Word16
+} deriving stock (Eq, Ord, Bounded, Show)
 
 
 {- | Isomorphism for the t'Block' type. -}
