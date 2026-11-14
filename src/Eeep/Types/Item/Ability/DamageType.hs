@@ -1,10 +1,10 @@
 {- |
-Module: Eeep.Types.Item.Ability.Damage
+Module: Eeep.Types.Item.Ability.DamageType
 
 The @DamageType@ type.
 -}
 
-module Eeep.Types.Item.Ability.Damage (
+module Eeep.Types.Item.Ability.DamageType (
     -- * Error types.
     Error (..),
 
