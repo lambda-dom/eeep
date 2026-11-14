@@ -8,6 +8,10 @@ module Eeep.Types.Opcode.Timing (
     -- * Error types.
     Error (..),
 
+    -- * Duration types.
+    Seconds,
+    Ticks,
+
     -- * Types.
     Timing (..),
 
@@ -15,29 +19,24 @@ module Eeep.Types.Opcode.Timing (
     timing,
 
     -- ** Parsers and serializers.
+    decodeTiming,
     decode,
-    encode,
 ) where
 
 -- Imports.
 -- Base.
-import Data.Functor.Contravariant (Contravariant(..))
 import Data.Ix (Ix)
-import Data.Word (Word8)
+import Data.Word (Word8, Word32)
 
 -- Libraries.
-import Optics.Core (Prism', prism', review, preview)
+import Optics.Core (Prism', prism')
 
 -- non-Hackage libraries.
-import Data.Enum.Optics (enum)
-import Data.Word.Optics (word8ToInt)
-import Trisagion.Utils.Either ((:+:), validator)
+import Trisagion.Utils.Either ((:+:))
 import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Combinators (validate)
 import Trisagion.Parsers.IStream (InputError)
 import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
-import Trisagion.Serializer (Serializer)
-import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Parsers.Combinators (validate)
 
 
 {- | The t'Timing' @Error@ type. -}
@@ -46,40 +45,98 @@ newtype Error = Error Word8
     deriving newtype Enum
 
 
+{- | The @Seconds@ duration type. -}
+newtype Seconds = Seconds Word32
+    deriving stock (Eq, Ord, Bounded, Ix)
+    deriving newtype (Enum, Show)
+
+{- | The @Ticks@ duration type. -}
+newtype Ticks = Ticks Word32
+    deriving stock (Eq, Ord, Bounded, Ix)
+    deriving newtype (Enum, Show)
+
+
 {- | The @Timing@ enumeration type for the timing mode of an opcode. -}
 data Timing
-    = Limited
+    = Limited          {-# UNPACK #-} !Seconds
     | Instant
     | Equipped
-    | DelayedLimited
-    | DelayedInstant
-    | DelayedEquipped
-    | DurationLimited
-    | DurationInstant
-    | DurationEquipped
+    | DelayedLimited   {-# UNPACK #-} !Seconds
+    | DelayedInstant   {-# UNPACK #-} !Seconds
+    | DelayedEquipped  {-# UNPACK #-} !Seconds
+    | DurationLimited  {-# UNPACK #-} !Ticks
+    | DurationInstant  {-# UNPACK #-} !Ticks
+    | DurationEquipped {-# UNPACK #-} !Ticks
     | Permanent
-    | InstantLimited
-    deriving stock (Eq, Ord, Enum, Bounded, Ix, Show)
+    | InstantLimited   {-# UNPACK #-} !Ticks
+    deriving stock (Eq, Ord, Show)
 
 
 {- | The prism for the t'Timing' type. -}
 {-# INLINE timing #-}
-timing :: Prism' Word8 Timing
+timing :: Prism' (Word8, Word32) Timing
 timing = prism' construct match
     where
-        construct :: Timing -> Word8
-        construct = fromIntegral @Int @Word8 . review enum
+        construct :: Timing -> (Word8, Word32)
+        construct (Limited (Seconds n))         = (0, n)
+        construct Instant                       = (1, 0)
+        construct Equipped                      = (2, 0)
+        construct (DelayedLimited (Seconds n))  = (3, n)
+        construct (DelayedInstant (Seconds n))  = (4, n)
+        construct (DelayedEquipped (Seconds n)) = (5, n)
+        construct (DurationLimited (Ticks n))   = (6, n)
+        construct (DurationInstant (Ticks n))   = (7, n)
+        construct (DurationEquipped (Ticks n))  = (8, n)
+        construct Permanent                     = (9, 0)
+        construct (InstantLimited (Ticks n))    = (10, n)
 
-        match :: Word8 -> Maybe Timing
-        match = preview enum . review word8ToInt
+        match :: (Word8, Word32) -> Maybe Timing
+        match (0, n)  = Just $ Limited (Seconds n)
+        match (1, _)  = Just $ Instant
+        match (2, _)  = Just $ Equipped
+        match (3, n)  = Just $ DelayedLimited (Seconds n)
+        match (4, n)  = Just $ DelayedInstant (Seconds n)
+        match (5, n)  = Just $ DelayedEquipped (Seconds n)
+        match (6, n)  = Just $ DurationLimited (Ticks n)
+        match (7, n)  = Just $ DurationInstant (Ticks n)
+        match (8, n)  = Just $ DurationEquipped (Ticks n)
+        match (9, _)  = Just $ Permanent
+        match (10, n) = Just $ InstantLimited (Ticks n)
+        match _       = Nothing
 
 
-{- | Decode a t'Timing'. -}
+{- | Decode the first field of a t'Timing'. -}
+{-# INLINE decodeTiming #-}
+decodeTiming :: Parsers.Binary b s => Parser s (InputError :+: Error) (Word32 -> Timing)
+decodeTiming = validate v Parsers.word8
+    where
+        v :: Word8 -> Error :+: (Word32 -> Timing)
+        v 0  = Right $ Limited . Seconds
+        v 1  = Right $ const Instant
+        v 2  = Right $ const Equipped
+        v 3  = Right $ DelayedLimited . Seconds
+        v 4  = Right $ DelayedInstant . Seconds
+        v 5  = Right $ DelayedEquipped . Seconds
+        v 6  = Right $ DurationLimited . Ticks
+        v 7  = Right $ DurationInstant . Ticks
+        v 8  = Right $ DurationEquipped . Ticks
+        v 9  = Right $ const Permanent
+        v 10 = Right $ InstantLimited . Ticks
+        v n  = Left $ Error n
+
+{- | Decode a t'Timing'.
+
+Because of the way the timing information is layed out, it must be done in two steps:
+
+@
+do
+    t <- decodeTiming   -- ^ Can throw here.
+    ...
+    timing <- decode t
+@
+
+For serializing, use the 'timing' prism and the standard serializers.
+-}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (InputError :+: Error) Timing
-decode = validate (validator Error (preview timing)) Parsers.word8
-
-{- | Encode a t'Timing'. -}
-{-# INLINE encode #-}
-encode :: Serializers.Binary s => Serializer s Timing
-encode = contramap (review timing) Serializers.word8
+decode :: Parsers.Binary b s => (Word32 -> Timing) -> Parser s InputError Timing
+decode f = fmap f $ Parsers.word32Le

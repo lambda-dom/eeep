@@ -65,7 +65,7 @@ import qualified Eeep.Types.Opcode.Power as Power (Error (..), decode, encode)
 import Eeep.Types.Opcode.Target (Target)
 import qualified Eeep.Types.Opcode.Target as Target (Error (..), decode, encode)
 import Eeep.Types.Opcode.Timing (Timing)
-import qualified Eeep.Types.Opcode.Timing as Timing (Error (..), decode, encode)
+import qualified Eeep.Types.Opcode.Timing as Timing (Error (..), decode, decodeTiming, timing)
 import Eeep.Types.Opcode.Probability (Probability)
 import qualified Eeep.Types.Opcode.Probability as Probability (probability, upper, lower)
 import Eeep.Types.Opcode.ResistDispel (ResistDispel)
@@ -104,7 +104,6 @@ data Effect = Effect {
     power        :: {-# UNPACK #-} !Power,
     target       :: {-# UNPACK #-} !Target,
     timing       :: {-# UNPACK #-} !Timing,
-    duration     :: {-# UNPACK #-} !Word32,
     probability  :: {-# UNPACK #-} !Probability,
     resistdispel :: {-# UNPACK #-} !ResistDispel,
     resref1      :: {-# UNPACK #-} !Resref,
@@ -155,9 +154,9 @@ decodeBody = do
     _            <- first absurd $ skipN 3
     parameter1   <- first Left Parsers.word32Le
     parameter2   <- first Left Parsers.word32Le
-    timing       <- first (fmap (review $ #_TimingError % coercedTo)) Timing.decode
+    f            <- first (fmap (review $ #_TimingError % coercedTo)) Timing.decodeTiming
     _            <- first absurd $ skipN 3
-    duration     <- first Left Parsers.word32Le
+    timing       <- first Left $ Timing.decode f
     probability  <- probParser
     resref1      <- first Left Resref.decode
     number       <- first Left Parsers.word8
@@ -203,9 +202,9 @@ encodeBody
     <> nullN 3
     <> contramap (^. #parameter1) Serializers.word32Le
     <> contramap (^. #parameter2) Serializers.word32Le
-    <> contramap (^. #timing) Timing.encode
+    <> contramap (fst . review Timing.timing . view #timing) Serializers.word8
     <> nullN 3
-    <> contramap (^. #duration) Serializers.word32Le
+    <> contramap (snd . review Timing.timing . view #timing) Serializers.word32Le
     <> contramap (Probability.upper . view #probability) Serializers.word8
     <> nullN 1
     <> contramap (Probability.lower . view #probability) Serializers.word8

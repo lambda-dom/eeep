@@ -29,7 +29,7 @@ import Data.Void (absurd)
 import Data.Word (Word8, Word16, Word32)
 
 -- Libraries.
-import Optics.Core ((%), (^.), coercedTo, review, re, _1, _2)
+import Optics.Core ((%), (^.), coercedTo, review, re, _1, _2, view)
 
 -- non-Hackage libraries.
 import Data.MonoFoldable (MonoFoldable)
@@ -54,7 +54,7 @@ import qualified Eeep.Types.Opcode.Target as Target (Error (..), decode, encode)
 import Eeep.Types.Opcode.Power (Power)
 import qualified Eeep.Types.Opcode.Power as Power (Error (..), decode, encode)
 import Eeep.Types.Opcode.Timing (Timing)
-import qualified Eeep.Types.Opcode.Timing as Timing (Error (..), decode, encode)
+import qualified Eeep.Types.Opcode.Timing as Timing (Error (..), decodeTiming, decode, timing)
 import Eeep.Types.Opcode.ResistDispel (ResistDispel)
 import qualified Eeep.Types.Opcode.ResistDispel as ResistDispel (Error (..), decode, encode)
 import Eeep.Types.Opcode.Probability (Probability)
@@ -90,7 +90,6 @@ data Opcode = Opcode {
     parameter2   :: {-# UNPACK #-} !Word32,
     power        :: {-# UNPACK #-} !Power,
     timing       :: {-# UNPACK #-} !Timing,
-    duration     :: {-# UNPACK #-} !Word32,
     resistdispel :: {-# UNPACK #-} !ResistDispel,
     probability  :: {-# UNPACK #-} !Probability,
     resref       :: {-# UNPACK #-} !Resref,
@@ -110,9 +109,9 @@ decode = do
     power        <- first (fmap (review $ #_PowerError % coercedTo)) Power.decode
     parameter1   <- first Left Parsers.word32Le
     parameter2   <- first Left Parsers.word32Le
-    timing       <- first (fmap (review $ #_TimingError % coercedTo)) Timing.decode
+    f            <- first (fmap (review $ #_TimingError % coercedTo)) Timing.decodeTiming
     resistdispel <- first (fmap (review $ #_ResistDispelError % coercedTo)) ResistDispel.decode
-    duration     <- first Left Parsers.word32Le
+    timing       <- first Left $ Timing.decode f
     probability  <- first (fmap (review $ #_ProbabilityError % re Probability.error)) Probability.decode
     resref       <- first Left Resref.decode
     number       <- first Left Parsers.word8
@@ -134,9 +133,9 @@ encode
     <> contramap (^. #power) Power.encode
     <> contramap (^. #parameter1) Serializers.word32Le
     <> contramap (^. #parameter2) Serializers.word32Le
-    <> contramap (^. #timing) Timing.encode
+    <> contramap (fst . review Timing.timing . view #timing) Serializers.word8
     <> contramap (^. #resistdispel) ResistDispel.encode
-    <> contramap (^. #duration) Serializers.word32Le
+    <> contramap (snd . review Timing.timing . view #timing) Serializers.word32Le
     <> contramap (^. #resref) Resref.encode
     <> contramap (^. #dice % Dice.dice % _1) Serializers.word8
     <> nullN 3
