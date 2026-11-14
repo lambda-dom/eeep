@@ -29,13 +29,13 @@ import Data.Word (Word8)
 import Optics.Core (Prism', review, preview, prism')
 
 -- Non-hackage libraries.
-import Trisagion.Utils.Either ((:+:), annotate)
-import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
+import Trisagion.Utils.Either ((:+:), validator)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Combinators (validate)
-import Trisagion.Parsers.Source (InputError)
-import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Parsers.IStream (InputError)
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 
 {- | The t'Launcher' @Error@ type. -}
@@ -81,10 +81,10 @@ launcher = prism' construct match
 
 {- | Decode a t'Launcher'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (Error :+: InputError) Launcher
-decode = validate (annotate Error (preview launcher)) Parsers.word8
+decode :: Parsers.Binary b s => Parser s (InputError :+: Error) Launcher
+decode = validate (validator Error (preview launcher)) Parsers.word8
 
 {- | Encode a t'Launcher'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary b s => Serializer s Launcher
+encode :: Serializers.Binary s => Serializer s Launcher
 encode = contramap (review launcher) Serializers.word8

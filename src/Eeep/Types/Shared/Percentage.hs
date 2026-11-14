@@ -30,12 +30,12 @@ import Optics.Core (Prism', prism', review, preview)
 import Data.Enum.Optics (enum)
 
 -- non-Hackage libraries.
-import Trisagion.Utils.Either ((:+:), annotate)
-import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
+import Trisagion.Utils.Either ((:+:), validator)
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Combinators (validate)
-import Trisagion.Parsers.Source (InputError)
-import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Parsers.IStream (InputError)
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 import Trisagion.Serializer (Serializer)
 
 
@@ -77,12 +77,12 @@ percentage = prism' construct match
         match = preview enum . fromIntegral @Word8 @Int
 
 
-{- | Decode an t'Percentage'. -}
+{- | Decode a t'Percentage'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (Error :+: InputError) Percentage
-decode = validate (annotate Error (preview percentage)) Parsers.word8
+decode :: Parsers.Binary b s => Parser s (InputError :+: Error) Percentage
+decode = validate (validator Error (preview percentage)) Parsers.word8
 
-{- | Encode an t'Percentage'. -}
+{- | Encode a t'Percentage'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary b s => Serializer s Percentage
+encode :: Serializers.Binary s => Serializer s Percentage
 encode = contramap (review percentage) Serializers.word8

@@ -4,12 +4,7 @@
 {- |
 Module: Eeep.Types.Shared.Dice
 
-The @Dice@ type for dice rolls.
-
-note(s):
-
-    * No custom parser and serializer is provided because in concrete examples (e. g. spells, items
-    , etc.) the fields are not consecutive and the space in-between varies.
+The @Dice@ type.
 -}
 
 module Eeep.Types.Shared.Dice (
@@ -23,17 +18,24 @@ module Eeep.Types.Shared.Dice (
 -- Imports.
 -- Base.
 import GHC.Generics (Generic)
+import Data.Ix (Ix)
 import Data.Word (Word8)
 
 -- Libraries.
 import Optics.Core (Iso', iso)
 
 
-{- | The @Dice@ type. -}
+{- | The @Dice@ type for dice rolls.
+
+note(s):
+
+    * No custom parser and serializer is provided because in concrete examples (e. g. spells, items
+    , etc.) the fields are not consecutive and the space in-between varies.
+-}
 data Dice = Dice {
     number :: {-# UNPACK #-} !Word8,
     sides  :: {-# UNPACK #-} !Word8
-} deriving stock (Eq, Ord, Bounded, Show, Generic)
+} deriving stock (Eq, Ord, Bounded, Ix, Show, Generic)
 
 
 {- | Isomorphism for the t'Dice' type. -}

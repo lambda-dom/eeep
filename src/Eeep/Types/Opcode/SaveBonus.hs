@@ -30,13 +30,14 @@ import Optics.Core (Prism', prism', review, preview)
 
 -- non-Hackage libraries.
 import Data.Enum.Optics (enum)
-import Trisagion.Utils.Either ((:+:), annotate)
-import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..), int32Le)
+import Data.Int.Optics (int32ToInt)
+import Trisagion.Utils.Either ((:+:), validator)
 import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Source (InputError)
 import Trisagion.Parsers.Combinators (validate)
-import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..), int32Le)
+import Trisagion.Parsers.IStream (InputError)
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..), int32Le)
 import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..), int32Le)
 
 
 {- | The t'SaveBonus' @Error@ type. -}
@@ -74,15 +75,15 @@ saveBonus = prism' construct match
         construct = fromIntegral @Int @Int32 . review enum
 
         match :: Int32 -> Maybe SaveBonus
-        match = preview enum . fromIntegral @Int32 @Int
+        match = preview enum . review int32ToInt
 
 
 {- | Decode a t'SaveBonus'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (Error :+: InputError) SaveBonus
-decode = validate (annotate Error (preview saveBonus)) Parsers.int32Le
+decode :: Parsers.Binary b s => Parser s (InputError :+: Error) SaveBonus
+decode = validate (validator Error (preview saveBonus)) Parsers.int32Le
 
 {- | Encode a t'SaveBonus'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary b s => Serializer s SaveBonus
+encode :: Serializers.Binary s => Serializer s SaveBonus
 encode = contramap (review saveBonus) Serializers.int32Le

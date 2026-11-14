@@ -24,21 +24,21 @@ module Eeep.Types.Item.Ability.Melee (
 import GHC.Generics (Generic)
 import Data.Bifunctor (Bifunctor (..))
 import Data.Functor.Contravariant (Contravariant (..))
+import Data.Void (absurd)
 import Data.Word (Word8)
 
 -- Libraries.
-import Control.Monad.Except (MonadError (..))
 import Optics.Core (Prism', (^.), prism', preview)
 
 -- non-Hackage libraries.
 import Trisagion.Utils.Either ((:+:))
-import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
-import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Source (InputError)
-import Trisagion.Parsers.Split (skipExact)
-import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Parser (Parser, throw)
+import Trisagion.Parsers.IStream (InputError)
+import Trisagion.Parsers.Split (skipN)
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Serializer (Serializer)
-import Trisagion.Typeclasses.Serializers.Binary (nulls)
+import Trisagion.Serializers.Binary (nullN)
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 
 {- | The t'Melee' @Error@ type.
@@ -48,7 +48,7 @@ note(s):
     * To be imported qualified.
 -}
 data Error = Error {-# UNPACK #-} !Word8 {-# UNPACK #-} !Word8 {-# UNPACK #-} !Word8
-    deriving stock (Eq, Ord, Bounded, Show, Generic)
+    deriving stock (Eq, Ord, Bounded, Show)
 
 
 {- | The @Melee@ animation frequency type. -}
@@ -58,20 +58,6 @@ data Melee = Melee {
     thrust   :: {-# UNPACK #-} !Word8
 } deriving stock (Eq, Ord, Bounded, Generic, Show)
 
-
-{- | Decode a t'Melee'. -}
-{-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (Error :+: InputError) Melee
-decode = do
-    m <- first Right Parsers.word8
-    _ <- first Right $ skipExact 1
-    n <- first Right Parsers.word8
-    _ <- first Right $ skipExact 1
-    p <- first Right Parsers.word8
-    _ <- first Right $ skipExact 1
-    case preview melee (m, n, p) of
-        Nothing -> throwError . Left $ Error m n p
-        Just x  -> pure x
 
 {- | Prism for the t'Melee' type. -}
 {-# INLINE melee #-}
@@ -87,13 +73,28 @@ melee = prism' construct match
             then Just $ Melee m n p
             else Nothing
 
+
+{- | Decode a t'Melee'. -}
+{-# INLINE decode #-}
+decode :: Parsers.Binary b s => Parser s (InputError :+: Error) Melee
+decode = do
+    m <- first Left Parsers.word8
+    _ <- first absurd $ skipN 1
+    n <- first Left Parsers.word8
+    _ <- first absurd $ skipN 1
+    p <- first Left Parsers.word8
+    _ <- first absurd $ skipN 1
+    case preview melee (m, n, p) of
+        Nothing -> throw . Right $ Error m n p
+        Just x  -> pure x
+
 {- | Encode a t'Melee'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary b s => Serializer s Melee
+encode :: Serializers.Binary s => Serializer s Melee
 encode
     =  contramap (^. #overhand) Serializers.word8
-    <> nulls 1
+    <> nullN 1
     <> contramap (^. #backhand) Serializers.word8
-    <> nulls 1
+    <> nullN 1
     <> contramap (^. #thrust) Serializers.word8
-    <> nulls 1
+    <> nullN 1

@@ -26,11 +26,11 @@ import Data.Word (Word32)
 import Optics.Core (Iso', coercedTo, view, review)
 
 -- non-Hackage libraries.
-import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Source (InputError)
-import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Parsers.IStream (InputError)
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 
 {- | A .tlk string reference.
@@ -55,5 +55,5 @@ decode = fmap (review strref) Parsers.word32Le
 
 {- | Encode a t'Strref'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary b s => Serializer s Strref
+encode :: Serializers.Binary s => Serializer s Strref
 encode = contramap (view strref) Serializers.word32Le

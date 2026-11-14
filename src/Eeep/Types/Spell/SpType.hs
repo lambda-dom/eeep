@@ -21,6 +21,7 @@ module Eeep.Types.Spell.SpType (
 
 -- Imports.
 -- Base.
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Ix (Ix)
 import Data.Word (Word8)
 
@@ -29,14 +30,13 @@ import Optics.Core (Prism', prism', review, preview)
 
 -- non-Hackage libraries.
 import Data.Enum.Optics (enum)
-import Trisagion.Utils.Either ((:+:), annotate)
-import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
+import Trisagion.Utils.Either ((:+:), validator)
 import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Source (InputError)
-import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
-import Trisagion.Serializer (Serializer)
 import Trisagion.Parsers.Combinators (validate)
-import Data.Functor.Contravariant (Contravariant(..))
+import Trisagion.Parsers.IStream (InputError)
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
+import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 
 {- | The t'SpType' @Error@ type.
@@ -75,10 +75,10 @@ spType = prism' construct match
 
 {- | Decode a t'SpType'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (Error :+: InputError) SpType
-decode = validate (annotate Error (preview spType)) Parsers.word8
+decode :: Parsers.Binary b s => Parser s (InputError :+: Error) SpType
+decode = validate (validator Error (preview spType)) Parsers.word8
 
 {- | Encode a t'SpType'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary b s => Serializer s SpType
+encode :: Serializers.Binary s => Serializer s SpType
 encode = contramap (review spType) Serializers.word8

@@ -33,21 +33,20 @@ import Data.ByteString.Short (ShortByteString)
 import Optics.Core ((%), (^.), review, coercedTo, _1, _2)
 
 -- non-Hackage libraries.
-import Mono.Typeclasses.MonoFoldable (MonoFoldable (..))
+import Data.MonoFoldable (MonoFoldable (..))
 import Trisagion.Utils.Either ((:+:))
-import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..), int16Le)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Combinators (validate)
-import Trisagion.Parsers.Source (InputError)
-import Trisagion.Parsers.Split (skipExact, skipPrefix)
-import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..), int16Le)
+import Trisagion.Parsers.IStream (InputError)
+import Trisagion.Parsers.Split (skipExact, skipN)
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..), int16Le)
 import Trisagion.Serializer (Serializer)
+import Trisagion.Serializers.Binary (nullN)
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..), int16Le)
 
 -- Package.
 import Eeep.Types.Shared.Ability.Location (Location)
 import qualified Eeep.Types.Shared.Ability.Location as Location (Error (..), decode, encode)
-import Eeep.Types.Shared.Ability.Range (Range)
-import qualified Eeep.Types.Shared.Ability.Range as Range (decode, encode)
 import Eeep.Types.Shared.Ability.Speed (Speed)
 import qualified Eeep.Types.Shared.Ability.Speed as Speed (Error (..), decode, encode)
 import Eeep.Types.Shared.Ability.Target (Target)
@@ -59,24 +58,19 @@ import qualified Eeep.Types.Shared.Dice as Dice (dice)
 import Eeep.Types.Shared.Projectile (Projectile)
 import qualified Eeep.Types.Shared.Projectile as Projectile (decode, encode)
 import Eeep.Types.Shared.Resref (Resref)
-import qualified Eeep.Types.Shared.Resref as Resref (Error (..), decode, encode)
-import Eeep.Types.Shared.School (School)
-import qualified Eeep.Types.Shared.School as School (decode, encode)
-import Eeep.Types.Shared.Sectype (Sectype)
-import qualified Eeep.Types.Shared.Sectype as Sectype (decode, encode)
-import Eeep.Types.Item.Ability.Attack (Attack)
-import qualified Eeep.Types.Item.Ability.Attack as Attack (Error (..), decode, encode)
+import qualified Eeep.Types.Shared.Resref as Resref (decode, encode)
+import Eeep.Types.Item.Ability.AttackType (AttackType)
+import qualified Eeep.Types.Item.Ability.AttackType as AttackType (Error (..), decode, encode)
 import Eeep.Types.Item.Ability.Charge (Charge)
 import qualified Eeep.Types.Item.Ability.Charge as Charge (Error (..), decode, encode)
-import Eeep.Types.Item.Ability.Damage (Damage)
-import qualified Eeep.Types.Item.Ability.Damage as Damage (Error (..), decode, encode)
+import Eeep.Types.Item.Ability.DamageType (DamageType)
+import qualified Eeep.Types.Item.Ability.DamageType as DamageType (Error (..), decode, encode)
 import Eeep.Types.Item.Ability.Flags (Flags)
 import qualified Eeep.Types.Item.Ability.Flags as Flags (decode, encode)
 import Eeep.Types.Item.Ability.Launcher (Launcher)
 import qualified Eeep.Types.Item.Ability.Launcher as Launcher (Error (..), decode, encode)
 import Eeep.Types.Item.Ability.Melee (Melee)
 import qualified Eeep.Types.Item.Ability.Melee as Melee (Error, decode, encode)
-import Trisagion.Typeclasses.Serializers.Binary (nulls)
 
 
 {- | The t'Header' @Error@ type.
@@ -86,13 +80,13 @@ note(s):
     * To be imported qualified.
 -}
 data Error
-    = AttackError     {-# UNPACK #-} !Word8
+    = AttackTypeError {-# UNPACK #-} !Word8
     | IdRequiredError {-# UNPACK #-} !Word8
     | LocationError   {-# UNPACK #-} !Word8
     | TargetError     {-# UNPACK #-} !Word8
     | LauncherError   {-# UNPACK #-} !Word8
     | SpeedError      {-# UNPACK #-} !Word8
-    | DamageError     {-# UNPACK #-} !Word8
+    | DamageTypeError {-# UNPACK #-} !Word8
     | ChargeError     {-# UNPACK #-} !Word8
     | IsAmmoError     {-# UNPACK #-} !Word8
     | MeleeError                     !Melee.Error
@@ -101,21 +95,19 @@ data Error
 
 {- | The item ability @Header@ type. -}
 data Header = Header {
-    attack      :: {-# UNPACK #-} !Attack,
+    attacktype  :: {-# UNPACK #-} !AttackType,
     idRequired  :: {-# UNPACK #-} !Bool,
     location    :: {-# UNPACK #-} !Location,
     icon        :: {-# UNPACK #-} !Resref,
     target      :: {-# UNPACK #-} !Target,
     count       :: {-# UNPACK #-} !Word8,
-    range       :: {-# UNPACK #-} !Range,
+    range       :: {-# UNPACK #-} !Word16,
     launcher    :: {-# UNPACK #-} !Launcher,
     speed       :: {-# UNPACK #-} !Speed,
     thac0       :: {-# UNPACK #-} !Int16,
     damage      :: {-# UNPACK #-} !Int16,
     dice        :: {-# UNPACK #-} !Dice,
-    school      :: {-# UNPACK #-} !School,
-    sectype     :: {-# UNPACK #-} !Sectype,
-    damtype     :: {-# UNPACK #-} !Damage,
+    damtype     :: {-# UNPACK #-} !DamageType,
     charge      :: {-# UNPACK #-} !Charge,
     charges     :: {-# UNPACK #-} !Word16,
     flags       :: {-# UNPACK #-} !Flags,
@@ -129,7 +121,7 @@ data Header = Header {
 
 -- | idRequired aux parser. Not exported.
 {-# INLINE idRequiredParser #-}
-idRequiredParser :: (Parsers.Binary b s) => Parser s (Error :+: InputError) Bool
+idRequiredParser :: (Parsers.Binary b s) => Parser s (InputError :+: Error) Bool
 idRequiredParser = validate v Parsers.word8
     where
         v :: Word8 -> Error :+: Bool
@@ -139,13 +131,13 @@ idRequiredParser = validate v Parsers.word8
 
 -- | idRequired aux serializer. Not exported.
 {-# INLINE idRequiredSerializer #-}
-idRequiredSerializer :: Serializers.Binary b s => Serializer s Bool
+idRequiredSerializer :: Serializers.Binary s => Serializer s Bool
 idRequiredSerializer = contramap (fromIntegral @Int @Word8 . fromEnum . not) Serializers.word8
         
 
 -- | isParser aux parser. Not exported.
 {-# INLINE isParser #-}
-isParser :: (Parsers.Binary b s) => Parser s (Error :+: InputError) Bool
+isParser :: (Parsers.Binary b s) => Parser s (InputError :+: Error) Bool
 isParser = validate v Parsers.word8
     where
         v :: Word8 -> Error :+: Bool
@@ -155,87 +147,87 @@ isParser = validate v Parsers.word8
 
 -- | isSerializer aux serializer. Not exported.
 {-# INLINE isSerializer #-}
-isSerializer :: Serializers.Binary b s => Serializer s Bool
+isSerializer :: Serializers.Binary s => Serializer s Bool
 isSerializer = contramap (fromIntegral @Int @Word8 . fromEnum) Serializers.word8
 
 
 {- | Parser for the item @t'Header'@ type. -}
 {-# INLINEABLE decode #-}
-decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error :+: InputError) (Header, Int)
+decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (InputError :+: Error) (Header, Int)
 decode = do
-    attack     <- first (first (review $ #_AttackError % coercedTo)) Attack.decode
+    attacktype <- first (fmap (review $ #_AttackTypeError % coercedTo)) AttackType.decode
     idRequired <- idRequiredParser
-    location   <- first (first (review $ #_LocationError % coercedTo)) Location.decode
-    _          <- first absurd $ skipPrefix 1
-    icon       <- first (first (review $ #_IconError % coercedTo)) Resref.decode
-    target     <- first (first (review $ #_TargetError % coercedTo)) Target.decode
-    count      <- first Right Parsers.word8
-    range      <- first Right Range.decode
-    launcher   <- first (first (review $ #_LauncherError % coercedTo)) Launcher.decode
-    _          <- first absurd $ skipPrefix 1
-    speed      <- first (first (review $ #_SpeedError % coercedTo)) Speed.decode
-    _          <- first absurd $ skipPrefix 1
-    thac0      <- first Right Parsers.int16Le
-    sides      <- first Right Parsers.word8
-    school     <- first Right School.decode
-    number     <- first Right Parsers.word8
+    location   <- first (fmap (review $ #_LocationError % coercedTo)) Location.decode
+    _          <- first absurd $ skipN 1
+    icon       <- first Left Resref.decode
+    target     <- first (fmap (review $ #_TargetError % coercedTo)) Target.decode
+    count      <- first Left Parsers.word8
+    range      <- first Left Parsers.word16Le
+    launcher   <- first (fmap (review $ #_LauncherError % coercedTo)) Launcher.decode
+    _          <- first absurd $ skipN 1
+    speed      <- first (fmap (review $ #_SpeedError % coercedTo)) Speed.decode
+    _          <- first absurd $ skipN 1
+    thac0      <- first Left Parsers.int16Le
+    sides      <- first Left Parsers.word8
+    _          <- first absurd $ skipN 1
+    number     <- first Left Parsers.word8
     let dice = review Dice.dice (number, sides)
-    sectype    <- first Right Sectype.decode
-    damage     <- first Right Parsers.int16Le
-    damtype    <- first (first (review $ #_DamageError % coercedTo)) Damage.decode
-    _          <- first absurd $ skipPrefix 1
-    op_count   <- bimap Right (fromIntegral @Word16 @Int) Parsers.word16Le
+    _          <- first absurd $ skipN 1
+    damage     <- first Left Parsers.int16Le
+    damtype    <- first (fmap (review $ #_DamageTypeError % coercedTo)) DamageType.decode
+    _          <- first absurd $ skipN 1
+    op_count   <- bimap Left (fromIntegral @Word16 @Int) Parsers.word16Le
     -- Note: opcode offset not needed.
-    _          <- first absurd $ skipPrefix 2
-    charges    <- first Right Parsers.word16Le
-    charge     <- first (first (review $ #_ChargeError % coercedTo)) Charge.decode
-    _          <- first absurd $ skipPrefix 1
-    flags      <- first Right Flags.decode
-    projectile <- first Right Projectile.decode
-    melee      <- first (first MeleeError) Melee.decode
+    _          <- first absurd $ skipN 2
+    charges    <- first Left Parsers.word16Le
+    charge     <- first (fmap (review $ #_ChargeError % coercedTo)) Charge.decode
+    _          <- first absurd $ skipN 1
+    flags      <- first Left Flags.decode
+    projectile <- first Left Projectile.decode
+    melee      <- first (fmap MeleeError) Melee.decode
     isArrow    <- isParser
-    _          <- first absurd $ skipPrefix 1
+    _          <- first absurd $ skipN 1
     isBolt     <- isParser
-    _          <- first absurd $ skipPrefix 1
+    _          <- first absurd $ skipN 1
     isBullet   <- isParser
-    _ <- first Right $ skipExact 1
+    _ <- first Left $ skipExact 1
     pure $ (Header {..}, op_count)
 
 
 {- | Serializer for the spell ability t'Header' type. -}
 {-# INLINEABLE encode #-}
-encode :: Serializers.Binary b s => Serializer s (Header, Block)
+encode :: Serializers.Binary s => Serializer s (Header, Block)
 encode
-    =  contramap (^. _1 % #attack) Attack.encode
+    =  contramap (^. _1 % #attacktype) AttackType.encode
     <> contramap (^. _1 % #idRequired) idRequiredSerializer
     <> contramap (^. _1 % #location) Location.encode
-    <> nulls 1
+    <> nullN 1
     <> contramap (^. _1 % #icon) Resref.encode
     <> contramap (^. _1 % #target) Target.encode
     <> contramap (^. _1 % #count) Serializers.word8
-    <> contramap (^. _1 % #range) Range.encode
+    <> contramap (^. _1 % #range) Serializers.word16Le
     <> contramap (^. _1 % #launcher) Launcher.encode
-    <> nulls 1
+    <> nullN 1
     <> contramap (^. _1 % #speed) Speed.encode
-    <> nulls 1
+    <> nullN 1
     <> contramap (^. _1 % #thac0) Serializers.int16Le
     <> contramap (^. _1 % #dice % Dice.dice % _2) Serializers.word8
-    <> contramap (^. _1 % #school) School.encode
+    <> nullN 1
     <> contramap (^. _1 % #dice % Dice.dice % _1) Serializers.word8
-    <> contramap (^. _1 % #sectype) Sectype.encode
+    <> nullN 1
     <> contramap (^. _1 % #damage) Serializers.int16Le
-    <> contramap (^. _1 % #damtype) Damage.encode
-    <> nulls 1
+    <> contramap (^. _1 % #damtype) DamageType.encode
+    <> nullN 1
     <> contramap (^. _2) Block.encode
     <> contramap (^. _1 % #charges) Serializers.word16Le
     <> contramap (^. _1 % #charge) Charge.encode
-    <> nulls 1
+    <> nullN 1
     <> contramap (^. _1 % #flags) Flags.encode
     <> contramap (^. _1 % #projectile) Projectile.encode
     <> contramap (^. _1 % #melee) Melee.encode
     <> contramap (^. _1 % #isArrow) isSerializer
-    <> nulls 1
+    <> nullN 1
     <> contramap (^. _1 % #isBolt) isSerializer
-    <> nulls 1
+    <> nullN 1
     <> contramap (^. _1 % #isBullet) isSerializer
-    <> nulls 1
+    <> nullN 1

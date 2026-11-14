@@ -23,19 +23,23 @@ module Eeep.Types.Opcode.OpType (
 -- Base.
 import Data.Ix (Ix)
 import Data.Functor.Contravariant (Contravariant (..))
-import Data.Maybe (isJust)
 import Data.Word (Word16)
 
 -- Libraries.
-import Data.Vector.Strict (Vector, (!), fromList, force)
-import Optics.Core (Prism', prism', preview, review)
-import Trisagion.Utils.Either ((:+:), annotate)
+import Optics.Core (Prism', preview, review)
+
+-- non-Hakcage libraries.
+import Data.Word.Optics (word16ToInt)
+import Trisagion.Utils.Either ((:+:), validator)
 import Trisagion.Parser (Parser)
-import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
-import Trisagion.Parsers.Source (InputError)
+import Trisagion.Parsers.IStream (InputError)
 import Trisagion.Parsers.Combinators (validate)
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Serializer (Serializer)
-import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
+
+-- Package.
+import Eeep.Utils.Enum (fromAssociations, biIso)
 
 
 -- $setup
@@ -405,9 +409,21 @@ data OpType
     deriving stock (Eq, Ord, Bounded, Enum, Ix, Show)
 
 
-{- | Enumeration of the opcode types for parsing and serialization. -}
-optypes :: [(Word16, Maybe OpType)]
-optypes = [
+{- | Prism for @t'OpType'@.
+
+=== __Examples:__
+
+>>> preview opType 364
+Nothing
+
+>>> preview opType 367
+Just MinimumBaseStats
+
+>>> review opType $ maxBound @OpType
+367
+-}
+opType :: Prism' Int OpType
+opType = biIso $ fromAssociations [
         (0,   Just ACDamageType),
         (1,   Just AttacksRound),
         (2,   Just CureSleep),
@@ -778,47 +794,13 @@ optypes = [
         (367, Just MinimumBaseStats)
     ]
 
-{- | Vector of @Maybe t'OpType'@. -}
-opTypes :: Vector (Maybe OpType)
-opTypes = force . fromList . fmap snd $ optypes
-
-{- | Vector of @t'OpType'@ indices. -}
-opIndices :: Vector Word16
-opIndices = force . fromList . fmap fst . filter (isJust . snd) $ optypes
-
-
-{- | Prism for @t'OpType'@.
-
-=== __Examples:__
-
->>> preview opType 364
-Nothing
-
->>> preview opType 367
-Just MinimumBaseStats
-
->>> review opType $ maxBound @OpType
-367
--}
-{-# INLINE opType #-}
-opType :: Prism' Word16 OpType
-opType = prism' construct matched
-    where
-        construct :: OpType -> Word16
-        construct op = opIndices ! fromEnum op
-
-        matched :: Word16 -> Maybe OpType
-        matched m = if n <= length opTypes then opTypes ! n else Nothing
-            where
-                n = fromIntegral m
-
 
 {- | Decode an t'OpType'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (Error :+: InputError) OpType
-decode = validate (annotate Error (preview opType)) Parsers.word16Le
+decode :: Parsers.Binary b s => Parser s (InputError :+: Error) OpType
+decode = validate (validator Error (preview opType . review word16ToInt)) Parsers.word16Le
 
 {- | Encode an t'OpType'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary b s => Serializer s OpType
-encode = contramap (review opType) Serializers.word16Le
+encode :: Serializers.Binary s => Serializer s OpType
+encode = contramap (fromIntegral @Int @Word16 . review opType) Serializers.word16Le

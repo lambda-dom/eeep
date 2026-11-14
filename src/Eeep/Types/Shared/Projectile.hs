@@ -26,14 +26,14 @@ import Data.Word (Word16)
 import Optics.Core (Iso', coercedTo, view, review)
 
 -- non-Hackage libraries.
-import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Source (InputError)
-import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Parsers.IStream (InputError)
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 import Trisagion.Serializer (Serializer)
 
 
-{- | The t'Projectile' numeric id type.
+{- | The t'Projectile' numeric id type for projectiles.
 
 note(s):
 
@@ -57,5 +57,5 @@ decode = fmap (review projectile) Parsers.word16Le
 
 {- | Encode a t'Projectile'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary b s => Serializer s Projectile
+encode :: Serializers.Binary s => Serializer s Projectile
 encode = contramap (view projectile) Serializers.word16Le

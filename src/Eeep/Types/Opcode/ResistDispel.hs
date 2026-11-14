@@ -34,13 +34,14 @@ import Optics.Core (Prism', prism', review, preview)
 
 -- non-Hackage libraries.
 import Data.Enum.Optics (enum)
-import Trisagion.Utils.Either ((:+:), annotate)
-import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
+import Data.Word.Optics (word8ToInt)
+import Trisagion.Utils.Either ((:+:), validator)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Combinators (validate)
-import Trisagion.Parsers.Source (InputError)
-import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Parsers.IStream (InputError)
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 
 {- | The t'ResistDispel' @Error@ type. -}
@@ -66,7 +67,7 @@ resistDispel = prism' construct match
         construct = fromIntegral @Int @Word8 . review enum
 
         match :: Word8 -> Maybe ResistDispel
-        match = preview enum . fromIntegral @Word8 @Int
+        match = preview enum . review word8ToInt
 
 
 {- | Return True if t'ResistDispel' is dispellable. -}
@@ -90,10 +91,10 @@ isResistable = \case
 
 {- | Decode a t'ResistDispel'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (Error :+: InputError) ResistDispel
-decode = validate (annotate Error (preview resistDispel)) Parsers.word8
+decode :: Parsers.Binary b s => Parser s (InputError :+: Error) ResistDispel
+decode = validate (validator Error (preview resistDispel)) Parsers.word8
 
 {- | Encode a t'ResistDispel'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary b s => Serializer s ResistDispel
+encode :: Serializers.Binary s => Serializer s ResistDispel
 encode = contramap (review resistDispel) Serializers.word8

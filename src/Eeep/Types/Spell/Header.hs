@@ -32,19 +32,19 @@ import Data.ByteString.Short (ShortByteString)
 import Optics.Core ((%), (^.), review, coercedTo)
 
 -- non-Hackage libraries.
-import Mono.Typeclasses.MonoFoldable (MonoFoldable (..))
+import Data.MonoFoldable (MonoFoldable (..))
 import Trisagion.Utils.Either ((:+:))
-import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Source (InputError)
-import Trisagion.Parsers.Split (skipExact, skipPrefix)
-import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Parsers.IStream (InputError)
+import Trisagion.Parsers.Split (skipExact, skipN)
 import Trisagion.Serializer (Serializer)
-import Trisagion.Typeclasses.Serializers.Binary (nulls)
+import Trisagion.Serializers.Binary (nullN)
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 -- Package.
 import Eeep.Types.Shared.Resref (Resref)
-import qualified Eeep.Types.Shared.Resref as Resref (Error (..), decode, encode)
+import qualified Eeep.Types.Shared.Resref as Resref (decode, encode)
 import Eeep.Types.Shared.School (School)
 import qualified Eeep.Types.Shared.School as School (decode, encode)
 import Eeep.Types.Shared.Sectype (Sectype)
@@ -95,49 +95,49 @@ data Header = Header {
 
 {- | Parser for the Spell @t'Header'@ type. -}
 {-# INLINEABLE decode #-}
-decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (Error :+: InputError) Header
+decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (InputError :+: Error) Header
 decode = do
-    name        <- first Right Strref.decode
-    _           <- first absurd $ skipPrefix 4
-    sound       <- first (first (review $ #_SoundError % coercedTo)) Resref.decode
-    flags       <- first Right Flags.decode
-    sptype      <- first (first (review $ #_SpTypeError % coercedTo)) SpType.decode
-    _           <- first absurd $ skipPrefix 1
-    exclusion   <- first Right Exclusion.decode
-    graphics    <- first Right Graphics.decode
-    _           <- first absurd $ skipPrefix 1
-    school      <- first Right School.decode
-    _           <- first absurd $ skipPrefix 1
-    sectype     <- first Right Sectype.decode
-    _           <- first absurd $ skipPrefix 12
-    level       <- first (first (review $ #_LevelError % coercedTo)) Level.decode
-    _           <- first absurd $ skipPrefix 5
-    icon        <- first (first (review $ #_IconError % coercedTo)) Resref.decode
-    _           <- first absurd $ skipPrefix 14
-    description <- first Right Strref.decode
-    _           <- first Right $ skipExact 16
+    name        <- first Left Strref.decode
+    _           <- first absurd $ skipN 4
+    sound       <- first Left Resref.decode
+    flags       <- first Left Flags.decode
+    sptype      <- first (fmap (review $ #_SpTypeError % coercedTo)) SpType.decode
+    _           <- first absurd $ skipN 1
+    exclusion   <- first Left Exclusion.decode
+    graphics    <- first Left Graphics.decode
+    _           <- first absurd $ skipN 1
+    school      <- first Left School.decode
+    _           <- first absurd $ skipN 1
+    sectype     <- first Left Sectype.decode
+    _           <- first absurd $ skipN 12
+    level       <- first (fmap (review $ #_LevelError % coercedTo)) Level.decode
+    _           <- first absurd $ skipN 5
+    icon        <- first Left Resref.decode
+    _           <- first absurd $ skipN 14
+    description <- first Left Strref.decode
+    _           <- first Left $ skipExact 16
     pure Header {..}
 
 {- | Serializer for the Spell t'Header' type. -}
 {-# INLINEABLE encode #-}
-encode :: Serializers.Binary b s => Serializer s Header
+encode :: Serializers.Binary s => Serializer s Header
 encode
     =  contramap (^. #name) Strref.encode
-    <> nulls 4
+    <> nullN 4
     <> contramap (^. #sound) Resref.encode
     <> contramap (^. #flags) Flags.encode
     <> contramap (^. #sptype) SpType.encode
-    <> nulls 1
+    <> nullN 1
     <> contramap (^. #exclusion) Exclusion.encode
     <> contramap (^. #graphics) Graphics.encode
-    <> nulls 1
+    <> nullN 1
     <> contramap (^. #school) School.encode
-    <> nulls 1
+    <> nullN 1
     <> contramap (^. #sectype) Sectype.encode
-    <> nulls 12
+    <> nullN 12
     <> contramap (^. #level) Level.encode
-    <> nulls 5
+    <> nullN 5
     <> contramap (^. #icon) Resref.encode
-    <> nulls 14
+    <> nullN 14
     <> contramap (^. #description) Strref.encode
-    <> nulls 16
+    <> nullN 16

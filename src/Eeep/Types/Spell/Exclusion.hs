@@ -12,6 +12,9 @@ module Eeep.Types.Spell.Exclusion (
     toExclusion,
     fromExclusion,
 
+    -- ** Traversals.
+    exclusionFlags,
+
     -- ** Exclusion bit lenses.
     chaotic,
     evil,
@@ -43,15 +46,15 @@ import Data.Functor.Contravariant (Contravariant (..))
 import Data.Word (Word32)
 
 -- Libraries.
-import Optics.Core (Iso', Lens', (%), coercedTo, view)
+import Optics.Core (Iso', Lens', IxTraversal', (%), coercedTo, view, elementsOf, toListOf)
 
 -- non-Hackage libraries.
-import Data.Bits.Optics (bitAt)
-import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
+import Data.Bits.Optics (bitAt, bits)
 import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Source (InputError)
-import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Parsers.IStream (InputError)
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 
 {- | The Exclusion flags type.
@@ -59,7 +62,13 @@ import Trisagion.Serializer (Serializer)
 The meaning of the bits depends on the spell type.
 -}
 newtype Exclusion = Exclusion Word32
-    deriving stock (Eq, Show)
+    deriving stock Eq
+
+
+-- Instances.
+instance Show Exclusion where
+    show :: Exclusion -> String
+    show = show . toListOf exclusionFlags
 
 
 {- | Smart constructor for the t'Exclusion' type.
@@ -67,7 +76,7 @@ newtype Exclusion = Exclusion Word32
 note(s)
 
     * The constructor performs normalization so it is *not* an inverse of 'fromExclusion', only a
-    right-inverse. By the same token, it is not part of a 'Optics.Core.Prism'.
+    right-inverse. For the same reason, it is not part of a 'Optics.Core.Prism'.
 -}
 {-# INLINE toExclusion #-}
 toExclusion :: Word32 -> Exclusion
@@ -86,6 +95,15 @@ fromExclusion = view exclusion
 {-# INLINE exclusion #-}
 exclusion :: Iso' Exclusion Word32
 exclusion = coercedTo
+
+
+{- | Indexed traversal over the valid exclusion bit flags. -}
+{-# INLINE exclusionFlags #-}
+exclusionFlags :: IxTraversal' Int Exclusion Bool
+exclusionFlags = elementsOf (exclusion % bits) p
+    where
+        p :: Int -> Bool
+        p n = (0 <= n && n <= 14) || (30 <= n && n <= 31)
 
 
 {- | The chaotic t'Exclusion' bit lens. -}
@@ -181,5 +199,5 @@ decode = fmap toExclusion Parsers.word32Le
 
 {- | Encode an t'Exclusion'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary b s => Serializer s Exclusion
+encode :: Serializers.Binary s => Serializer s Exclusion
 encode = contramap fromExclusion Serializers.word32Le

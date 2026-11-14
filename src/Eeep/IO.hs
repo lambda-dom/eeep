@@ -31,7 +31,7 @@ import System.File.OsPath (readFile')
 
 -- non-Hackage libraries.
 import Trisagion.Utils.Either ((:+:))
-import Trisagion.Streams.Offset (Offset, initialize)
+import Trisagion.IStreams.Offset (Offset, initialize)
 import Trisagion.Parser (Parser, eval)
 import Trisagion.Serializer (Serializer, run)
 

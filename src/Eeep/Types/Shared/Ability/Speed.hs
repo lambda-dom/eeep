@@ -30,13 +30,13 @@ import Optics.Core (Prism', prism', review, preview)
 
 -- non-Hackage libraries.
 import Data.Enum.Optics (enum)
-import Trisagion.Utils.Either ((:+:), annotate)
-import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
+import Trisagion.Utils.Either ((:+:), validator)
 import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Source (InputError)
+import Trisagion.Parsers.IStream (InputError)
 import Trisagion.Parsers.Combinators (validate)
-import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 
 {- | The t'Speed' @Error@ type.
@@ -50,7 +50,7 @@ newtype Error = Error Word8
     deriving newtype Enum
 
 
-{- | Refinement type to constrain the values of the ability speed to the interval [0 .. 10]. -}
+{- | Refinement type to constrain the values of the speed field to the interval [0 .. 10]. -}
 newtype Speed = Speed Word8
     deriving stock (Eq, Ord, Ix)
     deriving newtype (Enum, Show)
@@ -80,10 +80,10 @@ speed = prism' construct match
 
 {- | Decode a t'Speed'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (Error :+: InputError) Speed
-decode = validate (annotate Error (preview speed)) Parsers.word8
+decode :: Parsers.Binary b s => Parser s (InputError :+: Error) Speed
+decode = validate (validator Error (preview speed)) Parsers.word8
 
 {- | Encode a t'Speed'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary b s => Serializer s Speed
+encode :: Serializers.Binary s => Serializer s Speed
 encode = contramap (review speed) Serializers.word8

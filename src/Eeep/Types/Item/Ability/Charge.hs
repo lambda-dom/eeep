@@ -30,13 +30,14 @@ import Optics.Core (Prism', review, preview, prism')
 
 -- Non-hackage libraries.
 import Data.Enum.Optics (enum)
-import Trisagion.Utils.Either ((:+:), annotate)
-import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
+import Data.Word.Optics (word8ToInt)
+import Trisagion.Utils.Either ((:+:), validator)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Combinators (validate)
-import Trisagion.Parsers.Source (InputError)
-import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Parsers.IStream (InputError)
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 
 {- | The t'Charge' @Error@ type. -}
@@ -60,18 +61,18 @@ charge :: Prism' Word8 Charge
 charge = prism' construct match
     where
         construct :: Charge -> Word8
-        construct = succ . fromIntegral @Int @Word8 . review enum
+        construct = fromIntegral @Int @Word8 . review enum
 
         match :: Word8 -> Maybe Charge
-        match = preview enum . pred . fromIntegral @Word8 @Int
+        match = preview enum . review word8ToInt
 
 
 {- | Decode a t'Charge'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (Error :+: InputError) Charge
-decode = validate (annotate Error (preview charge)) Parsers.word8
+decode :: Parsers.Binary b s => Parser s (InputError :+: Error) Charge
+decode = validate (validator Error (preview charge)) Parsers.word8
 
 {- | Encode a t'Charge'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary b s => Serializer s Charge
+encode :: Serializers.Binary s => Serializer s Charge
 encode = contramap (review charge) Serializers.word8
