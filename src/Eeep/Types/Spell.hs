@@ -72,8 +72,8 @@ data Error
 {- | The @Spell@ type. -}
 data Spell = Spell {
     header    :: !SpellHeader.Header,
-    abilities :: !(Vector Ability),
-    opcodes   :: !(Vector Opcode)
+    opcodes   :: !(Vector Opcode),
+    abilities :: !(Vector Ability)
 } deriving stock (Eq, Show, Generic)
 
 

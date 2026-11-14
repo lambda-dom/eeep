@@ -29,11 +29,11 @@ import Data.Word (Word8)
 import Optics.Core (Iso', (^.), (%), iso, _1, _2)
 
 -- non-Hackage libraries.
-import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Source (InputError)
-import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Parsers.IStream (InputError)
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 
 {- | The item t'Animation' type of an item encoded as a pair of 8-bit characters.
@@ -76,7 +76,7 @@ decode = do
 
 {- | Encode a t'Animation'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary b s => Serializer s Animation
+encode :: Serializers.Binary s => Serializer s Animation
 encode
     =  contramap (fromIntegral @Int @Word8 . ord . (^. animation % _1)) Serializers.word8
     <> contramap (fromIntegral @Int @Word8 . ord . (^. animation % _2)) Serializers.word8
