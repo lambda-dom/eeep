@@ -30,6 +30,7 @@ import Optics.Core (Prism', review, preview, prism')
 
 -- Non-hackage libraries.
 import Data.Enum.Optics (enum)
+import Data.Word.Optics (word8ToInt)
 import Trisagion.Utils.Either ((:+:), validator)
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.Combinators (validate)
@@ -60,10 +61,10 @@ charge :: Prism' Word8 Charge
 charge = prism' construct match
     where
         construct :: Charge -> Word8
-        construct = succ . fromIntegral @Int @Word8 . review enum
+        construct = fromIntegral @Int @Word8 . review enum
 
         match :: Word8 -> Maybe Charge
-        match = preview enum . pred . fromIntegral @Word8 @Int
+        match = preview enum . review word8ToInt
 
 
 {- | Decode a t'Charge'. -}
