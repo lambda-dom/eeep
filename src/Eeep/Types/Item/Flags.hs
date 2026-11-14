@@ -12,6 +12,9 @@ module Eeep.Types.Item.Flags (
     toFlags,
     fromFlags,
 
+    -- ** Traversals.
+    flags,
+
     -- ** Bit lenses.
     unsellable,
     twoHanded,
@@ -39,19 +42,19 @@ module Eeep.Types.Item.Flags (
 -- Imports.
 -- Base.
 import Data.Bits ((.&.))
+import Data.Functor.Contravariant (Contravariant (..))
 import Data.Word (Word32)
 
 -- Libraries.
-import Optics.Core (Iso', Lens', (%), coercedTo, view)
+import Optics.Core (Iso', Lens', IxTraversal', (%), coercedTo, view, elementsOf, toListOf)
 
 -- non-Hackage libraries.
-import Data.Bits.Optics (bitAt)
-import qualified Trisagion.Typeclasses.Parsers.Binary as Parsers (Binary (..))
+import Data.Bits.Optics (bitAt, bits)
 import Trisagion.Parser (Parser)
-import Trisagion.Parsers.Source (InputError)
-import qualified Trisagion.Typeclasses.Serializers.Binary as Serializers (Binary (..))
+import Trisagion.Parsers.IStream (InputError)
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Serializer (Serializer)
-import Data.Functor.Contravariant (Contravariant(..))
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 
 {- | The item @Flags@ type.
@@ -62,7 +65,13 @@ note(s):
     use t'Flags' values as keys in maps, etc.
 -}
 newtype Flags = Flags Word32
-    deriving stock (Eq, Ord, Bounded, Show)
+    deriving stock (Eq, Ord, Bounded)
+
+
+-- Instances.
+instance Show Flags where
+    show :: Flags -> String
+    show = show . toListOf flags
 
 
 {- | Smart constructor for the t'Flags' type.
@@ -70,7 +79,7 @@ newtype Flags = Flags Word32
 note(s)
 
     * The constructor performs normalization so it is *not* an inverse of 'fromFlags', only a
-    right-inverse. By the same token, it is not part of a 'Optics.Core.Prism'.
+    right-inverse. For the same reason, it is not part of a 'Optics.Core.Prism'.
 -}
 {-# INLINE toFlags #-}
 toFlags :: Word32 -> Flags
@@ -82,99 +91,108 @@ toFlags = Flags . (.&. mask)
 {- | Eliminator for the t'Flags' type. -}
 {-# INLINE fromFlags #-}
 fromFlags :: Flags -> Word32
-fromFlags = view flags
+fromFlags = view itemFlags
 
 
 -- | Isomorphism for the t'Flags' type. Because of normalization, not exported.
+{-# INLINE itemFlags #-}
+itemFlags :: Iso' Flags Word32
+itemFlags = coercedTo
+
+
+{- | Indexed traversal over the valid bit flags. -}
 {-# INLINE flags #-}
-flags :: Iso' Flags Word32
-flags = coercedTo
+flags :: IxTraversal' Int Flags Bool
+flags = elementsOf (itemFlags % bits) p
+    where
+        p :: Int -> Bool
+        p n = (0 <= n && n <= 13) || (24 <= n && n <= 25) || (n == 15)
 
 
 {- | The unsellable t'Flags' bit lens. -}
 {-# INLINE unsellable #-}
 unsellable :: Lens' Flags Bool
-unsellable = flags % bitAt 0
+unsellable = itemFlags % bitAt 0
 
 {- | The twohanded t'Flags' bit lens. -}
 {-# INLINE twoHanded #-}
 twoHanded :: Lens' Flags Bool
-twoHanded = flags % bitAt 1
+twoHanded = itemFlags % bitAt 1
 
 {- | The droppable t'Flags' bit lens. -}
 {-# INLINE droppable #-}
 droppable :: Lens' Flags Bool
-droppable = flags % bitAt 2
+droppable = itemFlags % bitAt 2
 
 {- | The displayable t'Flags' bit lens. -}
 {-# INLINE displayable #-}
 displayable :: Lens' Flags Bool
-displayable = flags % bitAt 3
+displayable = itemFlags % bitAt 3
 
 {- | The cursed t'Flags' bit lens. -}
 {-# INLINE cursed #-}
 cursed :: Lens' Flags Bool
-cursed = flags % bitAt 4
+cursed = itemFlags % bitAt 4
 
 {- | The cloneable t'Flags' bit lens. -}
 {-# INLINE cloneable #-}
 cloneable :: Lens' Flags Bool
-cloneable = flags % bitAt 5
+cloneable = itemFlags % bitAt 5
 
 {- | The magical t'Flags' bit lens. -}
 {-# INLINE magical #-}
 magical :: Lens' Flags Bool
-magical = flags % bitAt 6
+magical = itemFlags % bitAt 6
 
 {- | The leftHanded t'Flags' bit lens. -}
 {-# INLINE leftHanded #-}
 leftHanded :: Lens' Flags Bool
-leftHanded = flags % bitAt 7
+leftHanded = itemFlags % bitAt 7
 
 {- | The silver t'Flags' bit lens. -}
 {-# INLINE silver #-}
 silver :: Lens' Flags Bool
-silver = flags % bitAt 8
+silver = itemFlags % bitAt 8
 
 {- | The coldIron t'Flags' bit lens. -}
 {-# INLINE coldIron #-}
 coldIron :: Lens' Flags Bool
-coldIron = flags % bitAt 9
+coldIron = itemFlags % bitAt 9
 
 {- | The offHanded t'Flags' bit lens. -}
 {-# INLINE offHanded #-}
 offHanded :: Lens' Flags Bool
-offHanded = flags % bitAt 10
+offHanded = itemFlags % bitAt 10
 
 {- | The conversable t'Flags' bit lens. -}
 {-# INLINE conversable #-}
 conversable :: Lens' Flags Bool
-conversable = flags % bitAt 11
+conversable = itemFlags % bitAt 11
 
 {- | The twohandedFake t'Flags' bit lens. -}
 {-# INLINE twoHandedFake #-}
 twoHandedFake :: Lens' Flags Bool
-twoHandedFake = flags % bitAt 12
+twoHandedFake = itemFlags % bitAt 12
 
 {- | The noOffHanded t'Flags' bit lens. -}
 {-# INLINE noOffHanded #-}
 noOffHanded :: Lens' Flags Bool
-noOffHanded = flags % bitAt 13
+noOffHanded = itemFlags % bitAt 13
 
 {- | The adamantine t'Flags' bit lens. -}
 {-# INLINE adamantine #-}
 adamantine :: Lens' Flags Bool
-adamantine = flags % bitAt 15
+adamantine = itemFlags % bitAt 15
 
 {- | The undispellable t'Flags' bit lens. -}
 {-# INLINE undispellable #-}
 undispellable :: Lens' Flags Bool
-undispellable = flags % bitAt 24
+undispellable = itemFlags % bitAt 24
 
 {- | The criticalAversion t'Flags' bit lens. -}
 {-# INLINE criticalAversion #-}
 criticalAversion :: Lens' Flags Bool
-criticalAversion = flags % bitAt 25
+criticalAversion = itemFlags % bitAt 25
 
 
 {- | Decode a t'Flags'. -}
@@ -184,5 +202,5 @@ decode = fmap toFlags Parsers.word32Le
 
 {- | Encode a t'Flags'. -}
 {-# INLINE encode #-}
-encode :: Serializers.Binary b s => Serializer s Flags
+encode :: Serializers.Binary s => Serializer s Flags
 encode = contramap fromFlags Serializers.word32Le

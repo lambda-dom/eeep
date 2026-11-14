@@ -102,9 +102,9 @@ library
         Eeep.Types.Item.Ability.Launcher
         Eeep.Types.Item.Ability.Melee
         Eeep.Types.Item.Ability.Header
-        -- Eeep.Types.Item.Category
-        -- Eeep.Types.Item.Flags
-        -- Eeep.Types.Item.Usability
+        Eeep.Types.Item.Category
+        Eeep.Types.Item.Flags
+        Eeep.Types.Item.Usability
         -- Eeep.Types.Item.KitUsability
         -- Eeep.Types.Item.Animation
         -- Eeep.Types.Item.Header
