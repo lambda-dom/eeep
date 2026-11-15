@@ -69,7 +69,7 @@ charge = prism' construct match
 
 {- | Decode a t'Charge'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (InputError :+: Error) Charge
+decode :: Parsers.Binary s => Parser s (InputError :+: Error) Charge
 decode = validate (validator Error (preview charge)) Parsers.word8
 
 {- | Encode a t'Charge'. -}

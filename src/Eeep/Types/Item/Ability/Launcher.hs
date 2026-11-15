@@ -69,19 +69,18 @@ launcher = prism' construct match
         construct Axe      = 100
 
         match :: Word8 -> Maybe Launcher
-        match n
-            | n == 0    = Just None
-            | n == 1    = Just Bow
-            | n == 2    = Just Crossbow
-            | n == 3    = Just Sling
-            | n == 40   = Just Spear
-            | n == 100  = Just Axe
-            | otherwise = Nothing
+        match 0   = Just None
+        match 1   = Just Bow
+        match 2   = Just Crossbow
+        match 3   = Just Sling
+        match 40  = Just Spear
+        match 100 = Just Axe
+        match _   = Nothing
 
 
 {- | Decode a t'Launcher'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (InputError :+: Error) Launcher
+decode :: Parsers.Binary s => Parser s (InputError :+: Error) Launcher
 decode = validate (validator Error (preview launcher)) Parsers.word8
 
 {- | Encode a t'Launcher'. -}

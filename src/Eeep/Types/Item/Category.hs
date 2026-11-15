@@ -9,7 +9,7 @@ module Eeep.Types.Item.Category (
     Category (..),
 
     -- ** Isomorphisms.
-    school,
+    category,
 
     -- ** Parsers and serializers.
     decode,
@@ -45,17 +45,17 @@ newtype Category = Category Word16
 
 
 {- | Isomorphism for the t'Category' type. -}
-{-# INLINE school #-}
-school :: Iso' Category Word16
-school = coercedTo
+{-# INLINE category #-}
+category :: Iso' Category Word16
+category = coercedTo
 
 
 {- | Decode a t'Category'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s InputError Category
-decode = fmap (review school) Parsers.word16Le
+decode :: Parsers.Binary s => Parser s InputError Category
+decode = fmap (review category) Parsers.word16Le
 
 {- | Encode a t'Category'. -}
 {-# INLINE encode #-}
 encode :: Serializers.Binary s => Serializer s Category
-encode = contramap (view school) Serializers.word16Le
+encode = contramap (view category) Serializers.word16Le

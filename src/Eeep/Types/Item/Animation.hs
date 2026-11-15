@@ -68,7 +68,7 @@ animation = iso from to
 
 {- | Decode a t'Animation'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s InputError Animation
+decode :: Parsers.Binary s => Parser s InputError Animation
 decode = do
     lower <- fmap (chr . fromIntegral @Word8 @Int) Parsers.word8
     upper <- fmap (chr . fromIntegral @Word8 @Int) Parsers.word8

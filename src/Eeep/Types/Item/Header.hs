@@ -113,7 +113,7 @@ data Header = Header {
 
 {- | Parser for the item @t'Header'@ type. -}
 {-# INLINEABLE decode #-}
-decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (InputError :+: Error) Header
+decode :: (Parsers.Binary s, MonoFoldable Word8 s) => Parser s (InputError :+: Error) Header
 decode = do
     name            <- first Left Strref.decode
     nameId          <- first Left Strref.decode

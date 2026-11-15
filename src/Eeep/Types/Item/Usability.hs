@@ -253,7 +253,7 @@ halfOrc = usabilityFlags % bitAt 31
 
 {- | Decode a t'Usability'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s InputError Usability
+decode :: Parsers.Binary s => Parser s InputError Usability
 decode = fmap (review usabilityFlags) Parsers.word32Le
 
 {- | Encode a t'Usability'. -}

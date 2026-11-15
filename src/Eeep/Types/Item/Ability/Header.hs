@@ -119,7 +119,7 @@ data Header = Header {
 
 -- | idRequired aux parser. Not exported.
 {-# INLINE idRequiredParser #-}
-idRequiredParser :: (Parsers.Binary b s) => Parser s (InputError :+: Error) Bool
+idRequiredParser :: Parsers.Binary s => Parser s (InputError :+: Error) Bool
 idRequiredParser = validate v Parsers.word8
     where
         v :: Word8 -> Error :+: Bool
@@ -135,7 +135,7 @@ idRequiredSerializer = contramap (fromIntegral @Int @Word8 . fromEnum . not) Ser
 
 -- | isParser aux parser. Not exported.
 {-# INLINE isParser #-}
-isParser :: (Parsers.Binary b s) => Parser s (InputError :+: Error) Bool
+isParser :: Parsers.Binary s => Parser s (InputError :+: Error) Bool
 isParser = validate v Parsers.word8
     where
         v :: Word8 -> Error :+: Bool
@@ -151,7 +151,7 @@ isSerializer = contramap (fromIntegral @Int @Word8 . fromEnum) Serializers.word8
 
 {- | Parser for the item @t'Header'@ type. -}
 {-# INLINEABLE decode #-}
-decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (InputError :+: Error) (Header, Int)
+decode :: (Parsers.Binary s, MonoFoldable Word8 s) => Parser s (InputError :+: Error) (Header, Int)
 decode = do
     abilitytype <- first (fmap (review $ #_AbilityTypeError % coercedTo)) AbilityType.decode
     idRequired  <- idRequiredParser
