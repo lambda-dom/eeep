@@ -49,7 +49,7 @@ graphics = coercedTo
 
 {- | Decode a t'Graphics'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s InputError Graphics
+decode :: Parsers.Binary s => Parser s InputError Graphics
 decode = fmap (review graphics) Parsers.word16Le
 
 {- | Encode a t'Graphics'. -}

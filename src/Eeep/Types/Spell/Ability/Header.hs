@@ -89,7 +89,7 @@ data Header = Header {
 {- | Parser for the spell ability @t'Header'@ type. -}
 {-# INLINEABLE decode #-}
 decode
-    :: (Parsers.Binary b s, MonoFoldable Word8 b)
+    :: (Parsers.Binary s, MonoFoldable Word8 s)
     => Parser s (InputError :+: Error) (Header, Int)
 decode = do
     _          <- first absurd $ skipN 2

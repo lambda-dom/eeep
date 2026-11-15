@@ -75,7 +75,7 @@ location = prism' construct match
 
 {- | Decode a t'Location'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (InputError :+: Error) Location
+decode :: Parsers.Binary s => Parser s (InputError :+: Error) Location
 decode = validate (validator Error (preview location)) Parsers.word8
 
 {- | Encode a t'Location'. -}

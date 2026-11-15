@@ -72,9 +72,9 @@ library
         Eeep.Types.Shared.School
         Eeep.Types.Shared.Sectype
         Eeep.Types.Shared.Strref
-        -- Eeep.Types.Shared.Ability.Location
-        -- Eeep.Types.Shared.Ability.Speed
-        -- Eeep.Types.Shared.Ability.Target
+        Eeep.Types.Shared.Ability.Location
+        Eeep.Types.Shared.Ability.Speed
+        Eeep.Types.Shared.Ability.Target
         Eeep.Types.Opcode.OpType
         Eeep.Types.Opcode.Target
         Eeep.Types.Opcode.Power
@@ -85,16 +85,16 @@ library
         Eeep.Types.Opcode.SaveBonus
         Eeep.Types.Opcode
         Eeep.Types.Effect
-        -- Eeep.Types.Spell.Ability.Level
-        -- Eeep.Types.Spell.Ability.Header
-        -- Eeep.Types.Spell.SpellType
-        -- Eeep.Types.Spell.Level
-        -- Eeep.Types.Spell.Flags
-        -- Eeep.Types.Spell.Exclusion
-        -- Eeep.Types.Spell.Graphics
-        -- Eeep.Types.Spell.Ability
-        -- Eeep.Types.Spell.Header
-        -- Eeep.Types.Spell
+        Eeep.Types.Spell.Ability.Level
+        Eeep.Types.Spell.Ability.Header
+        Eeep.Types.Spell.SpellType
+        Eeep.Types.Spell.Level
+        Eeep.Types.Spell.Flags
+        Eeep.Types.Spell.Exclusion
+        Eeep.Types.Spell.Graphics
+        Eeep.Types.Spell.Ability
+        Eeep.Types.Spell.Header
+        Eeep.Types.Spell
         -- Eeep.Types.Item.Ability.AbilityType
         -- Eeep.Types.Item.Ability.Charge
         -- Eeep.Types.Item.Ability.DamageType
@@ -110,4 +110,4 @@ library
         -- Eeep.Types.Item.Header
         -- Eeep.Types.Item.Ability
         -- Eeep.Types.Item
-        -- Eeep.IO
+        Eeep.IO

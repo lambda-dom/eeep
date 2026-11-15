@@ -194,7 +194,7 @@ nature = exclusion % bitAt 31
 
 {- | Decode an t'Exclusion'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s InputError Exclusion
+decode :: Parsers.Binary s => Parser s InputError Exclusion
 decode = fmap toExclusion Parsers.word32Le
 
 {- | Encode an t'Exclusion'. -}

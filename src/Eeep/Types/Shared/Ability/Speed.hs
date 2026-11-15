@@ -80,7 +80,7 @@ speed = prism' construct match
 
 {- | Decode a t'Speed'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (InputError :+: Error) Speed
+decode :: Parsers.Binary s => Parser s (InputError :+: Error) Speed
 decode = validate (validator Error (preview speed)) Parsers.word8
 
 {- | Encode a t'Speed'. -}
