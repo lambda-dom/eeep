@@ -54,7 +54,7 @@ block = iso from to
 
 {- | Decode a t'Block'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s InputError Block
+decode :: Parsers.Binary s => Parser s InputError Block
 decode = fmap (review block) $ Parsers.pair Parsers.word16Le Parsers.word16Le
 
 {- | Encode a t'Block'. -}

@@ -87,7 +87,7 @@ target = prism' construct match
 
 {- | Decode a t'Target'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (InputError :+: Error) Target
+decode :: Parsers.Binary s => Parser s (InputError :+: Error) Target
 decode = validate (validator Error (preview target)) Parsers.word8
 
 {- | Encode a t'Target'. -}

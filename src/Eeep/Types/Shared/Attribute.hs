@@ -80,7 +80,7 @@ attribute = prism' construct match
 
 {- | Decode an t'Attribute'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (InputError :+: Error) Attribute
+decode :: Parsers.Binary s => Parser s (InputError :+: Error) Attribute
 decode = validate (validator Error (preview attribute)) Parsers.word8
 
 {- | Encode an t'Attribute'. -}

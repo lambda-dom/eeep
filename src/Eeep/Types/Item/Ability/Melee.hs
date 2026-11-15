@@ -76,7 +76,7 @@ melee = prism' construct match
 
 {- | Decode a t'Melee'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (InputError :+: Error) Melee
+decode :: Parsers.Binary s => Parser s (InputError :+: Error) Melee
 decode = do
     m <- first Left Parsers.word8
     _ <- first absurd $ skipN 1

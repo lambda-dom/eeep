@@ -75,7 +75,7 @@ spType = prism' construct match
 
 {- | Decode a t'SpellType'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (InputError :+: Error) SpellType
+decode :: Parsers.Binary s => Parser s (InputError :+: Error) SpellType
 decode = validate (validator Error (preview spType)) Parsers.word8
 
 {- | Encode a t'SpellType'. -}

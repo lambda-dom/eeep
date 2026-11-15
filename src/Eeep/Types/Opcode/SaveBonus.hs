@@ -80,7 +80,7 @@ saveBonus = prism' construct match
 
 {- | Decode a t'SaveBonus'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (InputError :+: Error) SaveBonus
+decode :: Parsers.Binary s => Parser s (InputError :+: Error) SaveBonus
 decode = validate (validator Error (preview saveBonus)) Parsers.int32Le
 
 {- | Encode a t'SaveBonus'. -}

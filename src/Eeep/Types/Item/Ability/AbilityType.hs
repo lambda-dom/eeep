@@ -74,7 +74,7 @@ abilityType = prism' construct match
 
 {- | Decode a t'AbilityType'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (InputError :+: Error) AbilityType
+decode :: Parsers.Binary s => Parser s (InputError :+: Error) AbilityType
 decode = validate (validator Error (preview abilityType)) Parsers.word8
 
 {- | Encode a t'AbilityType'. -}

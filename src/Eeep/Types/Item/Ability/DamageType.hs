@@ -74,7 +74,7 @@ damageType = prism' construct match
 
 {- | Decode a t'DamageType'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (InputError :+: Error) DamageType
+decode :: Parsers.Binary s => Parser s (InputError :+: Error) DamageType
 decode = validate (validator Error (preview damageType)) Parsers.word8
 
 {- | Encode a t'DamageType'. -}

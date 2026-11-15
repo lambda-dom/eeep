@@ -797,7 +797,7 @@ opType = biIso $ fromAssociations [
 
 {- | Decode an t'OpType'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (InputError :+: Error) OpType
+decode :: Parsers.Binary s => Parser s (InputError :+: Error) OpType
 decode = validate (validator Error (preview opType . review word16ToInt)) Parsers.word16Le
 
 {- | Encode an t'OpType'. -}

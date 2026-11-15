@@ -84,7 +84,7 @@ level = prism' construct match
 
 {- | Decode a t'Level'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (InputError :+: Error) Level
+decode :: Parsers.Binary s => Parser s (InputError :+: Error) Level
 decode = validate (validator Error (preview level)) Parsers.word8
 
 {- | Encode a t'Level'. -}

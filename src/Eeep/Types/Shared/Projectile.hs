@@ -52,7 +52,7 @@ projectile = coercedTo
 
 {- | Decode a t'Projectile'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s InputError Projectile
+decode :: Parsers.Binary s => Parser s InputError Projectile
 decode = fmap (review projectile) Parsers.word16Le
 
 {- | Encode a t'Projectile'. -}

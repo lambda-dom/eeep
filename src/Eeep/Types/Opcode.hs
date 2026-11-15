@@ -102,7 +102,7 @@ data Opcode = Opcode {
 
 {- | Parser for the @t'Opcode'@ type. -}
 {-# INLINEABLE decode #-}
-decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (InputError :+: Error) Opcode
+decode :: (Parsers.Binary s, MonoFoldable Word8 s) => Parser s (InputError :+: Error) Opcode
 decode = do
     optype       <- first (fmap (review $ #_OpTypeError % coercedTo)) OpType.decode
     target       <- first (fmap (review $ #_TargetError % coercedTo)) Target.decode

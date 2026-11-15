@@ -52,7 +52,7 @@ school = coercedTo
 
 {- | Decode a t'School'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s InputError School
+decode :: Parsers.Binary s => Parser s InputError School
 decode = fmap (review school) Parsers.word8
 
 {- | Encode a t'School'. -}

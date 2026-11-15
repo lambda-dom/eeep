@@ -35,8 +35,8 @@ import Optics.Core (Prism', prism')
 import Trisagion.Utils.Either ((:+:))
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.IStream (InputError)
-import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parsers.Combinators (validate)
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 
 
 {- | The t'Timing' @Error@ type. -}
@@ -107,7 +107,7 @@ timing = prism' construct match
 
 {- | Decode the first field of a t'Timing'. -}
 {-# INLINE decodeTiming #-}
-decodeTiming :: Parsers.Binary b s => Parser s (InputError :+: Error) (Word32 -> Timing)
+decodeTiming :: Parsers.Binary s => Parser s (InputError :+: Error) (Word32 -> Timing)
 decodeTiming = validate v Parsers.word8
     where
         v :: Word8 -> Error :+: (Word32 -> Timing)
@@ -138,5 +138,5 @@ do
 For serializing, use the 'timing' prism and the standard serializers.
 -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => (Word32 -> Timing) -> Parser s InputError Timing
-decode f = fmap f $ Parsers.word32Le
+decode :: Parsers.Binary s => (Word32 -> Timing) -> Parser s InputError Timing
+decode f = fmap f Parsers.word32Le

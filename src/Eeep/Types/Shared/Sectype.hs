@@ -26,11 +26,11 @@ import Data.Word (Word8)
 import Optics.Core (Iso', coercedTo, view, review)
 
 -- non-Hackage libraries.
-import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Parser (Parser)
 import Trisagion.Parsers.IStream (InputError)
-import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
+import qualified Trisagion.Parsers.Binary as Parsers (Binary (..))
 import Trisagion.Serializer (Serializer)
+import qualified Trisagion.Serializers.Binary as Serializers (Binary (..))
 
 
 {- | The t'Sectype' numeric id type for (spell) sectypes.
@@ -52,7 +52,7 @@ sectype = coercedTo
 
 {- | Decode a t'Sectype'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s InputError Sectype
+decode :: Parsers.Binary s => Parser s InputError Sectype
 decode = fmap (review sectype) Parsers.word8
 
 {- | Encode a t'Sectype'. -}

@@ -155,7 +155,7 @@ castSilenced = spellFlags % bitAt 25
 
 {- | Decode a t'Flags'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s InputError Flags
+decode :: Parsers.Binary s => Parser s InputError Flags
 decode = fmap toFlags Parsers.word32Le
 
 {- | Encode a t'Flags'. -}

@@ -98,9 +98,7 @@ opCount = fromIntegral @Int @a . length . view #opcodes
 
 {- | Parser for the @t'Item'@ signature. -}
 {-# INLINE signature #-}
-signature
-    :: forall b s . (Parsers.Binary b s)
-    => Parser s (InputError :+: Error) ()
+signature :: Parsers.Binary s => Parser s (InputError :+: Error) ()
 signature =
     first
         (fmap (\ (ValidationError n) -> SignatureError n))
@@ -109,7 +107,7 @@ signature =
 
 -- | Parser for the table information of a spell header. Not exported.
 {-# INLINEABLE decodeStatic #-}
-decodeStatic :: (Parsers.Binary b s) => Parser s InputError (Int, Int)
+decodeStatic :: Parsers.Binary s => Parser s InputError (Int, Int)
 decodeStatic = do
         -- Note: Header offset, opcode table offset and casting opcode offset can all be computed. 
         _        <- first absurd $ skipN 4
@@ -122,7 +120,7 @@ decodeStatic = do
 {- | Parser for the @t'Item'@ type. -}
 {-# INLINEABLE decode #-}
 decode
-    :: (Parsers.Binary b s, MonoFoldable Word8 b)
+    :: (Parsers.Binary s, MonoFoldable Word8 s)
     => Parser s (InputError :+: Error) Item
 decode = do
         _                    <- signature
