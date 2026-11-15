@@ -143,7 +143,7 @@ toList (Probability l u) = enumFromTo l u
 
 {- | Decode a t'Probability' interval. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (InputError :+: Error) Probability
+decode :: Parsers.Binary s => Parser s (InputError :+: Error) Probability
 decode =
     validate
         (validator (uncurry Error) (preview probability))

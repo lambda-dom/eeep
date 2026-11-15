@@ -91,7 +91,7 @@ isResistable = \case
 
 {- | Decode a t'ResistDispel'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (InputError :+: Error) ResistDispel
+decode :: Parsers.Binary s => Parser s (InputError :+: Error) ResistDispel
 decode = validate (validator Error (preview resistDispel)) Parsers.word8
 
 {- | Encode a t'ResistDispel'. -}

@@ -50,7 +50,7 @@ strref = coercedTo
 
 {- | Decode a t'Strref'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s InputError Strref
+decode :: Parsers.Binary s => Parser s InputError Strref
 decode = fmap (review strref) Parsers.word32Le
 
 {- | Encode a t'Strref'. -}

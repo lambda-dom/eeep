@@ -80,7 +80,7 @@ power = prism' construct match
 
 {- | Decode a t'Power'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (InputError :+: Error) Power
+decode :: Parsers.Binary s => Parser s (InputError :+: Error) Power
 decode = validate (validator Error (preview power)) Parsers.word8
 
 {- | Encode a t'Power'. -}

@@ -136,7 +136,7 @@ isResrefChar c = isAscii c && not (isControl c) && c /= '\\' && c /= '/' && c /=
 
 {- | Decode a t'Resref'. -}
 {-# INLINE decode #-}
-decode :: (MonoFoldable Word8 b, Parsers.Binary b s) => Parser s InputError Resref
+decode :: (MonoFoldable Word8 s, Parsers.Binary s) => Parser s InputError Resref
 decode = fmap (Resref . Short.takeWhile (/= 0)) (Parsers.shortBytes $ takeExact 8)
 
 {- | Encode a t'Resref'. -}

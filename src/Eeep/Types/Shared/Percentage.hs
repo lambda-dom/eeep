@@ -79,7 +79,7 @@ percentage = prism' construct match
 
 {- | Decode a t'Percentage'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s (InputError :+: Error) Percentage
+decode :: Parsers.Binary s => Parser s (InputError :+: Error) Percentage
 decode = validate (validator Error (preview percentage)) Parsers.word8
 
 {- | Encode a t'Percentage'. -}

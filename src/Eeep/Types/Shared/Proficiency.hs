@@ -52,7 +52,7 @@ proficiency = coercedTo
 
 {- | Decode a t'Proficiency'. -}
 {-# INLINE decode #-}
-decode :: Parsers.Binary b s => Parser s InputError Proficiency
+decode :: Parsers.Binary s => Parser s InputError Proficiency
 decode = fmap (review proficiency) Parsers.word8
 
 {- | Encode a t'Proficiency'. -}

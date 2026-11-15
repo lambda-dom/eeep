@@ -120,9 +120,7 @@ data Effect = Effect {
 
 {- | Parser for the @t'Effect'@ signature. -}
 {-# INLINE signature #-}
-signature
-    :: forall b s . (Parsers.Binary b s)
-    => Parser s (InputError :+: Error) ()
+signature :: Parsers.Binary s => Parser s (InputError :+: Error) ()
 signature =
     first
         (fmap (\ (ValidationError n) -> SignatureError n))
@@ -131,7 +129,7 @@ signature =
 
 -- | Parser for t'Probability'. Not exported.
 {-# INLINE probParser #-}
-probParser :: Parsers.Binary b s => Parser s (InputError :+: Error) Probability
+probParser :: Parsers.Binary s => Parser s (InputError :+: Error) Probability
 probParser = do
     upper <- first Left Parsers.word8
     _     <- first absurd $ skipN 1
@@ -144,7 +142,7 @@ probParser = do
 
 {- | Parser for an embedded @t'Effect'@. -}
 {-# INLINEABLE decodeBody #-}
-decodeBody :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (InputError :+: Error) Effect
+decodeBody :: (Parsers.Binary s, MonoFoldable Word8 s) => Parser s (InputError :+: Error) Effect
 decodeBody = do
     optype       <- first (fmap (review $ #_OpTypeError % coercedTo)) OpType.decode
     _            <- first absurd $ skipN 2
@@ -184,7 +182,7 @@ decodeBody = do
 
 {- | Parser for a file @t'Effect'@. -}
 {-# INLINE decode #-}
-decode :: (Parsers.Binary b s, MonoFoldable Word8 b) => Parser s (InputError :+: Error) Effect
+decode :: (Parsers.Binary s, MonoFoldable Word8 s) => Parser s (InputError :+: Error) Effect
 decode = do
     _ <- signature
     _ <- first absurd $ skipN 8
