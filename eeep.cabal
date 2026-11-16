@@ -110,4 +110,5 @@ library
         Eeep.Types.Item.Header
         Eeep.Types.Item.Ability
         Eeep.Types.Item
+        Eeep.Types.Ids.Parsers
         Eeep.IO
